@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-07-31T12:55:15-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-07-31T12:55:15-04:00</published><updated>2026-07-31T12:55:15-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-09-15T09:33:03-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-09-15T09:33:03-04:00</published><updated>2026-09-15T09:33:03-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -766,7 +766,336 @@ run_dbcan <span class="nt">--tools</span> all ...
 
 <p>Last updated: February 2026</p>
 
-<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Daily Bioinformatics #98: Keeping Scratch Files Alive on HPC Clusters</title><link href="https://jojyjohn28.github.io/blog/keeping-scratch-files-alive/" rel="alternate" type="text/html" title="Daily Bioinformatics #98: Keeping Scratch Files Alive on HPC Clusters" /><published>2026-07-31T00:00:00-04:00</published><updated>2026-07-31T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/keeping-scratch-files-alive</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/keeping-scratch-files-alive/"><![CDATA[<h1 id="keeping-scratch-files-alive-on-hpc-clusters">Keeping Scratch Files Alive on HPC Clusters</h1>
+<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Human Contamination Removal in Host-Associated Metagenomics: Why It Matters — Day 1 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/" rel="alternate" type="text/html" title="Human Contamination Removal in Host-Associated Metagenomics: Why It Matters — Day 1 of 5" /><published>2026-09-15T00:00:00-04:00</published><updated>2026-09-15T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/host-associated-metagenomics</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/"><![CDATA[<p>🧬 <em>Day 1 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+
+<p>Shotgun metagenomics gives us access to microbial genomes, functional pathways, strain-level variation, and the full metabolic potential of a community — things that amplicon sequencing cannot reach. But in host-associated samples, one practical problem appears before almost any of that biology can begin: a substantial fraction of your sequencing reads may come from the host rather than the microbiome.</p>
+
+<p>This is not a minor calibration issue. In some vaginal swab datasets, host-derived reads can account for the majority of the library. Process them without removing host reads first, and every downstream step — taxonomic profiling, differential abundance, functional annotation — is working with a contaminated input. Worse, the contamination is not random noise; it is a structured signal from a specific organism (you), which can create systematic artifacts in community profiles.</p>
+
+<p>The standard solution is to run a host-removal step before anything else. Map your reads to the human reference genome, discard the matches, keep the rest. Simple in principle. But the question of <em>which tool</em> to use, with <em>which reference</em>, evaluated against <em>which criteria</em> — that is less simple than it sounds, and the choices have real consequences for the biology you ultimately report.</p>
+
+<p>This post opens a five-day benchmarking series. Over the week I will run five host-removal strategies on five vaginal metagenomes, measure what each tool removes, what it retains, how fast it runs, how much memory it needs, and — most importantly — whether the reads it discards are actually human or microbial. Today is the framing: why this benchmark exists, what it measures, and what a rigorous host-removal evaluation actually needs to look at.</p>
+
+<hr />
+
+<h2 id="the-two-ways-a-host-removal-tool-can-fail">The two ways a host-removal tool can fail</h2>
+
+<p>Every host-removal method can make two types of error, and they are not symmetric in their consequences.</p>
+
+<p><strong>Error type 1: Retaining human reads.</strong> The tool misses reads that are genuinely from the host. These contaminate your microbial profile — false taxa, inflated diversity, spurious functional signals. This is the error most people think about.</p>
+
+<p><strong>Error type 2: Removing microbial reads.</strong> The tool discards reads that are genuinely from the microbiome because they share sequence similarity with the human reference. This is the error that is easy to overlook — especially when you are looking at a summary table where the fraction of incorrectly removed reads appears tiny.</p>
+
+<p>The second error is the more insidious one, because its consequences are invisible in the host-removal output itself. You only see it later, downstream, when a biologically important taxon appears underrepresented or absent — and you have no easy way to know whether that is a real biological signal or an artifact of your decontamination step.</p>
+
+<hr />
+
+<h2 id="why-vaginal-metagenomics-is-a-particularly-challenging-case">Why vaginal metagenomics is a particularly challenging case</h2>
+
+<p>Vaginal microbial communities are ecologically unusual. Unlike gut communities, which are highly diverse and numerically dominated by many taxa, vaginal communities can be dominated by a small number of biologically critical organisms. Depending on the individual and community state type, a sample might be overwhelmingly composed of just one or two species:</p>
+
+<ul>
+  <li><em>Lactobacillus iners</em> — the most prevalent vaginal Lactobacillus, associated with community instability</li>
+  <li><em>Lactobacillus crispatus</em> — associated with community stability and health</li>
+  <li><em>Gardnerella</em> spp. — key players in bacterial vaginosis</li>
+  <li><em>Sneathia vaginalis</em>, <em>Fannyhessea vaginae</em>, <em>Aerococcus christensenii</em> — associated with BV and adverse reproductive outcomes</li>
+  <li><em>Metamycoplasma hominis</em> — a common BV-associated organism with an unusual genome</li>
+</ul>
+
+<p>This low-diversity, high-dominance structure means that if a host-removal tool systematically discards reads from even one of these taxa — because those reads share a short region of sequence similarity with the human genome — the biological impact is disproportionately large. The overall false-positive removal rate in your summary statistics might be 0.1%. The impact on your <em>L. iners</em> abundance estimate might be 15%.</p>
+
+<p>The question is therefore not simply “which tool removes the most reads?” A more precise question is:</p>
+
+<blockquote>
+  <p><strong>Which method provides the best balance between human-read removal sensitivity, microbial-read specificity, runtime, memory use, and workflow reproducibility — at the sample-level host content typical of vaginal specimens?</strong></p>
+</blockquote>
+
+<hr />
+
+<h2 id="the-benchmark-design">The benchmark design</h2>
+
+<p>Five paired-end vaginal metagenomes were selected to span a broad range of host contamination levels. All sample identifiers are anonymized for this public technical series.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sample</th>
+      <th>Input read pairs</th>
+      <th>Host content category</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sample 1</td>
+      <td>41,644,670</td>
+      <td>Very high</td>
+    </tr>
+    <tr>
+      <td>Sample 2</td>
+      <td>43,344,280</td>
+      <td>Very high</td>
+    </tr>
+    <tr>
+      <td>Sample 3</td>
+      <td>41,089,173</td>
+      <td>Moderate</td>
+    </tr>
+    <tr>
+      <td>Sample 4</td>
+      <td>31,349,380</td>
+      <td>Low</td>
+    </tr>
+    <tr>
+      <td>Sample 5</td>
+      <td>37,060,999</td>
+      <td>High</td>
+    </tr>
+    <tr>
+      <td><strong>Total</strong></td>
+      <td><strong>194,488,502</strong></td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The range matters. A tool that performs well on a low-host sample might struggle on a very high-host sample, or vice versa. Evaluating across this range gives a more honest picture of how each method scales with the biological reality of the input.</p>
+
+<h3 id="standardizing-the-input-fastp-first">Standardizing the input: fastp first</h3>
+
+<p>Before any host-removal tool saw the data, all samples were processed with <a href="https://github.com/OpenGene/fastp">fastp</a> — quality trimming, adapter removal, quality filtering. Every host-removal method then received exactly the same quality-controlled reads.</p>
+
+<p>This step is non-negotiable for a fair comparison. If method A receives raw reads and method B receives trimmed reads, you are measuring two different things simultaneously and cannot attribute differences in outcome to the host-removal algorithm. Standardizing input is the first rule of tool benchmarking.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fastp <span class="se">\</span>
+  <span class="nt">--in1</span> sample_R1.fastq.gz <span class="se">\</span>
+  <span class="nt">--in2</span> sample_R2.fastq.gz <span class="se">\</span>
+  <span class="nt">--out1</span> sample_fastp_R1.fastq.gz <span class="se">\</span>
+  <span class="nt">--out2</span> sample_fastp_R2.fastq.gz <span class="se">\</span>
+  <span class="nt">--json</span> sample_fastp.json <span class="se">\</span>
+  <span class="nt">--html</span> sample_fastp.html <span class="se">\</span>
+  <span class="nt">--thread</span> 8 <span class="se">\</span>
+  <span class="nt">--detect_adapter_for_pe</span> <span class="se">\</span>
+  <span class="nt">--qualified_quality_phred</span> 20 <span class="se">\</span>
+  <span class="nt">--length_required</span> 50
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="the-five-methods-being-compared">The five methods being compared</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Strategy</th>
+      <th>Why it is included</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>BMTagger</strong></td>
+      <td>Legacy k-mer screening + alignment</td>
+      <td>Historical baseline; still used in some lab workflows</td>
+    </tr>
+    <tr>
+      <td><strong>Bowtie2</strong></td>
+      <td>FM-index alignment to GRCh38</td>
+      <td>Widely used conventional approach</td>
+    </tr>
+    <tr>
+      <td><strong>BBMap + GRCh38</strong></td>
+      <td>k-mer-seeded hybrid mapping</td>
+      <td>Flexible, high-sensitivity mapper against standard reference</td>
+    </tr>
+    <tr>
+      <td><strong>BBMap + masked hg19</strong></td>
+      <td>Hybrid mapping to repeat-masked reference</td>
+      <td>Tests whether reference masking changes removal rates</td>
+    </tr>
+    <tr>
+      <td><strong>Cleanifier</strong></td>
+      <td>Modern probabilistic filtering, pangenome-aware</td>
+      <td>Very fast; designed for clinical and high-host-content samples</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>One thing that became clear immediately while planning this benchmark: <strong>the reference genome can matter almost as much as the aligner</strong>. BBMap run against GRCh38 is not the same as BBMap run against a repeat-masked hg19 reference. The algorithm is identical; the database is different. Both comparisons belong in a rigorous evaluation, which is why BBMap appears twice.</p>
+
+<p>This means the benchmark is measuring two things simultaneously:</p>
+<ol>
+  <li>Algorithm effects — does the underlying alignment or classification strategy matter?</li>
+  <li>Reference effects — does the choice of human reference change what gets removed?</li>
+</ol>
+
+<hr />
+
+<h2 id="what-the-benchmark-measures">What the benchmark measures</h2>
+
+<p>A single “percentage of reads removed” number is not enough. For each tool on each sample, I tracked:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Why it matters</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>% read pairs classified as human</td>
+      <td>Primary removal rate</td>
+    </tr>
+    <tr>
+      <td>Retained non-human read pairs</td>
+      <td>What goes into downstream analysis</td>
+    </tr>
+    <tr>
+      <td>Wall-clock runtime</td>
+      <td>Practical compute cost</td>
+    </tr>
+    <tr>
+      <td>Peak RAM (maximum resident set size)</td>
+      <td>Determines whether tool runs on a laptop vs HPC</td>
+    </tr>
+    <tr>
+      <td>CPU usage</td>
+      <td>Efficiency of parallelization</td>
+    </tr>
+    <tr>
+      <td>Discordant pairs between methods</td>
+      <td>Reads that one tool removes but another retains — the scientifically interesting subset</td>
+    </tr>
+    <tr>
+      <td>Evidence of microbial false-positive removal</td>
+      <td>Whether any known vaginal taxa are being incorrectly discarded</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The last two metrics require extra work beyond running the tool — they require cross-comparing outputs and mapping retained/discarded reads back to taxonomic assignments. But they are the metrics that actually answer the biological question.</p>
+
+<h3 id="measuring-compute-cost-with-usrbintime--v">Measuring compute cost with <code class="language-plaintext highlighter-rouge">/usr/bin/time -v</code></h3>
+
+<p>Every tool run was wrapped with:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/bin/time <span class="nt">-v</span> tool_command <span class="se">\</span>
+  2&gt; sample_tool_timing.txt
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">-v</code> flag (verbose mode) reports:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Elapsed (wall clock) time:    0:04:23.15
+Maximum resident set size:    12,847,316 KB
+User time (seconds):          187.34
+System time (seconds):        6.21
+Percent of CPU this job got:  73%
+</code></pre></div></div>
+
+<p>This is more informative than timing alone — it tells you whether the tool is memory-bound (relevant for deciding whether it can run on a standard server or requires HPC), and whether it parallelizes efficiently (relevant for estimating how long it will take at scale).</p>
+
+<hr />
+
+<h2 id="hpc-infrastructure-slurm-array-jobs">HPC infrastructure: SLURM array jobs</h2>
+
+<p>Benchmarking full metagenomes on a laptop is impractical. The full workflow ran on an HPC cluster organized as a SLURM array:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>5 samples × 5 tool configurations = 25 benchmark jobs
+</code></pre></div></div>
+
+<p>Each job received the same fastp-preprocessed inputs, wrote tool-specific outputs to a structured directory, and generated three additional files per run: a timing file, a command record, and a status file.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="c">#SBATCH --job-name=host_removal_benchmark</span>
+<span class="c">#SBATCH --array=1-25</span>
+<span class="c">#SBATCH --cpus-per-task=16</span>
+<span class="c">#SBATCH --mem=64G</span>
+<span class="c">#SBATCH --time=12:00:00</span>
+<span class="c">#SBATCH --output=logs/benchmark_%A_%a.out</span>
+<span class="c">#SBATCH --error=logs/benchmark_%A_%a.err</span>
+
+<span class="c"># Each array task reads its sample and tool assignment from a lookup table</span>
+<span class="nv">SAMPLE</span><span class="o">=</span><span class="si">$(</span><span class="nb">sed</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">SLURM_ARRAY_TASK_ID</span><span class="k">}</span><span class="s2">p"</span> benchmark_jobs.txt | <span class="nb">awk</span> <span class="s1">'{print $1}'</span><span class="si">)</span>
+<span class="nv">TOOL</span><span class="o">=</span><span class="si">$(</span><span class="nb">sed</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">SLURM_ARRAY_TASK_ID</span><span class="k">}</span><span class="s2">p"</span> benchmark_jobs.txt | <span class="nb">awk</span> <span class="s1">'{print $2}'</span><span class="si">)</span>
+
+<span class="c"># Tool-specific commands are dispatched from here</span>
+bash run_<span class="k">${</span><span class="nv">TOOL</span><span class="k">}</span>.sh <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">benchmark_jobs.txt</code> file is a 25-line table mapping array task IDs to sample-tool combinations. This design makes the benchmark fully auditable: every job’s exact command, input, and output is recorded, and any individual job can be rerun in isolation if needed.</p>
+
+<hr />
+
+<h2 id="the-full-workflow">The full workflow</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Raw paired-end FASTQ
+        ↓
+fastp preprocessing (same for all methods)
+        ↓
+Standardized quality-controlled input
+        ↓
+┌──────────────────────────────────┐
+│  5 host-removal tools in parallel │
+│  BMTagger                         │
+│  Bowtie2 → GRCh38                │
+│  BBMap → GRCh38                  │
+│  BBMap → masked hg19             │
+│  Cleanifier                       │
+└──────────────┬───────────────────┘
+               ↓
+   Human reads (discarded) + Retained reads
+               ↓
+   Runtime / RAM / removal rate per tool
+               ↓
+   Read-level discordance analysis
+   (which reads does only one tool remove?)
+               ↓
+   Microbial specificity validation
+   (are any vaginal taxa being falsely removed?)
+               ↓
+   Final comparison table
+</code></pre></div></div>
+
+<p>The last two steps — discordance analysis and microbial specificity validation — are the ones that distinguish a benchmark from simply running five tools and comparing numbers. Two methods can remove nearly identical percentages of reads while disagreeing substantially on which specific reads those are. If the disagreement is concentrated in reads from <em>Gardnerella</em> or <em>L. iners</em>, the two methods are not equivalent even if their removal rates look the same.</p>
+
+<hr />
+
+<h2 id="what-comes-next">What comes next</h2>
+
+<p>Over the next four days:</p>
+
+<p><strong>Day 2</strong> — BMTagger and Bowtie2: installation, reference preparation, paired-end commands, outputs, and why BMTagger remains a useful baseline despite being much slower than modern alternatives.</p>
+
+<p><strong>Day 3</strong> — BBMap with GRCh38 and masked hg19: how to run BBMap for host removal, what the reference masking actually changes, and first results from the high-host samples.</p>
+
+<p><strong>Day 4</strong> — Cleanifier: the newest method in the benchmark, designed specifically for high-host-content clinical metagenomes, with a pangenome-aware approach that differs substantially from the alignment-based tools.</p>
+
+<p><strong>Day 5</strong> — Full comparison: all five methods side by side. Removal rates, runtime, RAM, discordant read analysis, and which tool performs best across the range of host content represented in these samples.</p>
+
+<hr />
+
+<h2 id="the-central-principle-of-this-benchmark">The central principle of this benchmark</h2>
+
+<p>The metric I am optimizing for is not maximum human-read removal. A tool that removes 99.9% of human reads while also removing 5% of <em>Lactobacillus</em> reads is not a better tool — it is a differently failing tool, in a way that is harder to detect and more damaging to biological interpretation.</p>
+
+<p>The metric that actually matters is closer to:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>High host-removal sensitivity
+      +
+High microbial-read specificity
+      +
+Reasonable compute cost
+      +
+Reproducible, auditable workflow
+</code></pre></div></div>
+
+<p>Whether any single tool achieves all four is what this benchmark will determine.</p>
+
+<hr />
+
+<p><em>Sample identifiers have been anonymized for this public technical series. The benchmark is presented to illustrate workflow design and method comparison. Day 2 publishes soon.</em></p>
+
+<p><img src="/assets/img/hc1.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="metagenomics" /><category term="host-removal" /><category term="human-contamination" /><category term="vaginal-microbiome" /><category term="BMTagger" /><category term="Bowtie2" /><category term="BBMap" /><category term="Cleanifier" /><category term="benchmarking" /><category term="fastp" /><category term="SLURM" /><category term="HPC" /><category term="reproducibility" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[Shotgun metagenomics of host-associated samples has a problem that appears before any biology can begin: a large fraction of your reads may come from the host, not the microbiome. In vaginal samples, cervical swabs, saliva, skin, or nasal specimens, host-derived reads can dominate the library. The standard advice is to remove them — but the question of which tool to use, with which reference, and how to measure whether you are doing it correctly, is less straightforward than it appears. This post opens a 5-day benchmarking series comparing BMTagger, Bowtie2, BBMap (GRCh38 and masked hg19), and Cleanifier on five vaginal metagenomes spanning a broad range of host contamination.]]></summary></entry><entry><title type="html">Daily Bioinformatics #98: Keeping Scratch Files Alive on HPC Clusters</title><link href="https://jojyjohn28.github.io/blog/keeping-scratch-files-alive/" rel="alternate" type="text/html" title="Daily Bioinformatics #98: Keeping Scratch Files Alive on HPC Clusters" /><published>2026-07-31T00:00:00-04:00</published><updated>2026-07-31T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/keeping-scratch-files-alive</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/keeping-scratch-files-alive/"><![CDATA[<h1 id="keeping-scratch-files-alive-on-hpc-clusters">Keeping Scratch Files Alive on HPC Clusters</h1>
 <p>Day 98 of daily bioinformatics from Jojy’s desk</p>
 
 <p>One of the first things I learned after joining my new lab wasn’t about sequencing, metagenomics, or statistics.</p>
@@ -4264,644 +4593,4 @@ git push origin main
 
 <p><em>Git documentation: <a href="https://git-scm.com/doc">git-scm.com/doc</a>. GitHub authentication: <a href="https://docs.github.com/en/authentication">docs.github.com/en/authentication</a>.</em></p>
 
-<p><img src="/assets/img/gti.png" alt="see_your_plot" /></p>]]></content><author><name></name></author><category term="git" /><category term="github" /><category term="version-control" /><category term="reproducibility" /><category term="collaboration" /><category term="bioinformatics" /><category term="lab-workflow" /><category term="SSH" /><category term="HTTPS" /><category term="beginners" /><category term="linux" /><summary type="html"><![CDATA[You spend weeks writing a pipeline. It works. You make a small change. It breaks. You cannot remember what you changed. This is the scenario Git was built to prevent. This post explains what Git and GitHub are, why they matter for bioinformatics specifically, and walks through a complete setup guide — installing Git, connecting to GitHub with HTTPS authentication, cloning lab repositories, and the daily push-pull-commit workflow. Includes a lab organization setup, common authentication problems, and an optional SSH configuration for password-free access.]]></summary></entry><entry><title type="html">Linux Commands I Use Every Day as a Bioinformatician</title><link href="https://jojyjohn28.github.io/blog/linux-commands-bioinformatician-everyday/" rel="alternate" type="text/html" title="Linux Commands I Use Every Day as a Bioinformatician" /><published>2026-06-08T00:00:00-04:00</published><updated>2026-06-08T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/linux-commands-bioinformatician-everyday</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/linux-commands-bioinformatician-everyday/"><![CDATA[<p>🧬 𝐷𝑎𝑦 90 𝑜𝑓 𝐷𝑎𝑖𝑙𝑦 𝐵𝑖𝑜𝑖𝑛𝑓𝑜𝑟𝑚𝑎𝑡𝑖𝑐𝑠 𝑓𝑟𝑜𝑚 𝐽𝑜𝑗𝑦’𝑠 𝖽𝖾𝗌𝗄</p>
-
-<p>The command line is where bioinformatics actually happens. Genome assemblies, read mapping, taxonomic classification, differential expression — all of it ultimately runs as a series of commands in a terminal. The sooner you get comfortable here, the faster everything else becomes.</p>
-
-<p>This post is not a comprehensive Linux reference. It is a personal list: the commands I open a terminal and immediately use, every day, working with metagenomes, metatranscriptomes, and large genome datasets. Each one comes with real bioinformatics examples, not toy demos. At the end there is a short section for Windows users who want to get started without installing a new operating system — WSL makes this much easier than it used to be.</p>
-
-<hr />
-
-<h2 id="the-mindset-pipes-and-small-tools">The mindset: pipes and small tools</h2>
-
-<p>Before the commands, the philosophy. Linux is built around the idea that each tool should do one thing well, and tools should be composable — you chain them together with the pipe character <code class="language-plaintext highlighter-rouge">|</code>, passing the output of one command as input to the next.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Instead of a specialized program for "count unique taxa in my file",</span>
-<span class="c"># you chain three small tools:</span>
-<span class="nb">cut</span> <span class="nt">-f2</span> taxonomy.tsv | <span class="nb">sort</span> | <span class="nb">uniq</span> <span class="nt">-c</span> | <span class="nb">sort</span> <span class="nt">-nr</span>
-</code></pre></div></div>
-
-<p>Once this clicks, you stop looking for a specific program for every task and start building exactly what you need from the tools you already have.</p>
-
-<hr />
-
-<h2 id="1-ls--list-directory-contents">1. <code class="language-plaintext highlighter-rouge">ls</code> — list directory contents</h2>
-
-<p>You already know this one. But a few flags make it genuinely useful:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">ls</span> <span class="nt">-lh</span>            <span class="c"># human-readable file sizes</span>
-<span class="nb">ls</span> <span class="nt">-lhS</span>           <span class="c"># sort by size, largest first</span>
-<span class="nb">ls</span> <span class="nt">-lht</span>           <span class="c"># sort by modification time, newest first</span>
-<span class="nb">ls</span> <span class="nt">-1</span>             <span class="c"># one file per line (useful in scripts)</span>
-<span class="nb">ls</span> <span class="k">*</span>.fastq.gz     <span class="c"># list only matching files</span>
-</code></pre></div></div>
-
-<p>In bioinformatics you are constantly checking whether jobs finished, whether output files appeared, and whether they are the right size. <code class="language-plaintext highlighter-rouge">ls -lh</code> after every pipeline step becomes muscle memory.</p>
-
-<hr />
-
-<h2 id="2-find--locate-files-anywhere-in-the-filesystem">2. <code class="language-plaintext highlighter-rouge">find</code> — locate files anywhere in the filesystem</h2>
-
-<p><code class="language-plaintext highlighter-rouge">find</code> is for when you know what you are looking for but not exactly where it is — or when you want to operate on a large set of files that match a pattern.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Find all FASTQ files under the current directory</span>
-find <span class="nb">.</span> <span class="nt">-name</span> <span class="s2">"*.fastq.gz"</span>
-
-<span class="c"># Find files modified in the last 24 hours (useful after a job finishes)</span>
-find <span class="nb">.</span> <span class="nt">-mtime</span> <span class="nt">-1</span> <span class="nt">-name</span> <span class="s2">"*.out"</span>
-
-<span class="c"># Find files larger than 1 GB</span>
-find <span class="nb">.</span> <span class="nt">-size</span> +1G
-
-<span class="c"># Find and delete all empty files</span>
-find <span class="nb">.</span> <span class="nt">-empty</span> <span class="nt">-type</span> f <span class="nt">-delete</span>
-
-<span class="c"># Find all antiSMASH region files across output subdirectories</span>
-find antismash_output <span class="nt">-name</span> <span class="s2">"*region*.gbk"</span>
-
-<span class="c"># Count how many genomes you have</span>
-find genomes/ <span class="nt">-name</span> <span class="s2">"*.fna"</span> | <span class="nb">wc</span> <span class="nt">-l</span>
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">find ... | xargs ...</code> combination (covered below) is one of the most powerful patterns in bioinformatics shell scripting.</p>
-
-<hr />
-
-<h2 id="3-grep--search-text-using-patterns">3. <code class="language-plaintext highlighter-rouge">grep</code> — search text using patterns</h2>
-
-<p><code class="language-plaintext highlighter-rouge">grep</code> searches for patterns in files. In bioinformatics this means searching sequence headers, taxonomy strings, log files, result tables — almost everything.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Count sequences in a FASTA file</span>
-<span class="nb">grep</span> <span class="nt">-c</span> <span class="s2">"^&gt;"</span> assembly.fasta
-
-<span class="c"># Extract all contig headers</span>
-<span class="nb">grep</span> <span class="s2">"^&gt;"</span> assembly.fasta
-
-<span class="c"># Search for a specific genome in a results table</span>
-<span class="nb">grep</span> <span class="s2">"Staphylococcus_capitis"</span> all_results.tsv
-
-<span class="c"># Case-insensitive search</span>
-<span class="nb">grep</span> <span class="nt">-i</span> <span class="s2">"candida"</span> taxonomy.txt
-
-<span class="c"># Show lines that DO NOT match (inverse)</span>
-<span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"unclassified"</span> taxonomy.tsv
-
-<span class="c"># Search recursively through all files in a directory</span>
-<span class="nb">grep</span> <span class="nt">-r</span> <span class="s2">"ERROR"</span> logs/
-
-<span class="c"># Count fungal reads per phylum in a Kaiju output</span>
-<span class="nb">grep</span> <span class="nt">-c</span> <span class="s2">"Eukaryota; Ascomycota"</span> sample.names.out
-
-<span class="c"># Show the line number of matches</span>
-<span class="nb">grep</span> <span class="nt">-n</span> <span class="s2">"warning"</span> pipeline.log
-
-<span class="c"># Print only the matching part, not the whole line</span>
-<span class="nb">grep</span> <span class="nt">-o</span> <span class="s2">"GC_[0-9]*"</span> gene_clusters.txt | <span class="nb">sort</span> | <span class="nb">uniq</span>
-
-<span class="c"># Show 2 lines of context before and after a match</span>
-<span class="nb">grep</span> <span class="nt">-B</span> 2 <span class="nt">-A</span> 2 <span class="s2">"CRITICAL"</span> pipeline.log
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="4-awk--process-structured-text-by-column">4. <code class="language-plaintext highlighter-rouge">awk</code> — process structured text by column</h2>
-
-<p><code class="language-plaintext highlighter-rouge">awk</code> is a mini-programming language for working with tabular data. If your file has columns separated by tabs or spaces, <code class="language-plaintext highlighter-rouge">awk</code> can slice, filter, compute, and reformat it without loading it into R or Python.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Print the second column of a TSV file</span>
-<span class="nb">awk</span> <span class="s1">'{print $2}'</span> results.tsv
-
-<span class="c"># Print rows where column 3 is greater than 100</span>
-<span class="nb">awk</span> <span class="s1">'$3 &gt; 100'</span> counts.tsv
-
-<span class="c"># Print rows where column 5 (p-value) is less than 0.05</span>
-<span class="nb">awk</span> <span class="s1">'$5 &lt; 0.05'</span> deseq_results.tsv
-
-<span class="c"># Use tab as delimiter explicitly</span>
-<span class="nb">awk</span> <span class="nt">-F</span><span class="s1">'\t'</span> <span class="s1">'{print $1, $4}'</span> metadata.tsv
-
-<span class="c"># Sum the values in column 4</span>
-<span class="nb">awk</span> <span class="s1">'{sum += $4} END {print sum}'</span> coverage.tsv
-
-<span class="c"># Print the genome name and total reads for high-abundance genomes</span>
-<span class="nb">awk</span> <span class="s1">'$3 &gt; 1000 {print $1, $3}'</span> mag_counts.tsv
-
-<span class="c"># Rename sequences in a FASTA: add a prefix to every header</span>
-<span class="nb">awk</span> <span class="s1">'/^&gt;/{print "&gt;PREFIX_" substr($0,2); next} {print}'</span> input.fasta
-
-<span class="c"># Count the number of fields (columns) in a file</span>
-<span class="nb">awk</span> <span class="s1">'{print NF; exit}'</span> metadata.tsv
-
-<span class="c"># Extract genus field from Kaiju taxonomy string (field 6, semicolon-delimited)</span>
-<span class="nb">awk</span> <span class="nt">-F</span><span class="s1">';'</span> <span class="s1">'{gsub(/^ +| +$/,"",$6); if($6!="NA" &amp;&amp; $6!="") print $6}'</span> sample.names.out
-</code></pre></div></div>
-
-<p>The last example is directly from the Kaiju fungal workflow. <code class="language-plaintext highlighter-rouge">awk</code> is how you parse those semicolon-delimited taxonomy strings without writing a Python script.</p>
-
-<hr />
-
-<h2 id="5-sed--stream-editor-for-text-substitution">5. <code class="language-plaintext highlighter-rouge">sed</code> — stream editor for text substitution</h2>
-
-<p><code class="language-plaintext highlighter-rouge">sed</code> edits text as it streams through — the most common use is find-and-replace, but it can also delete lines, insert lines, and extract ranges.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Replace all spaces with underscores in a file</span>
-<span class="nb">sed</span> <span class="s1">'s/ /_/g'</span> names.txt
-
-<span class="c"># Replace only the first occurrence per line (no /g flag)</span>
-<span class="nb">sed</span> <span class="s1">'s/Staphylococcus/S./g'</span> taxonomy.txt
-
-<span class="c"># Delete blank lines</span>
-<span class="nb">sed</span> <span class="s1">'/^$/d'</span> messy_file.txt
-
-<span class="c"># Delete lines containing a pattern</span>
-<span class="nb">sed</span> <span class="s1">'/unclassified/d'</span> taxonomy.tsv
-
-<span class="c"># Print only lines 10 to 20</span>
-<span class="nb">sed</span> <span class="nt">-n</span> <span class="s1">'10,20p'</span> large_file.tsv
-
-<span class="c"># Add a header to a file that doesn't have one</span>
-<span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">'1i sample\tgroup\tsalinity'</span> metadata.tsv
-
-<span class="c"># Remove Windows line endings (carriage returns) from files transferred from Windows</span>
-<span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">'s/\r//'</span> metadata.csv
-
-<span class="c"># In-place editing (modify the file directly, with backup)</span>
-<span class="nb">sed</span> <span class="nt">-i</span>.bak <span class="s1">'s/old_name/new_name/g'</span> external-genomes.txt
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">\r</code> removal line is something I run on almost every CSV that came from Excel or was edited on Windows. Invisible carriage return characters cause mysterious failures in tools that are not expecting them.</p>
-
-<hr />
-
-<h2 id="6-wc--count-lines-words-characters">6. <code class="language-plaintext highlighter-rouge">wc</code> — count lines, words, characters</h2>
-
-<p><code class="language-plaintext highlighter-rouge">wc</code> is simple but essential.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Count lines in a file (number of entries in a table)</span>
-<span class="nb">wc</span> <span class="nt">-l</span> results.tsv
-
-<span class="c"># Count sequences in a FASTA (divide by 2 for FASTQ)</span>
-<span class="nb">grep</span> <span class="nt">-c</span> <span class="s2">"^&gt;"</span> assembly.fasta
-
-<span class="c"># Count how many samples are in your metadata</span>
-<span class="nb">wc</span> <span class="nt">-l</span> metadata.csv
-
-<span class="c"># Count total characters (bytes) in a file</span>
-<span class="nb">wc</span> <span class="nt">-c</span> large_file.txt
-
-<span class="c"># Count reads in a FASTQ (divide by 4)</span>
-<span class="nb">wc</span> <span class="nt">-l</span> sample_R1.fastq
-
-<span class="c"># Count how many genomes passed quality filtering</span>
-<span class="nb">wc</span> <span class="nt">-l</span> checkm_pass.txt
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">-l</code> flag (count lines) is the one I use ~20 times a day. After any pipeline step that produces a list, I run <code class="language-plaintext highlighter-rouge">wc -l</code> to confirm the expected number of entries came out.</p>
-
-<hr />
-
-<h2 id="7-sort--sort-lines-of-a-file">7. <code class="language-plaintext highlighter-rouge">sort</code> — sort lines of a file</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Sort alphabetically (default)</span>
-<span class="nb">sort </span>names.txt
-
-<span class="c"># Sort numerically</span>
-<span class="nb">sort</span> <span class="nt">-n</span> counts.txt
-
-<span class="c"># Sort numerically, descending (largest first)</span>
-<span class="nb">sort</span> <span class="nt">-nr</span> counts.txt
-
-<span class="c"># Sort by the second column (tab-delimited)</span>
-<span class="nb">sort</span> <span class="nt">-t</span><span class="s1">$'</span><span class="se">\t</span><span class="s1">'</span> <span class="nt">-k2</span>,2n results.tsv
-
-<span class="c"># Sort by multiple columns: column 1 alphabetically, then column 2 numerically</span>
-<span class="nb">sort</span> <span class="nt">-k1</span>,1 <span class="nt">-k2</span>,2n results.tsv
-
-<span class="c"># Remove duplicate lines while sorting</span>
-<span class="nb">sort</span> <span class="nt">-u</span> names.txt
-
-<span class="c"># Sort FASTA by sequence length (useful for assembly QC)</span>
-<span class="nb">awk</span> <span class="s1">'/^&gt;/{if(seq) print length(seq), header; header=$0; seq=""} !/^&gt;/{seq=seq$0} END{print length(seq), header}'</span> <span class="se">\</span>
-  assembly.fasta | <span class="nb">sort</span> <span class="nt">-nr</span> | <span class="nb">head</span> <span class="nt">-20</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="8-uniq--collapse-or-count-repeated-lines">8. <code class="language-plaintext highlighter-rouge">uniq</code> — collapse or count repeated lines</h2>
-
-<p><code class="language-plaintext highlighter-rouge">uniq</code> only collapses <em>adjacent</em> duplicate lines — which is why it is almost always preceded by <code class="language-plaintext highlighter-rouge">sort</code>.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Count occurrences of each unique value (classic pattern)</span>
-<span class="nb">sort </span>column.txt | <span class="nb">uniq</span> <span class="nt">-c</span>
-
-<span class="c"># Show only lines that appear exactly once</span>
-<span class="nb">sort </span>column.txt | <span class="nb">uniq</span> <span class="nt">-u</span>
-
-<span class="c"># Show only lines that appear more than once (duplicates)</span>
-<span class="nb">sort </span>column.txt | <span class="nb">uniq</span> <span class="nt">-d</span>
-
-<span class="c"># Count unique BGC classes across all genomes</span>
-<span class="nb">cut</span> <span class="nt">-f2</span> bgc_summary.tsv | <span class="nb">sort</span> | <span class="nb">uniq</span> <span class="nt">-c</span> | <span class="nb">sort</span> <span class="nt">-nr</span>
-
-<span class="c"># Count how many genomes carry each BGC type</span>
-<span class="nb">awk</span> <span class="nt">-F</span><span class="s1">','</span> <span class="s1">'{print $3}'</span> antismash_results.csv | <span class="nb">sort</span> | <span class="nb">uniq</span> <span class="nt">-c</span> | <span class="nb">sort</span> <span class="nt">-nr</span>
-
-<span class="c"># Find taxa that appear in multiple samples</span>
-<span class="nb">cut</span> <span class="nt">-f2</span> taxonomy_all.tsv | <span class="nb">sort</span> | <span class="nb">uniq</span> <span class="nt">-c</span> | <span class="nb">sort</span> <span class="nt">-nr</span> | <span class="nb">head</span> <span class="nt">-20</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="9-cut--extract-columns-from-delimited-files">9. <code class="language-plaintext highlighter-rouge">cut</code> — extract columns from delimited files</h2>
-
-<p><code class="language-plaintext highlighter-rouge">cut</code> extracts specific columns without loading a full table into memory.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Extract the first column of a CSV</span>
-<span class="nb">cut</span> <span class="nt">-d</span><span class="s1">','</span> <span class="nt">-f1</span> metadata.csv
-
-<span class="c"># Extract columns 1, 3, and 5 from a TSV</span>
-<span class="nb">cut</span> <span class="nt">-f1</span>,3,5 results.tsv
-
-<span class="c"># Extract sample names from a FASTQ file list</span>
-<span class="nb">ls</span> <span class="k">*</span>.fastq.gz | <span class="nb">cut</span> <span class="nt">-d</span><span class="s1">'_'</span> <span class="nt">-f1</span>
-
-<span class="c"># Get all unique genome names from the first column</span>
-<span class="nb">cut</span> <span class="nt">-f1</span> gene_clusters.txt | <span class="nb">sort</span> | <span class="nb">uniq</span>
-
-<span class="c"># Pull run accessions from ENA report</span>
-<span class="nb">cut</span> <span class="nt">-f1</span> filereport_read_run.tsv | <span class="nb">tail</span> <span class="nt">-n</span> +2 <span class="o">&gt;</span> run_accessions.txt
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="10-head-and-tail--inspect-files-without-opening-them">10. <code class="language-plaintext highlighter-rouge">head</code> and <code class="language-plaintext highlighter-rouge">tail</code> — inspect files without opening them</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See the first 10 lines (default)</span>
-<span class="nb">head </span>results.tsv
-
-<span class="c"># See the first 50 lines</span>
-<span class="nb">head</span> <span class="nt">-50</span> results.tsv
-
-<span class="c"># See the last 20 lines</span>
-<span class="nb">tail</span> <span class="nt">-20</span> pipeline.log
-
-<span class="c"># Skip the header row (everything from line 2 onward)</span>
-<span class="nb">tail</span> <span class="nt">-n</span> +2 results.tsv
-
-<span class="c"># Watch a log file update in real time (essential during long jobs)</span>
-<span class="nb">tail</span> <span class="nt">-f</span> logs/job_12345.out
-
-<span class="c"># See the header and first few data rows</span>
-<span class="nb">head</span> <span class="nt">-5</span> results.tsv
-</code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">tail -f</code> is how I monitor running SLURM jobs. You open a second terminal, run <code class="language-plaintext highlighter-rouge">tail -f logs/jobname.out</code>, and watch the log scroll in real time.</p>
-
-<hr />
-
-<h2 id="11-xargs--pass-file-lists-to-commands">11. <code class="language-plaintext highlighter-rouge">xargs</code> — pass file lists to commands</h2>
-
-<p><code class="language-plaintext highlighter-rouge">xargs</code> takes lines from standard input and passes them as arguments to another command. This is how you apply a command to hundreds of files at once without writing a loop.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Move all FASTQ files found by find to a new directory</span>
-find <span class="nb">.</span> <span class="nt">-name</span> <span class="s2">"*.fastq.gz"</span> | xargs <span class="nt">-I</span><span class="o">{}</span> <span class="nb">mv</span> <span class="o">{}</span> /scratch/raw_data/
-
-<span class="c"># Run wc -l on all result files</span>
-find results/ <span class="nt">-name</span> <span class="s2">"*.tsv"</span> | xargs <span class="nb">wc</span> <span class="nt">-l</span>
-
-<span class="c"># Delete all empty log files</span>
-find logs/ <span class="nt">-empty</span> <span class="nt">-name</span> <span class="s2">"*.log"</span> | xargs <span class="nb">rm</span>
-
-<span class="c"># Compress all FASTA files</span>
-find genomes/ <span class="nt">-name</span> <span class="s2">"*.fasta"</span> | xargs <span class="nt">-n1</span> <span class="nb">gzip</span>
-
-<span class="c"># Run a command on 4 files simultaneously (-P sets parallel processes)</span>
-<span class="nb">cat </span>sample_list.txt | xargs <span class="nt">-n1</span> <span class="nt">-P4</span> <span class="nt">-I</span><span class="o">{}</span> bash <span class="nt">-c</span> <span class="s1">'bwa mem ref.fasta {}_R1.fastq.gz {}_R2.fastq.gz &gt; {}.sam'</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="12-parallel--run-jobs-in-parallel-gnu-parallel">12. <code class="language-plaintext highlighter-rouge">parallel</code> — run jobs in parallel (GNU Parallel)</h2>
-
-<p>GNU Parallel is <code class="language-plaintext highlighter-rouge">xargs</code> with better control over parallelism, output handling, and job management. If <code class="language-plaintext highlighter-rouge">xargs -P</code> feels limited, <code class="language-plaintext highlighter-rouge">parallel</code> is the upgrade.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install (if not already available)</span>
-conda <span class="nb">install</span> <span class="nt">-c</span> conda-forge parallel
-
-<span class="c"># Run a command on each sample using 8 cores</span>
-parallel <span class="nt">-j</span> 8 <span class="s1">'kaiju -t nodes.dmp -f db.fmi -i {}_R1.fastq.gz -j {}_R2.fastq.gz -o {}.out'</span> <span class="se">\</span>
-  ::: <span class="si">$(</span><span class="nb">cat </span>sample_list.txt<span class="si">)</span>
-
-<span class="c"># Process all FASTA files with 4 cores</span>
-parallel <span class="nt">-j</span> 4 <span class="s1">'prodigal -i {} -o {.}.gff -a {.}.faa'</span> ::: genomes/<span class="k">*</span>.fasta
-
-<span class="c"># Use a two-column input file (sample, output path)</span>
-parallel <span class="nt">--colsep</span> <span class="s1">'\t'</span> <span class="nt">-j</span> 8 <span class="s1">'antismash {1} --output-dir {2}'</span> <span class="se">\</span>
-  :::: sample_antismash_jobs.tsv
-
-<span class="c"># Keep a progress bar visible</span>
-parallel <span class="nt">--progress</span> <span class="nt">-j</span> 8 <span class="s1">'gzip {}'</span> ::: <span class="k">*</span>.sam
-
-<span class="c"># Retry failed jobs (useful for jobs with occasional timeouts)</span>
-parallel <span class="nt">--joblog</span> joblog.txt <span class="nt">-j</span> 8 <span class="s1">'your_command {}'</span> ::: input_list.txt
-</code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">parallel</code> is especially useful on a login node for quick jobs that do not justify a full SLURM submission, or when you have 50 samples to process and want them done in 15 minutes instead of 15 hours.</p>
-
-<hr />
-
-<h2 id="13-rsync--transfer-and-sync-files-reliably">13. <code class="language-plaintext highlighter-rouge">rsync</code> — transfer and sync files reliably</h2>
-
-<p><code class="language-plaintext highlighter-rouge">rsync</code> is how you move large files between your local machine and an HPC cluster — or between locations on the same cluster — without risking data loss from interrupted transfers.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Copy a local directory to the cluster (preserving permissions, showing progress)</span>
-rsync <span class="nt">-avzP</span> /local/results/ username@hpc.cluster.edu:/scratch/username/results/
-
-<span class="c"># Pull results from the cluster to your local machine</span>
-rsync <span class="nt">-avzP</span> username@hpc.cluster.edu:/scratch/username/results/ /local/results/
-
-<span class="c"># Dry run: see what would be transferred without actually doing it</span>
-rsync <span class="nt">-avzn</span> /local/data/ username@hpc:/scratch/data/
-
-<span class="c"># Exclude large intermediate files you don't want to copy</span>
-rsync <span class="nt">-avzP</span> <span class="nt">--exclude</span> <span class="s2">"*.bam"</span> <span class="nt">--exclude</span> <span class="s2">"*.sam"</span> results/ username@hpc:/scratch/results/
-
-<span class="c"># Resume an interrupted transfer (rsync only sends what is missing)</span>
-rsync <span class="nt">-avzP</span> <span class="nt">--partial</span> large_file.tar.gz username@hpc:/scratch/
-
-<span class="c"># Sync a project folder (delete files on destination that are no longer in source)</span>
-rsync <span class="nt">-avzP</span> <span class="nt">--delete</span> project/ username@hpc:/scratch/project/
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">-P</code> flag combines <code class="language-plaintext highlighter-rouge">--progress</code> (show transfer progress) and <code class="language-plaintext highlighter-rouge">--partial</code> (keep partial files so an interrupted transfer can resume). I use this combination for every large transfer.</p>
-
-<hr />
-
-<h2 id="14-cat-zcat-less--read-file-contents">14. <code class="language-plaintext highlighter-rouge">cat</code>, <code class="language-plaintext highlighter-rouge">zcat</code>, <code class="language-plaintext highlighter-rouge">less</code> — read file contents</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Print a file to screen</span>
-<span class="nb">cat </span>file.txt
-
-<span class="c"># Concatenate multiple files</span>
-<span class="nb">cat </span>sample1.tsv sample2.tsv sample3.tsv <span class="o">&gt;</span> combined.tsv
-
-<span class="c"># Read a gzipped file without decompressing it</span>
-zcat sample.fastq.gz | <span class="nb">head</span> <span class="nt">-8</span>
-
-<span class="c"># Page through a large file interactively (q to quit, / to search)</span>
-less results.tsv
-
-<span class="c"># Page through a gzipped file</span>
-zless large_results.tsv.gz
-</code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">less</code> is how you inspect large files without opening them in a text editor. Once inside: <code class="language-plaintext highlighter-rouge">G</code> jumps to the end, <code class="language-plaintext highlighter-rouge">g</code> jumps to the beginning, <code class="language-plaintext highlighter-rouge">/pattern</code> searches forward, <code class="language-plaintext highlighter-rouge">q</code> quits.</p>
-
-<hr />
-
-<h2 id="15-chmod-screen-nohup--the-ones-that-save-you-at-11pm">15. <code class="language-plaintext highlighter-rouge">chmod</code>, <code class="language-plaintext highlighter-rouge">screen</code>, <code class="language-plaintext highlighter-rouge">nohup</code> — the ones that save you at 11pm</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Make a script executable</span>
-<span class="nb">chmod</span> +x run_pipeline.sh
-./run_pipeline.sh
-
-<span class="c"># Start a screen session that keeps running after you disconnect</span>
-screen <span class="nt">-S</span> my_pipeline
-<span class="c"># Run your job inside screen</span>
-<span class="c"># Detach: Ctrl+A then D</span>
-<span class="c"># Reattach later:</span>
-screen <span class="nt">-r</span> my_pipeline
-<span class="c"># List all sessions:</span>
-screen <span class="nt">-ls</span>
-
-<span class="c"># Run a job that survives logout (alternative to screen)</span>
-<span class="nb">nohup </span>bash run_pipeline.sh <span class="o">&gt;</span> pipeline.log 2&gt;&amp;1 &amp;
-<span class="c"># The &amp; runs it in the background</span>
-<span class="c"># nohup prevents it dying when you log out</span>
-<span class="c"># pipeline.log captures all output</span>
-
-<span class="c"># Check background jobs</span>
-<span class="nb">jobs
-</span>ps aux | <span class="nb">grep </span>run_pipeline
-</code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">screen</code> and <code class="language-plaintext highlighter-rouge">nohup</code> exist for the same reason: SSH connections drop. If your pipeline takes 6 hours and your connection dies after 2, without <code class="language-plaintext highlighter-rouge">screen</code> or <code class="language-plaintext highlighter-rouge">nohup</code> the job dies with it. Always wrap long jobs in one of these before logging off.</p>
-
-<hr />
-
-<h2 id="combining-them-real-one-liners-from-daily-work">Combining them: real one-liners from daily work</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># How many reads did each sample produce?</span>
-<span class="k">for </span>f <span class="k">in</span> <span class="k">*</span>.fastq.gz<span class="p">;</span> <span class="k">do </span><span class="nb">echo</span> <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$f</span><span class="s2">: "</span><span class="p">;</span> zcat <span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span> | <span class="nb">wc</span> <span class="nt">-l</span> | <span class="nb">awk</span> <span class="s1">'{print $1/4}'</span><span class="p">;</span> <span class="k">done</span>
-
-<span class="c"># Find samples that produced empty output files (possible failed jobs)</span>
-find results/ <span class="nt">-name</span> <span class="s2">"*.out"</span> <span class="nt">-empty</span> | <span class="nb">sed</span> <span class="s1">'s/results\///'</span> | <span class="nb">sed</span> <span class="s1">'s/\.out//'</span>
-
-<span class="c"># Get the top 20 most abundant genera across all Kaiju outputs</span>
-<span class="nb">cat</span> <span class="k">*</span>.names.out | <span class="nb">awk</span> <span class="nt">-F</span><span class="s1">';'</span> <span class="s1">'{gsub(/^ +| +$/,"",$6); if($6!="NA" &amp;&amp; $6!="") print $6}'</span> <span class="se">\</span>
-  | <span class="nb">sort</span> | <span class="nb">uniq</span> <span class="nt">-c</span> | <span class="nb">sort</span> <span class="nt">-nr</span> | <span class="nb">head</span> <span class="nt">-20</span>
-
-<span class="c"># Check how much disk space your project is using</span>
-<span class="nb">du</span> <span class="nt">-sh</span> /scratch/username/project/
-<span class="nb">du</span> <span class="nt">-sh</span> /scratch/username/project/<span class="k">*</span>/ | <span class="nb">sort</span> <span class="nt">-hr</span> | <span class="nb">head</span> <span class="nt">-10</span>
-
-<span class="c"># Rename all files matching a pattern</span>
-<span class="k">for </span>f <span class="k">in</span> <span class="k">*</span>_R1_001.fastq.gz<span class="p">;</span> <span class="k">do </span><span class="nb">mv</span> <span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">f</span><span class="p">/_R1_001/_R1</span><span class="k">}</span><span class="s2">"</span><span class="p">;</span> <span class="k">done</span>
-
-<span class="c"># Extract only classified reads from a Kaiju output</span>
-<span class="nb">awk</span> <span class="s1">'$1 == "C"'</span> sample.out | <span class="nb">wc</span> <span class="nt">-l</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="for-windows-users-getting-linux-without-leaving-windows">For Windows users: getting Linux without leaving Windows</h2>
-
-<p>If you are on Windows and want to follow along with bioinformatics tutorials or run tools that only exist on Linux, you have a clean option that does not require dual-booting or a virtual machine: <strong>WSL (Windows Subsystem for Linux)</strong>. It puts a real Linux terminal directly inside Windows, with access to your Windows files.</p>
-
-<h3 id="what-is-wsl">What is WSL?</h3>
-
-<p>WSL runs a genuine Linux kernel alongside Windows. WSL 2 (the current version) uses a lightweight virtual machine but behaves like a native Linux environment from inside the terminal — you can install <code class="language-plaintext highlighter-rouge">conda</code>, run <code class="language-plaintext highlighter-rouge">bash</code> scripts, and use every command in this post exactly as written.</p>
-
-<h3 id="installing-wsl">Installing WSL</h3>
-
-<p>Open <strong>PowerShell as Administrator</strong> (right-click → Run as administrator) and run:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w">
-</span></code></pre></div></div>
-
-<p>This installs WSL 2 and Ubuntu (the default Linux distribution) in one step. Restart your computer when prompted.</p>
-
-<p>After restarting, Ubuntu will finish setting up and ask you to create a username and password. That username is your Linux identity — it does not need to match your Windows username.</p>
-
-<p>If you want a specific Linux distribution:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See available distributions</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--list</span><span class="w"> </span><span class="nt">--online</span><span class="w">
-
-</span><span class="c"># Install a specific one</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w"> </span><span class="nt">-d</span><span class="w"> </span><span class="nx">Ubuntu-22.04</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="first-steps-inside-wsl">First steps inside WSL</h3>
-
-<p>Open the Ubuntu app from the Start menu (or type <code class="language-plaintext highlighter-rouge">wsl</code> in PowerShell). You are now in a Linux terminal.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Update the package list and upgrade installed packages</span>
-<span class="nb">sudo </span>apt update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt upgrade <span class="nt">-y</span>
-
-<span class="c"># Install common bioinformatics dependencies</span>
-<span class="nb">sudo </span>apt <span class="nb">install</span> <span class="nt">-y</span> wget curl git build-essential python3 python3-pip
-
-<span class="c"># Install conda (recommended for managing bioinformatics tools)</span>
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-<span class="c"># Follow the prompts, then restart the terminal</span>
-
-<span class="c"># Verify conda installed</span>
-conda <span class="nt">--version</span>
-
-<span class="c"># Install a bioinformatics tool (example: FastQC)</span>
-conda <span class="nb">install</span> <span class="nt">-c</span> bioconda fastqc
-fastqc <span class="nt">--version</span>
-</code></pre></div></div>
-
-<h3 id="accessing-your-windows-files-from-wsl">Accessing your Windows files from WSL</h3>
-
-<p>Your Windows drives are mounted under <code class="language-plaintext highlighter-rouge">/mnt/</code>:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Access your Windows Desktop</span>
-<span class="nb">ls</span> /mnt/c/Users/YourWindowsUsername/Desktop/
-
-<span class="c"># Copy a file from Windows to your Linux home directory</span>
-<span class="nb">cp</span> /mnt/c/Users/YourWindowsUsername/Downloads/data.csv ~/data.csv
-
-<span class="c"># Set Windows Desktop as a shortcut (add to ~/.bashrc)</span>
-<span class="nb">echo</span> <span class="s1">'alias desktop="cd /mnt/c/Users/YourWindowsUsername/Desktop"'</span> <span class="o">&gt;&gt;</span> ~/.bashrc
-<span class="nb">source</span> ~/.bashrc
-desktop    <span class="c"># now takes you straight there</span>
-</code></pre></div></div>
-
-<h3 id="vs-code-integration-recommended">VS Code integration (recommended)</h3>
-
-<p>If you use VS Code, install the <strong>WSL extension</strong> (search “WSL” in the Extensions panel). Then from inside WSL:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>code <span class="nb">.</span>    <span class="c"># opens VS Code connected to your Linux environment</span>
-</code></pre></div></div>
-
-<p>You can edit files, run terminals, and use the integrated debugger — all running natively in Linux, displayed in your Windows VS Code window.</p>
-
-<h3 id="common-wsl-tips">Common WSL tips</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Find out which WSL version you are running</span>
-wsl <span class="nt">--list</span> <span class="nt">--verbose</span>     <span class="c"># (from PowerShell)</span>
-
-<span class="c"># Shut down WSL (frees memory)</span>
-wsl <span class="nt">--shutdown</span>           <span class="c"># (from PowerShell)</span>
-
-<span class="c"># Open Windows Explorer in the current WSL folder</span>
-explorer.exe <span class="nb">.</span>
-
-<span class="c"># Fix slow file performance: store project files inside WSL (~/) not on /mnt/c/</span>
-<span class="c"># Working on /mnt/c/ is slow because it crosses the WSL/Windows boundary</span>
-<span class="c"># Store your data at ~/projects/ for full Linux-native speed</span>
-</code></pre></div></div>
-
-<h3 id="wsl-limitations-to-know">WSL limitations to know</h3>
-
-<ul>
-  <li><strong>No GUI tools</strong> by default — bioinformatics command-line tools work perfectly; graphical tools like Geneious or IGV should run on the Windows side instead (WSLg adds limited GUI support on newer Windows 11 builds)</li>
-  <li><strong>File I/O is fastest inside WSL</strong> — if you store large FASTQ files on <code class="language-plaintext highlighter-rouge">/mnt/c/</code>, operations will be noticeably slower than storing them in <code class="language-plaintext highlighter-rouge">~/</code> (the Linux filesystem)</li>
-  <li><strong>Not suitable for full HPC workloads</strong> — WSL is for development, testing, and learning. For production runs on large datasets, use a proper Linux cluster</li>
-</ul>
-
-<hr />
-
-<h2 id="quick-reference-card">Quick reference card</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Command</th>
-      <th>What it does</th>
-      <th>Daily use case</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">ls -lh</code></td>
-      <td>List files with sizes</td>
-      <td>Check job outputs</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">find . -name "*.gbk"</code></td>
-      <td>Find files by name</td>
-      <td>Locate scattered output files</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">grep -c "^&gt;"</code></td>
-      <td>Count FASTA sequences</td>
-      <td>Quick QC</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">awk '$5 &lt; 0.05'</code></td>
-      <td>Filter by column value</td>
-      <td>Extract significant results</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">sed 's/\r//'</code></td>
-      <td>Remove Windows line endings</td>
-      <td>Fix Excel CSVs</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">wc -l</code></td>
-      <td>Count lines</td>
-      <td>Verify record counts</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">sort \| uniq -c</code></td>
-      <td>Count occurrences</td>
-      <td>Summarize taxa or categories</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">cut -f1,3</code></td>
-      <td>Extract columns</td>
-      <td>Reshape tables</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">head -5 / tail -f</code></td>
-      <td>Inspect files / watch logs</td>
-      <td>QC and monitoring</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">xargs -n1 gzip</code></td>
-      <td>Apply command to file list</td>
-      <td>Batch compress files</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">parallel -j 8</code></td>
-      <td>Run jobs in parallel</td>
-      <td>Process many samples</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">rsync -avzP</code></td>
-      <td>Transfer files reliably</td>
-      <td>HPC ↔ local sync</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">screen -S name</code></td>
-      <td>Persistent terminal session</td>
-      <td>Survive SSH disconnection</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">nohup ... &amp;</code></td>
-      <td>Run job detached from terminal</td>
-      <td>Long jobs on login nodes</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr />
-
-<p><em>All commands tested on Ubuntu 22.04 / bash 5.1. WSL installation instructions current as of June 2026 — check <code class="language-plaintext highlighter-rouge">wsl --help</code> for the latest options on your Windows version.</em></p>
-
-<p><img src="/assets/img/linux_codes.png" alt="see_your_plot" /></p>]]></content><author><name></name></author><category term="linux" /><category term="linux" /><category term="bash" /><category term="command-line" /><category term="bioinformatics" /><category term="grep" /><category term="awk" /><category term="sed" /><category term="find" /><category term="parallel" /><category term="rsync" /><category term="WSL" /><category term="Windows" /><category term="HPC" /><category term="beginners" /><category term="productivity" /><summary type="html"><![CDATA[You do not need to memorize 500 Linux commands to be effective at the command line. You need maybe 20, used well and combined creatively. This post covers the commands I reach for every single day — find, grep, awk, sed, wc, sort, uniq, xargs, parallel, rsync, and a handful of others — with real bioinformatics examples for each one. There is also a short section at the end for Windows users who want to get started without dual-booting: WSL (Windows Subsystem for Linux) puts a full Linux terminal on your Windows machine in about ten minutes.]]></summary></entry></feed>
+<p><img src="/assets/img/gti.png" alt="see_your_plot" /></p>]]></content><author><name></name></author><category term="git" /><category term="github" /><category term="version-control" /><category term="reproducibility" /><category term="collaboration" /><category term="bioinformatics" /><category term="lab-workflow" /><category term="SSH" /><category term="HTTPS" /><category term="beginners" /><category term="linux" /><summary type="html"><![CDATA[You spend weeks writing a pipeline. It works. You make a small change. It breaks. You cannot remember what you changed. This is the scenario Git was built to prevent. This post explains what Git and GitHub are, why they matter for bioinformatics specifically, and walks through a complete setup guide — installing Git, connecting to GitHub with HTTPS authentication, cloning lab repositories, and the daily push-pull-commit workflow. Includes a lab organization setup, common authentication problems, and an optional SSH configuration for password-free access.]]></summary></entry></feed>
