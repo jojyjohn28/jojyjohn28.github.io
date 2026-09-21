@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-09-15T09:35:34-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-09-15T09:35:34-04:00</published><updated>2026-09-15T09:35:34-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-09-21T08:32:40-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-09-21T08:32:40-04:00</published><updated>2026-09-21T08:32:40-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -766,7 +766,346 @@ run_dbcan <span class="nt">--tools</span> all ...
 
 <p>Last updated: February 2026</p>
 
-<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Human Contamination Removal in Host-Associated Metagenomics: Why It Matters — Day 1 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/" rel="alternate" type="text/html" title="Human Contamination Removal in Host-Associated Metagenomics: Why It Matters — Day 1 of 5" /><published>2026-09-15T00:00:00-04:00</published><updated>2026-09-15T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/host-associated-metagenomics</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/"><![CDATA[<p>🧬 <em>Day 1 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">BMTagger vs Bowtie2 for Human Read Removal — Day 2 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-bmtagger-bowtie2-day2/" rel="alternate" type="text/html" title="BMTagger vs Bowtie2 for Human Read Removal — Day 2 of 5" /><published>2026-09-21T00:00:00-04:00</published><updated>2026-09-21T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/bmtagger-vs-bowtie</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-bmtagger-bowtie2-day2/"><![CDATA[<p>🧬 <em>Day 2 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+
+<p><a href="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/">Yesterday</a>  I introduced the core challenge of host-read removal: the goal is not simply to remove as many human reads as possible, but to do so without discarding genuine microbial reads from the organisms you actually care about. In host associated metagenomics, where community composition can hinge on the relative abundance of a small number of taxa, that distinction is not academic — it determines whether your downstream biology is real or an artifact.</p>
+
+<p>Today I am working through the first two methods in the benchmark: <strong>BMTagger</strong> and <strong>Bowtie2</strong>. Both are alignment-oriented approaches to host removal, both used GRCh38 as the human reference, and both support paired-end reads. But they differ substantially in workflow complexity, computational requirements, and how they handle the removed-vs-retained decision. Understanding those differences sets up everything that follows in the series.</p>
+
+<hr />
+
+<h2 id="bmtagger--the-legacy-baseline">BMTagger — the legacy baseline</h2>
+
+<p>BMTagger is an NCBI host-screening workflow that combines two sequential steps: a fast bitmask-based screening step to identify candidate human reads, followed by an SRPRISM alignment step to confirm classifications. It was the standard NCBI approach for human read removal for many years and is still used as a reference point in benchmarks precisely because of its history.</p>
+
+<p>The workflow looks like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FASTQ input
+    ↓
+BMFilter (bitmask k-mer screening)
+    ↓
+SRPRISM (alignment confirmation)
+    ↓
+Text file of human read IDs
+</code></pre></div></div>
+
+<p>Notice the output is a list of read identifiers — not FASTQ files. An additional extraction step is needed to produce the actual retained-reads FASTQ for downstream analysis.</p>
+
+<h3 id="database">Database</h3>
+
+<p>The BMTagger run used a GRCh38.p12 database consisting of two pre-built index files:</p>
+
+<ul>
+  <li>A bitmask (<code class="language-plaintext highlighter-rouge">.bitmask</code>) — used by the fast k-mer screening step</li>
+  <li>An SRPRISM index (<code class="language-plaintext highlighter-rouge">.srprism.*</code>) — used by the alignment confirmation step</li>
+</ul>
+
+<p>Both must be built from the same reference FASTA before running.</p>
+
+<h3 id="installation">Installation</h3>
+
+<p>BMTagger has legacy dependencies that can conflict with modern tools, so I kept it isolated in its own conda environment:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda create <span class="nt">-n</span> bmtagger
+conda activate bmtagger
+<span class="c"># Install BMTagger via your HPC module system or conda channel</span>
+<span class="c"># conda install -c bioconda bmtagger   (if available)</span>
+</code></pre></div></div>
+
+<p>Keeping legacy tools in isolated environments is good hygiene regardless of whether you are benchmarking — it prevents dependency conflicts that can subtly alter tool behavior.</p>
+
+<h3 id="one-practical-limitation-uncompressed-input">One practical limitation: uncompressed input</h3>
+
+<p>The workflow I used expected uncompressed FASTQ files. The fastp outputs (<code class="language-plaintext highlighter-rouge">.fastq.gz</code>) had to be decompressed into a temporary working directory before BMTagger could run. I used <code class="language-plaintext highlighter-rouge">pigz</code> for parallel decompression:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pigz <span class="nt">-dc</span> sample_R1.fastp.fastq.gz <span class="o">&gt;</span> /tmp/sample_R1.fastq
+pigz <span class="nt">-dc</span> sample_R2.fastp.fastq.gz <span class="o">&gt;</span> /tmp/sample_R2.fastq
+</code></pre></div></div>
+
+<p>This adds a step that the other tools in the benchmark do not require, and it has storage implications at scale — temporary uncompressed files for a 40M-read sample can be 10–15 GB each.</p>
+
+<h3 id="running-bmtagger">Running BMTagger</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/bin/time <span class="nt">-v</span> <span class="nt">-o</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_bmtagger.time.txt <span class="se">\</span>
+  bmtagger.sh <span class="se">\</span>
+    <span class="nt">-b</span> GRCh38_p12.bitmask <span class="se">\</span>
+    <span class="nt">-x</span> GRCh38_p12.srprism <span class="se">\</span>
+    <span class="nt">-T</span> <span class="k">${</span><span class="nv">TMP_DIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span> <span class="se">\</span>
+    <span class="nt">-q</span> 1 <span class="se">\</span>
+    <span class="nt">-1</span> <span class="k">${</span><span class="nv">TMP_DIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R1.fastq <span class="se">\</span>
+    <span class="nt">-2</span> <span class="k">${</span><span class="nv">TMP_DIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R2.fastq <span class="se">\</span>
+    <span class="nt">-o</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_taggedHuman.txt
+</code></pre></div></div>
+
+<p>The key flags:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-b</code> — bitmask database</li>
+  <li><code class="language-plaintext highlighter-rouge">-x</code> — SRPRISM index</li>
+  <li><code class="language-plaintext highlighter-rouge">-T</code> — temporary working directory (needs enough space for intermediate files)</li>
+  <li><code class="language-plaintext highlighter-rouge">-q 1</code> — input is FASTQ (not FASTA)</li>
+  <li><code class="language-plaintext highlighter-rouge">-o</code> — output prefix for the human read ID list</li>
+</ul>
+
+<h3 id="extracting-paired-retained-reads">Extracting paired retained reads</h3>
+
+<p>Because BMTagger outputs a text file of read IDs rather than FASTQ files directly, a post-processing step is needed to extract the microbial reads you actually want:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Get list of human read IDs from BMTagger output</span>
+<span class="nb">grep</span> <span class="nt">-v</span> <span class="s2">"^#"</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_taggedHuman.txt <span class="o">&gt;</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_human_ids.txt
+
+<span class="c"># Use seqtk to extract non-human reads (those NOT in the human ID list)</span>
+seqtk subseq <span class="k">${</span><span class="nv">TMP_DIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R1.fastq <span class="se">\</span>
+    &lt;<span class="o">(</span><span class="nb">grep</span> <span class="nt">-Fxvf</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_human_ids.txt &lt;<span class="o">(</span><span class="nb">grep</span> <span class="s2">"^@"</span> <span class="k">${</span><span class="nv">TMP_DIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R1.fastq | <span class="nb">sed</span> <span class="s1">'s/^@//'</span><span class="o">))</span> <span class="se">\</span>
+    <span class="o">&gt;</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_bmtagger_nonhuman_R1.fastq
+
+<span class="c"># Compress output</span>
+<span class="nb">gzip</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_bmtagger_nonhuman_R1.fastq
+</code></pre></div></div>
+
+<p>This extraction step adds workflow complexity that Bowtie2 avoids entirely.</p>
+
+<hr />
+
+<h2 id="bowtie2--the-modern-alignment-baseline">Bowtie2 — the modern alignment baseline</h2>
+
+<p><a href="https://bowtie-bio.sourceforge.net/bowtie2/">Bowtie2</a> uses an FM-index for fast short-read alignment and is one of the most widely used aligners in metagenomics preprocessing. For host removal, the logic is straightforward:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Paired FASTQ
+    ↓
+Align to human genome (GRCh38)
+    ↓
+Concordantly aligned pairs  →  human (discard)
+Unaligned pairs             →  retain for microbiome analysis
+</code></pre></div></div>
+
+<p>One significant workflow advantage: Bowtie2 writes both human and non-human reads directly to FASTQ output in a single command, with no post-processing extraction step needed.</p>
+
+<h3 id="building-the-reference-index">Building the reference index</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bowtie2-build <span class="se">\</span>
+    GRCh38.fa <span class="se">\</span>
+    GRCh38_bowtie2_index <span class="se">\</span>
+    <span class="nt">--threads</span> 16
+</code></pre></div></div>
+
+<p>This step is slow (30–60 minutes for the full human genome) but only needs to be done once. Store the index in a shared location on the cluster so the same index is used for every sample.</p>
+
+<h3 id="running-bowtie2">Running Bowtie2</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/bin/time <span class="nt">-v</span> <span class="nt">-o</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_bowtie2.time.txt <span class="se">\</span>
+  bowtie2 <span class="se">\</span>
+    <span class="nt">--very-sensitive</span> <span class="se">\</span>
+    <span class="nt">--threads</span> 16 <span class="se">\</span>
+    <span class="nt">-x</span> <span class="k">${</span><span class="nv">BOWTIE2_INDEX</span><span class="k">}</span>/GRCh38 <span class="se">\</span>
+    <span class="nt">-1</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R1.fastp.fastq.gz <span class="se">\</span>
+    <span class="nt">-2</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R2.fastp.fastq.gz <span class="se">\</span>
+    <span class="nt">--un-conc-gz</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_nonhuman_R%.fastq.gz <span class="se">\</span>
+    <span class="nt">--al-conc-gz</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_human_R%.fastq.gz <span class="se">\</span>
+    <span class="nt">--met-file</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_bowtie2_metrics.txt <span class="se">\</span>
+    <span class="nt">-S</span> /dev/null
+</code></pre></div></div>
+
+<p>Key flags worth explaining:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">--very-sensitive</code> — uses the highest-sensitivity preset (<code class="language-plaintext highlighter-rouge">-D 20 -R 3 -N 1 -L 20 -i S,1,0.50</code>). For host removal, sensitivity matters more than speed — you want to find all the human reads, not just the easy ones</li>
+  <li><code class="language-plaintext highlighter-rouge">--un-conc-gz</code> — writes both reads of pairs that did NOT align concordantly to the human genome. The <code class="language-plaintext highlighter-rouge">%</code> is replaced by <code class="language-plaintext highlighter-rouge">1</code> and <code class="language-plaintext highlighter-rouge">2</code> for R1 and R2. These are your retained microbial reads</li>
+  <li><code class="language-plaintext highlighter-rouge">--al-conc-gz</code> — writes both reads of pairs that DID align concordantly. These are your human reads</li>
+  <li><code class="language-plaintext highlighter-rouge">-S /dev/null</code> — discards the SAM alignment output (we do not need it, and it would be enormous)</li>
+  <li><code class="language-plaintext highlighter-rouge">--met-file</code> — alignment metrics per sample, useful for QC</li>
+</ul>
+
+<p>The <code class="language-plaintext highlighter-rouge">--un-conc-gz</code> and <code class="language-plaintext highlighter-rouge">--al-conc-gz</code> flags are the feature that makes Bowtie2 especially clean to work with for this purpose. No post-processing required — two output files per read, gzip-compressed, paired-end aware.</p>
+
+<hr />
+
+<h2 id="side-by-side-workflow-comparison">Side-by-side workflow comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>BMTagger</th>
+      <th>Bowtie2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Input format</td>
+      <td>Uncompressed FASTQ (in this workflow)</td>
+      <td>Gzipped FASTQ directly</td>
+    </tr>
+    <tr>
+      <td>Human reference</td>
+      <td>GRCh38.p12 (bitmask + SRPRISM)</td>
+      <td>GRCh38 (FM-index)</td>
+    </tr>
+    <tr>
+      <td>Output format</td>
+      <td>Text file of human read IDs</td>
+      <td>Human + non-human FASTQ directly</td>
+    </tr>
+    <tr>
+      <td>Paired-end handling</td>
+      <td>Supported</td>
+      <td>Supported, explicit <code class="language-plaintext highlighter-rouge">--un-conc-gz</code></td>
+    </tr>
+    <tr>
+      <td>Post-processing needed</td>
+      <td>Yes (extract retained reads)</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>Workflow complexity</td>
+      <td>Higher</td>
+      <td>Lower</td>
+    </tr>
+    <tr>
+      <td>Maintenance status</td>
+      <td>Legacy</td>
+      <td>Actively maintained</td>
+    </tr>
+    <tr>
+      <td>Role in this benchmark</td>
+      <td>Historical conservative baseline</td>
+      <td>Conventional modern alignment baseline</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="benchmark-results">Benchmark results</h2>
+
+<p>Across all five samples:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sample</th>
+      <th>BMTagger removed</th>
+      <th>Bowtie2 removed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sample 1</td>
+      <td>94.88%</td>
+      <td>89.76%</td>
+    </tr>
+    <tr>
+      <td>Sample 2</td>
+      <td>97.91%</td>
+      <td>94.82%</td>
+    </tr>
+    <tr>
+      <td>Sample 3</td>
+      <td>22.51%</td>
+      <td>21.72%</td>
+    </tr>
+    <tr>
+      <td>Sample 4</td>
+      <td>10.52%</td>
+      <td>10.14%</td>
+    </tr>
+    <tr>
+      <td>Sample 5</td>
+      <td>86.07%</td>
+      <td>83.71%</td>
+    </tr>
+    <tr>
+      <td><strong>Mean</strong></td>
+      <td><strong>62.38%</strong></td>
+      <td><strong>60.03%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>BMTagger consistently removed a higher percentage of reads than Bowtie2 across all five samples. The difference ranges from less than one percentage point (Sample 4, low host content) to over three percentage points (Samples 1 and 2, very high host content).</p>
+
+<p>The range of removal rates across samples is striking and reflects what was described on Day 1: host content varies enormously between individuals and sampling events. Sample 4 had only ~10% host reads; Samples 1 and 2 had ~90–98%. A method that performs well across this entire range is more broadly useful than one that is optimized for a narrow host-content regime.</p>
+
+<h3 id="what-the-removal-percentages-cannot-tell-you">What the removal percentages cannot tell you</h3>
+
+<p>BMTagger removed more reads. But this does not automatically mean BMTagger is more accurate. Those additional removed reads represent one of two possibilities:</p>
+
+<ol>
+  <li><strong>True human reads</strong> that Bowtie2 missed — in which case BMTagger is more sensitive and its additional removals are correct</li>
+  <li><strong>Microbial reads</strong> incorrectly classified as human by BMTagger — in which case its higher removal rate is actually a false-positive problem</li>
+</ol>
+
+<p>Distinguishing between these two cases requires read-level discordance analysis, which comes on Day 5. For now, the removal rates establish the quantitative gap between methods and confirm that the two tools make different decisions — something worth investigating.</p>
+
+<hr />
+
+<h2 id="computational-performance">Computational performance</h2>
+
+<p>Approximate mean performance across the five samples:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tool</th>
+      <th>Mean wall-clock runtime</th>
+      <th>Approximate peak RAM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BMTagger</td>
+      <td>~73 minutes</td>
+      <td>~8 GB</td>
+    </tr>
+    <tr>
+      <td>Bowtie2</td>
+      <td>~51 minutes</td>
+      <td>~4 GB</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Bowtie2 was approximately 30% faster and used roughly half the RAM of BMTagger. At scale — hundreds of samples, limited cluster allocation — this difference accumulates quickly. 25 additional CPU-hours across 20 samples is a meaningful budget difference.</p>
+
+<p>These numbers were captured using the <code class="language-plaintext highlighter-rouge">/usr/bin/time -v</code> wrapper on every job:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/bin/time <span class="nt">-v</span> <span class="nt">-o</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_<span class="k">${</span><span class="nv">TOOL</span><span class="k">}</span>.time.txt <span class="se">\</span>
+    tool_command ...
+</code></pre></div></div>
+
+<p>The verbose output includes:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Elapsed (wall clock) time:       1:13:12.48
+Maximum resident set size:       8,124,456 KB
+User time (seconds):             1847.23
+System time (seconds):           12.41
+Percent of CPU this job got:     42%
+</code></pre></div></div>
+
+<p>The CPU percentage is also informative. BMTagger’s 42% utilization on a 16-thread node suggests it is not parallelizing efficiently across all available cores — something to keep in mind when allocating cluster resources.</p>
+
+<hr />
+
+<h2 id="what-day-2-established">What Day 2 established</h2>
+
+<p>Two alignment-oriented tools using the same broad human reference can produce noticeably different removal rates. On very high-host samples (Samples 1 and 2), the gap between BMTagger and Bowtie2 is 3–5 percentage points. That translates to millions of read pairs in absolute terms on 40M-read libraries.</p>
+
+<p>The operational lesson is equally clear: workflow simplicity is not trivial. BMTagger requires decompressed input, produces a read-ID list rather than FASTQ output, and needs post-processing extraction. Bowtie2 reads gzipped files directly, writes both output streams in a single command, and integrates cleanly into a modern pipeline. At scale, these differences matter for the time you spend writing and debugging pipeline code, not just the time the tool itself takes to run.</p>
+
+<p>Both tools established the baseline range against which the more modern approaches — BBMap and Cleanifier — will be evaluated tomorrow.</p>
+
+<hr />
+
+<h2 id="what-comes-tomorrow">What comes tomorrow</h2>
+
+<p><strong>Day 3</strong> covers BBMap, with a specific focus on a question that this comparison naturally raises: if two tools using the same reference can produce different results, what happens when the same tool is run against two different human references?</p>
+
+<p>BBMap will be run twice — once against the standard GRCh38 and once against a repeat-masked hg19 reference. The comparison isolates the reference effect from the algorithm effect and reveals something that is easy to overlook when benchmarking host-removal tools.</p>
+
+<hr />
+
+<p><img src="/assets/img/bm-hc2.png" alt="See your plot" /></p>
+
+<p><em>Day 1 of this series is <a href="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/">here</a>. Day 3 publishes soon.</em></p>]]></content><author><name></name></author><category term="metagenomics" /><category term="host-removal" /><category term="BMTagger" /><category term="Bowtie2" /><category term="GRCh38" /><category term="human-contamination" /><category term="vaginal-microbiome" /><category term="benchmarking" /><category term="SLURM" /><category term="HPC" /><category term="paired-end" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[Day 2 of the host-read removal benchmark series. Today: two conventional alignment-oriented approaches — BMTagger (a legacy NCBI screening workflow) and Bowtie2 (the modern FM-index aligner). Both use GRCh38 as the human reference, both handle paired-end reads, but their workflows, computational behavior, and removal rates differ in ways that matter for high-host-content vaginal metagenomes. Includes full installation and command walkthroughs, the benchmark results across five samples, runtime and RAM comparison, and the key question the numbers alone cannot answer.]]></summary></entry><entry><title type="html">Human Contamination Removal in Host-Associated Metagenomics: Why It Matters — Day 1 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/" rel="alternate" type="text/html" title="Human Contamination Removal in Host-Associated Metagenomics: Why It Matters — Day 1 of 5" /><published>2026-09-15T00:00:00-04:00</published><updated>2026-09-15T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/host-associated-metagenomics</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/"><![CDATA[<p>🧬 <em>Day 1 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
 
 <p>Shotgun metagenomics gives us access to microbial genomes, functional pathways, strain-level variation, and the full metabolic potential of a community — things that amplicon sequencing cannot reach. But in host-associated samples, one practical problem appears before almost any of that biology can begin: a substantial fraction of your sequencing reads may come from the host rather than the microbiome.</p>
 
@@ -3954,643 +4293,4 @@ Please see <a href="https://github.com/jojyjohn28/Size_Fractionated_Microbiome_A
 
 <p><em>Analysis ongoing — results and scripts will be updated as the project progresses. dbCAN version: HMMdb-V14. TCDB accessed May 2026. Genome dataset: 1,824 representative MAGs from Chesapeake Bay and Delaware Bay estuarine metagenomes.</em></p>
 
-<p><img src="/assets/img/gen_sub.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="CAZymes" /><category term="dbCAN" /><category term="TCDB" /><category term="transporters" /><category term="free-living" /><category term="particle-associated" /><category term="estuarine" /><category term="metagenomics" /><category term="MAGs" /><category term="Prodigal" /><category term="DIAMOND" /><category term="SLURM" /><category term="genome-ecology" /><category term="comparative-genomics" /><category term="R" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[Free-living and particle-associated bacteria occupy fundamentally different ecological niches — and their genomes should reflect that. Particle-attached microbes need enzymes to degrade complex polymers and transporters to capture the breakdown products. Free-living cells in the open water column face a different challenge: competing for dilute dissolved organic matter with a small, streamlined genome. This post documents a genome-scale workflow for annotating CAZymes (carbohydrate-active enzymes) and TCDB transporters across 1,824 representative estuarine genomes, classifying each genome by its FL vs PA abundance pattern, and testing whether lifestyle predicts functional repertoire.]]></summary></entry><entry><title type="html">Why Every Bioinformatician Should Learn Git (And How to Set It Up Today)</title><link href="https://jojyjohn28.github.io/blog/git-github-setup-guide-bioinformaticians/" rel="alternate" type="text/html" title="Why Every Bioinformatician Should Learn Git (And How to Set It Up Today)" /><published>2026-06-09T00:00:00-04:00</published><updated>2026-06-09T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/git-github-setup-guide</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/git-github-setup-guide-bioinformaticians/"><![CDATA[<p>You spend three weeks writing a metagenomics pipeline. It works — you have results, the paper is coming together. You make a “small tweak” to the abundance normalization step. Something breaks. You are not sure what you changed or when. Your previous working version exists only in your memory of what it looked like before.</p>
-
-<p>This is not a hypothetical. It happens to almost everyone in computational biology at some point. Git exists precisely to prevent it.</p>
-
-<p>This post covers what Git and GitHub are, why they matter specifically for bioinformatics work, and gives you a complete step-by-step setup — from installation through your first push to a lab organization repository. If you are new to version control, start from the beginning. If you already have Git installed but have never used it in a team setting, jump to the GitHub authentication and lab organization sections.</p>
-
-<hr />
-
-<h2 id="what-is-version-control-and-why-should-you-care">What is version control, and why should you care?</h2>
-
-<p>Version control is a system that records every change you make to a file over time, along with who made it and when. The key word is <em>every</em> — not just the versions you remembered to save with a different filename.</p>
-
-<p>Without version control, most people do something like this:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pipeline_v1.sh
-pipeline_v1_final.sh
-pipeline_v1_final_ACTUAL.sh
-pipeline_jan_working.sh
-pipeline_jan_SUBMIT_THIS_ONE.sh
-</code></pre></div></div>
-
-<p>You have almost certainly seen this pattern in a shared lab folder. It is inefficient, confusing, and does not actually protect you — you still do not know what changed between <code class="language-plaintext highlighter-rouge">final.sh</code> and <code class="language-plaintext highlighter-rouge">final_ACTUAL.sh</code>.</p>
-
-<p>With Git, you instead have one file and a complete, annotated history of every change:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git log <span class="nt">--oneline</span> pipeline.sh
-
-a3f9b2c Fix normalization bug <span class="k">for </span>low-salinity samples
-7e1d8a1 Add DESeq2 step <span class="k">for </span>seasonal comparison
-c2f4019 Initial pipeline — <span class="nb">read </span>mapping and assembly
-</code></pre></div></div>
-
-<p>You can see exactly what changed at each step, revert to any previous version in seconds, and understand the history of decisions without asking anyone. That is the core value proposition.</p>
-
-<hr />
-
-<h2 id="what-is-git">What is Git?</h2>
-
-<p>Git is the version control tool that runs on your machine. When you create a <strong>repository</strong> (repo), Git creates a hidden <code class="language-plaintext highlighter-rouge">.git</code> directory inside your project folder. This directory is the database — it stores every version of every file, the complete history of changes, and who made them.</p>
-
-<p>The fundamental unit in Git is a <strong>commit</strong> — a snapshot of your project at a specific moment, with a message describing what changed. Think of commits as save points in a video game, except you can jump to any save point at any time and the save points have descriptions.</p>
-
-<p>Git is local. It lives on your machine. You can use it entirely offline, for personal projects, without ever touching GitHub.</p>
-
-<hr />
-
-<h2 id="what-is-github">What is GitHub?</h2>
-
-<p>GitHub is a remote hosting service for Git repositories. It stores a copy of your repository in the cloud, which provides:</p>
-
-<ul>
-  <li><strong>Backup</strong> — your work exists somewhere other than your laptop</li>
-  <li><strong>Collaboration</strong> — multiple people can work on the same codebase</li>
-  <li><strong>Sharing</strong> — you can make repositories public for others to use or cite</li>
-  <li><strong>Lab organization</strong> — a shared space where an entire research group manages their codebases together</li>
-</ul>
-
-<p>The relationship is: Git manages your local history, GitHub hosts a synchronized copy of that history online.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Your laptop                    GitHub
-──────────────────             ────────────────────────────
-project/                       CampbellLab-Bioinformatics/
-├── pipeline.sh     ←──────→       ├── project1
-├── analysis.R      git push        ├── project2
-└── .git/           git pull        └── pipelines
-    (local history)                     (cloud copy)
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="why-git-matters-specifically-for-bioinformatics">Why Git matters specifically for bioinformatics</h2>
-
-<p>Version control is standard practice in software engineering. In biology it is still underused, despite the fact that computational research has at least as much to gain from it.</p>
-
-<p><strong>Reproducibility.</strong> A published computational analysis is only reproducible if the exact code that produced the results is available. Hosting your analysis scripts on GitHub — with the commit hash referenced in your methods section — is the most direct way to satisfy this.</p>
-
-<p><strong>Collaboration without chaos.</strong> When two people edit the same R script at the same time and email versions back and forth, you inevitably lose changes or overwrite each other’s work. Git handles this through branching and merging — each person works on their own version, and Git combines the changes when they are ready.</p>
-
-<p><strong>Lab continuity.</strong> When a postdoc leaves the lab, their analysis pipelines should not leave with them. A lab GitHub organization means the code stays with the lab, not the individual.</p>
-
-<p><strong>Code review.</strong> Pull requests on GitHub let a PI or senior lab member review a student’s analysis script before it is merged into the main codebase. This is how computational mistakes get caught before they become published errors.</p>
-
-<p><strong>Disaster recovery.</strong> Hard drives fail. Laptops get stolen. HPC scratch filesystems get purged. If your code only exists in one place, you are one hardware failure away from losing months of work.</p>
-
-<hr />
-
-<h2 id="step-1--install-git">Step 1 — Install Git</h2>
-
-<h3 id="linux-ubuntudebian">Linux (Ubuntu/Debian)</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt update
-<span class="nb">sudo </span>apt <span class="nb">install </span>git <span class="nt">-y</span>
-</code></pre></div></div>
-
-<h3 id="macos">macOS</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew <span class="nb">install </span>git
-</code></pre></div></div>
-
-<p>If you do not have Homebrew: <code class="language-plaintext highlighter-rouge">xargs</code> it first from <a href="https://brew.sh">brew.sh</a>, or install Xcode Command Line Tools:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>xcode-select <span class="nt">--install</span>
-</code></pre></div></div>
-
-<h3 id="windows">Windows</h3>
-
-<p>Download the installer from <a href="https://git-scm.com/download/win">git-scm.com/download/win</a> and follow the prompts. Accept the default options — they are sensible. This installs Git Bash, which gives you a Unix-style terminal on Windows.</p>
-
-<p>If you are using WSL (Windows Subsystem for Linux), install Git inside the WSL terminal using the Linux instructions above.</p>
-
-<h3 id="verify-installation">Verify installation</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git <span class="nt">--version</span>
-<span class="c"># git version 2.43.0</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="step-2--configure-your-identity">Step 2 — Configure your identity</h2>
-
-<p>Git records your name and email with every commit. Set these once and they apply to all repositories on your machine:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git config <span class="nt">--global</span> user.name <span class="s2">"Your Name"</span>
-git config <span class="nt">--global</span> user.email <span class="s2">"your_email@example.com"</span>
-</code></pre></div></div>
-
-<p>Check the configuration:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git config <span class="nt">--global</span> <span class="nt">--list</span>
-<span class="c"># user.name=Your Name</span>
-<span class="c"># user.email=your_email@example.com</span>
-</code></pre></div></div>
-
-<p>Use the same email address as your GitHub account — this is how GitHub links your local commits to your profile.</p>
-
-<hr />
-
-<h2 id="step-3--create-a-github-account-and-join-the-lab-organization">Step 3 — Create a GitHub account and join the lab organization</h2>
-
-<ol>
-  <li>Create a free account at <a href="https://github.com">github.com</a> if you don’t have one</li>
-  <li>Send your GitHub username to your PI or lab manager</li>
-  <li>Check your email for an invitation to the lab organization (e.g., <code class="language-plaintext highlighter-rouge">CampbellLab-Bioinformatics</code>)</li>
-  <li>Click <strong>Accept Invitation</strong> in the email</li>
-</ol>
-
-<p>After accepting, you will have access to all repositories in the organization that your permissions allow.</p>
-
-<hr />
-
-<h2 id="step-4--create-a-personal-access-token-https-authentication">Step 4 — Create a Personal Access Token (HTTPS authentication)</h2>
-
-<p>GitHub no longer accepts your account password for <code class="language-plaintext highlighter-rouge">git push</code> or <code class="language-plaintext highlighter-rouge">git pull</code> from the command line. You need a <strong>Personal Access Token (PAT)</strong> — think of it as a generated password that is specific to Git operations.</p>
-
-<p><strong>How to create one:</strong></p>
-
-<ol>
-  <li>Go to GitHub → click your profile photo (top right) → <strong>Settings</strong></li>
-  <li>Scroll down the left sidebar → <strong>Developer settings</strong></li>
-  <li><strong>Personal access tokens</strong> → <strong>Tokens (classic)</strong></li>
-  <li>Click <strong>Generate new token (classic)</strong></li>
-  <li>Give it a descriptive name: <code class="language-plaintext highlighter-rouge">"HPC lab work"</code> or <code class="language-plaintext highlighter-rouge">"laptop git access"</code></li>
-  <li>Set an expiration (90 days is a reasonable default — you can renew it)</li>
-  <li>Under <strong>Select scopes</strong>, check ✅ <strong>repo</strong> (this gives full access to your repositories)</li>
-  <li>Click <strong>Generate token</strong></li>
-  <li><strong>Copy the token immediately</strong> — GitHub will never show it again</li>
-</ol>
-
-<p>Store it somewhere safe: a password manager, a secure note, or your HPC environment file:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Optional: store token in a file that is NOT in any git repository</span>
-<span class="nb">echo</span> <span class="s2">"ghp_yourTokenHere"</span> <span class="o">&gt;</span> ~/.github_token
-<span class="nb">chmod </span>600 ~/.github_token
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="step-5--clone-a-repository">Step 5 — Clone a repository</h2>
-
-<p>With your token ready, clone a repository from the lab organization:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/CampbellLab-Bioinformatics/REPO_NAME.git
-</code></pre></div></div>
-
-<p>The first time you push or pull, Git will ask for credentials:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Username: your_github_username
-Password: ghp_yourPersonalAccessTokenHere   ← paste your token, not your password
-</code></pre></div></div>
-
-<p>To avoid entering it every time, cache the credentials:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git config <span class="nt">--global</span> credential.helper store
-</code></pre></div></div>
-
-<p>After one successful authentication, your credentials are saved and subsequent <code class="language-plaintext highlighter-rouge">git push</code> / <code class="language-plaintext highlighter-rouge">git pull</code> commands work without prompting.</p>
-
-<hr />
-
-<h2 id="step-6--the-daily-workflow">Step 6 — The daily workflow</h2>
-
-<p>This is the sequence you will use every single day once Git is part of your routine:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Start of day: get the latest changes from GitHub</span>
-git pull origin main
-
-<span class="c"># 2. Do your work — edit scripts, add files, run analyses</span>
-<span class="c"># ...</span>
-
-<span class="c"># 3. Stage your changes (tell Git what to include in the next commit)</span>
-git add <span class="nb">.</span>                        <span class="c"># add everything changed</span>
-git add specific_script.R        <span class="c"># or add one file at a time</span>
-
-<span class="c"># 4. Commit with a descriptive message</span>
-git commit <span class="nt">-m</span> <span class="s2">"Add DESeq2 analysis for FL vs PA comparison"</span>
-
-<span class="c"># 5. Push to GitHub</span>
-git push origin main
-</code></pre></div></div>
-
-<h3 id="what-makes-a-good-commit-message">What makes a good commit message?</h3>
-
-<p>A good commit message answers: <em>what changed and why?</em> Not: <em>what did I do?</em></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Bad — vague, not informative</span>
-git commit <span class="nt">-m</span> <span class="s2">"update"</span>
-git commit <span class="nt">-m</span> <span class="s2">"fixed stuff"</span>
-git commit <span class="nt">-m</span> <span class="s2">"changes"</span>
-
-<span class="c"># Good — tells you exactly what changed</span>
-git commit <span class="nt">-m</span> <span class="s2">"Fix sample order mismatch in DESeq2 metadata alignment"</span>
-git commit <span class="nt">-m</span> <span class="s2">"Add seasonal stratification to MaAsLin2 model"</span>
-git commit <span class="nt">-m</span> <span class="s2">"Initial Kaiju fungal classification workflow for pilot cohort"</span>
-</code></pre></div></div>
-
-<p>Six months from now you will be reading your own commit history. Future you will thank present you for writing messages that actually mean something.</p>
-
-<hr />
-
-<h2 id="creating-a-new-repository">Creating a new repository</h2>
-
-<h3 id="option-a--recommended-create-on-github-first-then-clone">Option A — Recommended: create on GitHub first, then clone</h3>
-
-<ol>
-  <li>Go to your lab organization on GitHub</li>
-  <li>Click <strong>New repository</strong></li>
-  <li>Name it, add a description, choose Public or Private</li>
-  <li>Click <strong>Create repository</strong></li>
-  <li>Clone it to your machine:</li>
-</ol>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/CampbellLab-Bioinformatics/new-project.git
-<span class="nb">cd </span>new-project
-<span class="c"># start adding files</span>
-</code></pre></div></div>
-
-<h3 id="option-b--start-locally-push-to-github">Option B — Start locally, push to GitHub</h3>
-
-<p>If you already have a project folder on your machine:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> /path/to/your/project
-
-git init                          <span class="c"># initialize a new repo</span>
-git add <span class="nb">.</span>                         <span class="c"># stage all files</span>
-git commit <span class="nt">-m</span> <span class="s2">"Initial commit"</span>    <span class="c"># first commit</span>
-git branch <span class="nt">-M</span> main                <span class="c"># rename branch to main</span>
-
-<span class="c"># Connect to the GitHub remote (create the repo on GitHub first — empty, no README)</span>
-git remote add origin https://github.com/CampbellLab-Bioinformatics/REPO_NAME.git
-git push <span class="nt">-u</span> origin main           <span class="c"># -u sets the upstream for future pushes</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="how-lab-organization-access-works">How lab organization access works</h2>
-
-<p>Understanding the authentication structure helps when things go wrong:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>You (GitHub account)
-─────────────────────────────────
-Username: your_github_username
-Token: 🔑 (created in your account settings)
-              │
-              │  push / pull via HTTPS
-              ▼
-Lab Organization (Shared Space)
-─────────────────────────────────
-CampbellLab-Bioinformatics
-    ├── project1
-    ├── project2
-    └── pipelines
-              ▲
-              │ permission check (happens automatically)
-              │
-GitHub Authentication System
-─────────────────────────────────
-✔ Is this user a member of the organization?
-✔ Does this user have access to this repository?
-✔ Is the token valid and not expired?
-              │
-              ▼
-✅ Access Granted → push / pull works
-</code></pre></div></div>
-
-<p>Three things must all be true: you are a member of the organization, you have access to the specific repository, and your token is valid. If any of these fails, you get a permission error.</p>
-
-<hr />
-
-<h2 id="optional-ssh-setup-password-free-access">Optional: SSH setup (password-free access)</h2>
-
-<p>If you are frequently pushing and pulling from a server or HPC cluster, setting up SSH keys eliminates the need for token entry entirely. SSH uses a cryptographic key pair: a private key that stays on your machine, and a public key that you register with GitHub.</p>
-
-<h3 id="generate-an-ssh-key-pair">Generate an SSH key pair</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh-keygen <span class="nt">-t</span> ed25519 <span class="nt">-C</span> <span class="s2">"your_email@example.com"</span>
-<span class="c"># Press Enter to accept the default file location (~/.ssh/id_ed25519)</span>
-<span class="c"># Optionally set a passphrase (recommended for security)</span>
-</code></pre></div></div>
-
-<h3 id="add-the-public-key-to-github">Add the public key to GitHub</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Copy the public key to your clipboard</span>
-<span class="nb">cat</span> ~/.ssh/id_ed25519.pub
-</code></pre></div></div>
-
-<ol>
-  <li>Go to GitHub → <strong>Settings</strong> → <strong>SSH and GPG keys</strong></li>
-  <li>Click <strong>New SSH key</strong></li>
-  <li>Give it a title (e.g., <code class="language-plaintext highlighter-rouge">"Palmetto HPC"</code> or <code class="language-plaintext highlighter-rouge">"Laptop"</code>)</li>
-  <li>Paste the public key</li>
-  <li>Click <strong>Add SSH key</strong></li>
-</ol>
-
-<h3 id="test-the-connection">Test the connection</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh <span class="nt">-T</span> git@github.com
-<span class="c"># Hi your_username! You've successfully authenticated</span>
-</code></pre></div></div>
-
-<h3 id="clone-using-ssh-instead-of-https">Clone using SSH instead of HTTPS</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git@github.com:CampbellLab-Bioinformatics/REPO_NAME.git
-</code></pre></div></div>
-
-<p>With SSH configured, <code class="language-plaintext highlighter-rouge">git push</code> and <code class="language-plaintext highlighter-rouge">git pull</code> work without any credential prompt.</p>
-
-<hr />
-
-<h2 id="common-problems-and-fixes">Common problems and fixes</h2>
-
-<h3 id="-remote-permission-denied">❌ <code class="language-plaintext highlighter-rouge">remote: Permission denied</code></h3>
-
-<p><strong>Cause:</strong> You have not accepted the lab organization invitation, or your token does not have <code class="language-plaintext highlighter-rouge">repo</code> scope.</p>
-
-<p><strong>Fix:</strong> Check your email for the invitation and accept it. If you already accepted, regenerate your token and make sure <code class="language-plaintext highlighter-rouge">repo</code> is checked.</p>
-
-<hr />
-
-<h3 id="-fatal-authentication-failed">❌ <code class="language-plaintext highlighter-rouge">fatal: Authentication failed</code></h3>
-
-<p><strong>Cause:</strong> You entered your GitHub password instead of your Personal Access Token.</p>
-
-<p><strong>Fix:</strong> At the password prompt, paste your token (starts with <code class="language-plaintext highlighter-rouge">ghp_</code>), not your account password. GitHub stopped accepting passwords for Git operations in 2021.</p>
-
-<hr />
-
-<h3 id="-error-failed-to-push-some-refs--updates-were-rejected">❌ <code class="language-plaintext highlighter-rouge">error: failed to push some refs</code> / <code class="language-plaintext highlighter-rouge">Updates were rejected</code></h3>
-
-<p><strong>Cause:</strong> Someone else pushed changes to GitHub since you last pulled. Your local history has diverged.</p>
-
-<p><strong>Fix:</strong></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git pull origin main    <span class="c"># get the latest changes first</span>
-<span class="c"># resolve any conflicts if prompted</span>
-git push origin main    <span class="c"># now push your changes</span>
-</code></pre></div></div>
-
-<hr />
-
-<h3 id="-please-tell-me-who-you-are-on-a-new-machine">❌ <code class="language-plaintext highlighter-rouge">Please tell me who you are</code> (on a new machine)</h3>
-
-<p><strong>Cause:</strong> Git identity not configured.</p>
-
-<p><strong>Fix:</strong></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git config <span class="nt">--global</span> user.name <span class="s2">"Your Name"</span>
-git config <span class="nt">--global</span> user.email <span class="s2">"your_email@example.com"</span>
-</code></pre></div></div>
-
-<hr />
-
-<h3 id="-fatal-not-a-git-repository">❌ <code class="language-plaintext highlighter-rouge">fatal: not a git repository</code></h3>
-
-<p><strong>Cause:</strong> You are running a Git command outside of a Git repository.</p>
-
-<p><strong>Fix:</strong> Either <code class="language-plaintext highlighter-rouge">cd</code> into your project directory, or initialize a new repository:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git init
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="a-gitignore-file-for-bioinformatics-projects">A <code class="language-plaintext highlighter-rouge">.gitignore</code> file for bioinformatics projects</h2>
-
-<p>Not everything should be committed to Git. Large data files, compiled binaries, and sensitive credentials should stay out of the repository. Create a <code class="language-plaintext highlighter-rouge">.gitignore</code> file in your project root:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># .gitignore for bioinformatics projects</span>
-
-<span class="c"># Large data files — store these on the HPC, not in Git</span>
-<span class="k">*</span>.fastq
-<span class="k">*</span>.fastq.gz
-<span class="k">*</span>.bam
-<span class="k">*</span>.sam
-<span class="k">*</span>.fasta
-<span class="k">*</span>.fa
-<span class="k">*</span>.fq
-data/
-
-<span class="c"># Intermediate outputs</span>
-<span class="k">*</span>.tmp
-<span class="k">*</span>.log
-logs/
-
-<span class="c"># R temporary files</span>
-.Rhistory
-.RData
-.Rproj.user/
-
-<span class="c"># Python cache</span>
-__pycache__/
-<span class="k">*</span>.pyc
-
-<span class="c"># Conda environments (document with environment.yml instead)</span>
-<span class="nb">env</span>/
-venv/
-
-<span class="c"># Credentials — NEVER commit tokens or passwords</span>
-<span class="k">*</span>.token
-.env
-secrets.txt
-</code></pre></div></div>
-
-<p>Commit the <code class="language-plaintext highlighter-rouge">.gitignore</code> file itself — this protects everyone working on the repository.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git add .gitignore
-git commit <span class="nt">-m</span> <span class="s2">"Add .gitignore for bioinformatics project"</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="what-to-actually-commit-in-a-bioinformatics-project">What to actually commit in a bioinformatics project</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Commit ✅</th>
-      <th>Do not commit ❌</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Analysis scripts (<code class="language-plaintext highlighter-rouge">.R</code>, <code class="language-plaintext highlighter-rouge">.py</code>, <code class="language-plaintext highlighter-rouge">.sh</code>)</td>
-      <td>Raw FASTQ / FASTA data files</td>
-    </tr>
-    <tr>
-      <td>Pipeline configuration files</td>
-      <td>BAM / SAM alignment files</td>
-    </tr>
-    <tr>
-      <td>Metadata files (small <code class="language-plaintext highlighter-rouge">.csv</code>, <code class="language-plaintext highlighter-rouge">.tsv</code>)</td>
-      <td>Large output files &gt; 50 MB</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">environment.yml</code> / <code class="language-plaintext highlighter-rouge">requirements.txt</code></td>
-      <td>Credentials and tokens</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">README.md</code> documenting the project</td>
-      <td>Scratch / temporary files</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">sessionInfo()</code> output</td>
-      <td>Compiled binaries</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>The rule of thumb: commit the <strong>code and instructions</strong> that reproduce the results. Do not commit the raw data or the results themselves — those live on the HPC or in a data repository.</p>
-
-<hr />
-
-<h2 id="quick-reference">Quick reference</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone &lt;url&gt;              <span class="c"># download a repository</span>
-git pull origin main         <span class="c"># get latest changes from GitHub</span>
-git status                   <span class="c"># see what has changed</span>
-git add <span class="nb">.</span>                    <span class="c"># stage all changes</span>
-git add &lt;file&gt;               <span class="c"># stage a specific file</span>
-git commit <span class="nt">-m</span> <span class="s2">"message"</span>      <span class="c"># save a snapshot with a message</span>
-git push origin main         <span class="c"># upload commits to GitHub</span>
-git log <span class="nt">--oneline</span>            <span class="c"># see commit history</span>
-git diff                     <span class="c"># see exactly what changed</span>
-git checkout <span class="nt">-b</span> new-branch   <span class="c"># create and switch to a new branch</span>
-git branch                   <span class="c"># list branches</span>
-git merge branch-name        <span class="c"># merge a branch into current branch</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="github-pages-your-free-academic-website-powered-by-git">GitHub Pages: your free academic website, powered by Git</h2>
-
-<p>Here is something most bioinformaticians do not realize until someone points it out: GitHub will host a website for you, for free, directly from a repository. No server, no hosting fees, no FTP uploads. You push a commit, and your site updates automatically within seconds. This is <strong>GitHub Pages</strong>.</p>
-
-<p>This entire blog — the one you are reading right now — runs on GitHub Pages, built with Jekyll and the al-folio academic theme. Every post I write is a Markdown file committed to a GitHub repository. Writing a post and publishing it are the same action: <code class="language-plaintext highlighter-rouge">git push</code>.</p>
-
-<h3 id="how-github-pages-works">How GitHub Pages works</h3>
-
-<p>GitHub Pages watches a specific branch of your repository (usually <code class="language-plaintext highlighter-rouge">main</code> or <code class="language-plaintext highlighter-rouge">gh-pages</code>). When you push new content, GitHub builds the site and serves it at:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://your-username.github.io/repository-name/
-</code></pre></div></div>
-
-<p>Or, if the repository is named <code class="language-plaintext highlighter-rouge">your-username.github.io</code>:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://your-username.github.io/
-</code></pre></div></div>
-
-<p>The site rebuilds automatically on every push — no manual deployment step.</p>
-
-<h3 id="jekyll-the-engine-behind-the-scenes">Jekyll: the engine behind the scenes</h3>
-
-<p>Jekyll is a static site generator. It takes Markdown files and a theme, and compiles them into plain HTML that browsers can serve. You write in Markdown (the same format used in README files), and Jekyll handles the layout, navigation, tags, and styling.</p>
-
-<p>GitHub Pages has native Jekyll support — you do not need to install anything or run Jekyll locally to build the site. Push a <code class="language-plaintext highlighter-rouge">.md</code> file in the right folder, and GitHub builds it for you.</p>
-
-<h3 id="the-al-folio-academic-theme">The al-folio academic theme</h3>
-
-<p>The <a href="https://github.com/alshedivat/al-folio">al-folio theme</a> was designed specifically for academics and researchers. It includes out-of-the-box support for:</p>
-
-<ul>
-  <li><strong>Blog posts</strong> — written in Markdown with a YAML front matter header (which is exactly what every post in this series uses)</li>
-  <li><strong>Publications list</strong> — with BibTeX integration</li>
-  <li><strong>Projects page</strong> — for showcasing research or code repositories</li>
-  <li><strong>About / CV page</strong> — with a clean academic layout</li>
-  <li><strong>Tags and categories</strong> — for organizing posts by topic</li>
-  <li><strong>Giscus comments</strong> — GitHub-powered discussion threads on each post</li>
-  <li><strong>Dark mode</strong> — automatic based on system preference</li>
-</ul>
-
-<p>The front matter at the top of every post in this blog — the <code class="language-plaintext highlighter-rouge">layout</code>, <code class="language-plaintext highlighter-rouge">title</code>, <code class="language-plaintext highlighter-rouge">date</code>, <code class="language-plaintext highlighter-rouge">permalink</code>, <code class="language-plaintext highlighter-rouge">tags</code> block — is the Jekyll metadata that tells al-folio how to build and display each page.</p>
-
-<h3 id="setting-up-your-own-academic-site">Setting up your own academic site</h3>
-
-<p>The quickest path to a live site:</p>
-
-<p><strong>1. Fork the al-folio repository</strong></p>
-
-<p>Go to <a href="https://github.com/alshedivat/al-folio">github.com/alshedivat/al-folio</a>, click <strong>Fork</strong>, and name your fork <code class="language-plaintext highlighter-rouge">your-username.github.io</code>.</p>
-
-<p><strong>2. Enable GitHub Pages</strong></p>
-
-<p>In your forked repository: <strong>Settings</strong> → <strong>Pages</strong> → set Source to <code class="language-plaintext highlighter-rouge">gh-pages</code> branch (al-folio’s deploy action writes to this branch automatically).</p>
-
-<p><strong>3. Edit <code class="language-plaintext highlighter-rouge">_config.yml</code></strong></p>
-
-<p>The config file controls your name, institution, social links, and theme settings:</p>
-
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">title</span><span class="pi">:</span> <span class="s">Your Name</span>
-<span class="na">description</span><span class="pi">:</span> <span class="s">PhD Candidate | Microbial Ecology | Bioinformatics</span>
-<span class="na">url</span><span class="pi">:</span> <span class="s">https://your-username.github.io</span>
-
-<span class="na">author</span><span class="pi">:</span>
-  <span class="na">name</span><span class="pi">:</span> <span class="s">Your Name</span>
-  <span class="na">email</span><span class="pi">:</span> <span class="s">you@university.edu</span>
-  <span class="na">github</span><span class="pi">:</span> <span class="s">your-username</span>
-  <span class="na">twitter</span><span class="pi">:</span> <span class="s">your-handle</span> <span class="c1"># optional</span>
-  <span class="na">orcid</span><span class="pi">:</span> <span class="s">0000-0000-0000-0000</span> <span class="c1"># optional</span>
-</code></pre></div></div>
-
-<p><strong>4. Write your first post</strong></p>
-
-<p>Create a file in <code class="language-plaintext highlighter-rouge">_posts/</code> named with the date-title convention:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_posts/2026-06-07-my-first-post.md
-</code></pre></div></div>
-
-<p>With the standard front matter:</p>
-
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
-<span class="na">layout</span><span class="pi">:</span> <span class="s">post</span>
-<span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">My</span><span class="nv"> </span><span class="s">First</span><span class="nv"> </span><span class="s">Post"</span>
-<span class="na">date</span><span class="pi">:</span> <span class="s">2026-06-07</span>
-<span class="na">description</span><span class="pi">:</span> <span class="s2">"</span><span class="s">A</span><span class="nv"> </span><span class="s">short</span><span class="nv"> </span><span class="s">description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">post</span><span class="nv"> </span><span class="s">preview."</span>
-<span class="na">tags</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">bioinformatics</span><span class="pi">,</span> <span class="nv">methods</span><span class="pi">]</span>
-<span class="nn">---</span>
-<span class="s">Your content here, written in Markdown.</span>
-</code></pre></div></div>
-
-<p><strong>5. Commit and push</strong></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git add _posts/2026-06-07-my-first-post.md
-git commit <span class="nt">-m</span> <span class="s2">"Add first blog post"</span>
-git push origin main
-</code></pre></div></div>
-
-<p>GitHub Actions will build the site and deploy it. Within 60–90 seconds your post is live at <code class="language-plaintext highlighter-rouge">https://your-username.github.io/blog/my-first-post/</code>.</p>
-
-<h3 id="why-this-matters-for-a-research-career">Why this matters for a research career</h3>
-
-<p>An academic website on GitHub Pages is not just a blog. It is:</p>
-
-<ul>
-  <li><strong>A living methods archive</strong> — every computational workflow you document becomes a permanent, citable, searchable record of how you did your science</li>
-  <li><strong>A lab-facing resource</strong> — new lab members can read your posts instead of asking you to re-explain the same pipeline</li>
-  <li><strong>A public portfolio</strong> — PIs, collaborators, and hiring committees can see your work before you send a CV</li>
-  <li><strong>Free advertising for your papers</strong> — a post explaining the methods behind a paper drives traffic to the paper itself</li>
-</ul>
-
-<p>The barrier to entry is exactly one <code class="language-plaintext highlighter-rouge">git push</code>. Since you are learning Git anyway, you might as well use it to build something visible.</p>
-
-<h2 id="please-see-my-website-and-blog-hosted-by-gith-hub-pages">Please see <a href="https://jojyjohn28.github.io/">my website</a> and <a href="https://jojyjohn28.github.io/blog/">blog</a> hosted by gith hub pages</h2>
-
-<h2 id="the-reproducibility-payoff">The reproducibility payoff</h2>
-
-<p>Learning Git takes about an afternoon. The payoff compounds for the rest of your career. Every analysis you push to GitHub with a clear commit history and a descriptive README is an analysis that is:</p>
-
-<ul>
-  <li><strong>Reproducible</strong> — anyone with the commit hash can reproduce your exact analysis</li>
-  <li><strong>Recoverable</strong> — every previous version is one <code class="language-plaintext highlighter-rouge">git checkout</code> away</li>
-  <li><strong>Collaborative</strong> — a lab member can pick up where you left off without a handover meeting</li>
-  <li><strong>Citable</strong> — GitHub repositories can be archived on Zenodo and given a DOI</li>
-</ul>
-
-<p>None of those things are true of <code class="language-plaintext highlighter-rouge">pipeline_final_ACTUAL_v3.sh</code> sitting in a folder that only you know about.</p>
-
-<hr />
-
-<p><em>Git documentation: <a href="https://git-scm.com/doc">git-scm.com/doc</a>. GitHub authentication: <a href="https://docs.github.com/en/authentication">docs.github.com/en/authentication</a>.</em></p>
-
-<p><img src="/assets/img/gti.png" alt="see_your_plot" /></p>]]></content><author><name></name></author><category term="git" /><category term="github" /><category term="version-control" /><category term="reproducibility" /><category term="collaboration" /><category term="bioinformatics" /><category term="lab-workflow" /><category term="SSH" /><category term="HTTPS" /><category term="beginners" /><category term="linux" /><summary type="html"><![CDATA[You spend weeks writing a pipeline. It works. You make a small change. It breaks. You cannot remember what you changed. This is the scenario Git was built to prevent. This post explains what Git and GitHub are, why they matter for bioinformatics specifically, and walks through a complete setup guide — installing Git, connecting to GitHub with HTTPS authentication, cloning lab repositories, and the daily push-pull-commit workflow. Includes a lab organization setup, common authentication problems, and an optional SSH configuration for password-free access.]]></summary></entry></feed>
+<p><img src="/assets/img/gen_sub.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="CAZymes" /><category term="dbCAN" /><category term="TCDB" /><category term="transporters" /><category term="free-living" /><category term="particle-associated" /><category term="estuarine" /><category term="metagenomics" /><category term="MAGs" /><category term="Prodigal" /><category term="DIAMOND" /><category term="SLURM" /><category term="genome-ecology" /><category term="comparative-genomics" /><category term="R" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[Free-living and particle-associated bacteria occupy fundamentally different ecological niches — and their genomes should reflect that. Particle-attached microbes need enzymes to degrade complex polymers and transporters to capture the breakdown products. Free-living cells in the open water column face a different challenge: competing for dilute dissolved organic matter with a small, streamlined genome. This post documents a genome-scale workflow for annotating CAZymes (carbohydrate-active enzymes) and TCDB transporters across 1,824 representative estuarine genomes, classifying each genome by its FL vs PA abundance pattern, and testing whether lifestyle predicts functional repertoire.]]></summary></entry></feed>
