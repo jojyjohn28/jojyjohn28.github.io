@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-09-21T08:32:40-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-09-21T08:32:40-04:00</published><updated>2026-09-21T08:32:40-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-06T10:25:51-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-06T10:25:51-04:00</published><updated>2026-10-06T10:25:51-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -766,7 +766,379 @@ run_dbcan <span class="nt">--tools</span> all ...
 
 <p>Last updated: February 2026</p>
 
-<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">BMTagger vs Bowtie2 for Human Read Removal — Day 2 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-bmtagger-bowtie2-day2/" rel="alternate" type="text/html" title="BMTagger vs Bowtie2 for Human Read Removal — Day 2 of 5" /><published>2026-09-21T00:00:00-04:00</published><updated>2026-09-21T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/bmtagger-vs-bowtie</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-bmtagger-bowtie2-day2/"><![CDATA[<p>🧬 <em>Day 2 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">BBMap and the Human Reference Problem: Why Your Database Choice Matters as Much as Your Tool — Day 3 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-bbmap-reference-day3/" rel="alternate" type="text/html" title="BBMap and the Human Reference Problem: Why Your Database Choice Matters as Much as Your Tool — Day 3 of 5" /><published>2026-10-06T00:00:00-04:00</published><updated>2026-10-06T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/bbmap</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-bbmap-reference-day3/"><![CDATA[<p>🧬 <em>Day 3 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em>
+<a href="/blog/human-contamination-removal-vaginal-metagenomics-day1/">Day 1</a> framed the benchmark. <a href="/blog/human-contamination-removal-bmtagger-bowtie2-day2/">Day 2</a> showed that two well-known alignment tools — BMTagger and Bowtie2 — produce noticeably different removal rates even when both use GRCh38 as the reference. The natural next question was: how much of that difference is the <strong>algorithm</strong>, and how much is the <strong>reference</strong>?</p>
+
+<p>Today’s post answers that directly. I ran BBMap twice — same samples, same mapping parameters, same tool — against two different human references: the standard GRCh38.p12 and a repeat-masked hg19. The only thing that changed between the two runs was the database.</p>
+
+<p>The result was a 3–5 percentage point difference in host removal across the high-host samples.</p>
+
+<p>This is the most important lesson in the entire benchmark series: <strong>the reference is part of the method</strong>. Writing “human reads were removed with BBMap” in a Methods section is not a complete description. Stating the reference genome, the masking strategy, and the key alignment parameters is what makes a host-removal workflow reproducible.</p>
+
+<hr />
+
+<h2 id="what-bbmap-is-and-why-it-is-used-here">What BBMap is and why it is used here</h2>
+
+<p><a href="https://sourceforge.net/projects/bbmap/">BBMap</a> is a splice-aware short- and long-read aligner developed at the Joint Genome Institute. For host removal it offers a useful combination: a k-mer-seeded hybrid mapping strategy that is highly sensitive, configurable alignment thresholds that let you tune the sensitivity/specificity balance, and output flags that directly separate unmapped (retained microbial) reads from mapped (human) reads in a single command.</p>
+
+<p>The key output flags are:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">outu1</code> / <code class="language-plaintext highlighter-rouge">outu2</code> — reads that did <strong>not</strong> map to the human reference → your retained microbial reads</li>
+  <li><code class="language-plaintext highlighter-rouge">outm1</code> / <code class="language-plaintext highlighter-rouge">outm2</code> — reads that <strong>did</strong> map → your discarded human reads</li>
+</ul>
+
+<p>This direct separation in a single pass is operationally cleaner than tools that require a post-processing extraction step.</p>
+
+<hr />
+
+<h2 id="the-benchmark-design-for-day-3">The benchmark design for Day 3</h2>
+
+<p>The same fastp-preprocessed paired-end reads used on Days 1 and 2 were passed to BBMap twice, with only the <code class="language-plaintext highlighter-rouge">path=</code> argument changed between runs:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Run</th>
+      <th>Reference</th>
+      <th>All other parameters</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BBMap GRCh38</td>
+      <td>GRCh38.p12 (standard)</td>
+      <td>Identical</td>
+    </tr>
+    <tr>
+      <td>BBMap masked hg19</td>
+      <td>Repeat-masked hg19</td>
+      <td>Identical</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This is the controlled comparison that isolates the reference effect from the algorithm effect. When the only variable between two runs is the database, any difference in output is a reference effect.</p>
+
+<hr />
+
+<h2 id="bbmap-full-command">BBMap: full command</h2>
+
+<p>Both runs used these parameters:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/bin/time <span class="nt">-v</span> <span class="nt">-o</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_bbmap_<span class="k">${</span><span class="nv">REF_NAME</span><span class="k">}</span>.time.txt <span class="se">\</span>
+  bbmap.sh <span class="se">\</span>
+    <span class="nv">minid</span><span class="o">=</span>0.95 <span class="se">\</span>
+    <span class="nv">maxindel</span><span class="o">=</span>3 <span class="se">\</span>
+    <span class="nv">bwr</span><span class="o">=</span>0.16 <span class="se">\</span>
+    <span class="nv">bw</span><span class="o">=</span>12 <span class="se">\</span>
+    quickmatch <span class="se">\</span>
+    fast <span class="se">\</span>
+    <span class="nv">minhits</span><span class="o">=</span>2 <span class="se">\</span>
+    <span class="nv">qtrim</span><span class="o">=</span>rl <span class="se">\</span>
+    <span class="nv">trimq</span><span class="o">=</span>10 <span class="se">\</span>
+    untrim <span class="se">\</span>
+    <span class="nv">path</span><span class="o">=</span><span class="k">${</span><span class="nv">REF_DIR</span><span class="k">}</span> <span class="se">\</span>
+    <span class="nv">in1</span><span class="o">=</span><span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R1.fastp.fastq.gz <span class="se">\</span>
+    <span class="nv">in2</span><span class="o">=</span><span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R2.fastp.fastq.gz <span class="se">\</span>
+    <span class="nv">outu1</span><span class="o">=</span><span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_nonhuman_R1.fastq.gz <span class="se">\</span>
+    <span class="nv">outu2</span><span class="o">=</span><span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_nonhuman_R2.fastq.gz <span class="se">\</span>
+    <span class="nv">outm1</span><span class="o">=</span><span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_human_R1.fastq.gz <span class="se">\</span>
+    <span class="nv">outm2</span><span class="o">=</span><span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_human_R2.fastq.gz <span class="se">\</span>
+    <span class="nv">threads</span><span class="o">=</span>16 <span class="se">\</span>
+    <span class="nt">-Xmx48g</span>
+</code></pre></div></div>
+
+<p><strong>Key parameters explained:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Value</th>
+      <th>What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">minid=0.95</code></td>
+      <td>95% identity threshold</td>
+      <td>Only classify a read as human if ≥95% identity to the reference — reduces false positives</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">maxindel=3</code></td>
+      <td>Max 3 indels</td>
+      <td>Appropriate for short reads; reduces misalignments</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bwr=0.16</code></td>
+      <td>Bandwidth ratio</td>
+      <td>Controls alignment band width; affects sensitivity/speed tradeoff</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">quickmatch</code></td>
+      <td>—</td>
+      <td>Uses faster approximate matching before full alignment</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">fast</code></td>
+      <td>—</td>
+      <td>Increases speed at slight sensitivity cost</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">minhits=2</code></td>
+      <td>Min 2 k-mer hits</td>
+      <td>A read must share at least 2 k-mer seeds with the reference before full alignment — reduces spurious mappings</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">qtrim=rl trimq=10</code></td>
+      <td>Quality trim both ends</td>
+      <td>Trim low-quality bases before alignment</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">untrim</code></td>
+      <td>—</td>
+      <td>Restore original read length in output after alignment</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Xmx48g</code></td>
+      <td>48 GB heap</td>
+      <td><strong>Critical</strong> — BBMap loads the reference into memory; undersizing this causes crashes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <code class="language-plaintext highlighter-rouge">-Xmx48g</code> flag deserves attention. BBMap stores the reference index in Java heap memory. For a full human genome reference, this requires tens of gigabytes. If you run BBMap without setting this appropriately for your reference size, it will fail mid-run with an out-of-memory error — sometimes after hours of processing. Always set this flag explicitly and allocate enough memory in your SLURM job request.</p>
+
+<h3 id="building-the-bbmap-reference-database">Building the BBMap reference database</h3>
+
+<p>For GRCh38:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bbmap.sh <span class="nv">ref</span><span class="o">=</span>GRCh38.p12.fa <span class="nv">path</span><span class="o">=</span>GRCh38_BBMap_DB <span class="nt">-Xmx48g</span>
+</code></pre></div></div>
+
+<p>For masked hg19:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bbmap.sh <span class="nv">ref</span><span class="o">=</span>hg19_masked.fa <span class="nv">path</span><span class="o">=</span>masked_hg19_DB <span class="nt">-Xmx48g</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">path=</code> directory stores the pre-built index. Building the index from a full human genome takes 30–60 minutes and substantial memory, but it only needs to be done once. Store the index in a shared project location so all samples use the same database.</p>
+
+<hr />
+
+<h2 id="what-masking-actually-does">What masking actually does</h2>
+
+<p>Before looking at the results, it is worth understanding what a masked reference is and why someone would use one.</p>
+
+<p>The human genome contains large amounts of:</p>
+
+<ul>
+  <li><strong>Repetitive sequence</strong> — transposable elements, satellite repeats, tandem repeats</li>
+  <li><strong>Low-complexity regions</strong> — homopolymers, simple sequence repeats</li>
+  <li><strong>Conserved sequence</strong> — regions similar to genes found in bacteria, archaea, or other eukaryotes</li>
+</ul>
+
+<p>When a short read maps to one of these regions, the alignment may be ambiguous: the read matches the human reference, but it might equally match a microbial sequence. An aggressive mapper will classify it as human and remove it. A more conservative approach would leave it unclassified.</p>
+
+<p>A repeat-masked reference replaces these problematic regions with <code class="language-plaintext highlighter-rouge">N</code> characters before indexing. A read that would have mapped to a repetitive or low-complexity human region can no longer map — because that region has been masked out. The mapper therefore retains reads it would otherwise have classified as human.</p>
+
+<p>The trade-off is explicit:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Standard reference (GRCh38):
+  Higher sensitivity for human reads
+  Risk: some ambiguous/microbial reads classified as human
+
+Masked reference:
+  Lower sensitivity for human reads in repetitive regions
+  Benefit: reduced false-positive removal of microbial reads
+</code></pre></div></div>
+
+<p>Neither is universally correct. The right choice depends on what matters most for your biological question.</p>
+
+<hr />
+
+<h2 id="benchmark-results">Benchmark results</h2>
+
+<p>Across the five samples:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sample</th>
+      <th>BBMap GRCh38</th>
+      <th>BBMap masked hg19</th>
+      <th>Difference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sample 1</td>
+      <td>89.85%</td>
+      <td>85.57%</td>
+      <td>−4.28%</td>
+    </tr>
+    <tr>
+      <td>Sample 2</td>
+      <td>93.26%</td>
+      <td>88.44%</td>
+      <td>−4.82%</td>
+    </tr>
+    <tr>
+      <td>Sample 3</td>
+      <td>21.25%</td>
+      <td>20.19%</td>
+      <td>−1.06%</td>
+    </tr>
+    <tr>
+      <td>Sample 4</td>
+      <td>9.83%</td>
+      <td>9.30%</td>
+      <td>−0.53%</td>
+    </tr>
+    <tr>
+      <td>Sample 5</td>
+      <td>82.19%</td>
+      <td>78.71%</td>
+      <td>−3.48%</td>
+    </tr>
+    <tr>
+      <td><strong>Mean</strong></td>
+      <td><strong>59.28%</strong></td>
+      <td><strong>56.44%</strong></td>
+      <td><strong>−2.84%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The masked reference consistently removed fewer reads. The difference is largest in high-host samples (Samples 1, 2, and 5) and smallest in the low-host sample (Sample 4) — which makes intuitive sense. In high-host samples, a larger fraction of reads are genuinely human, so the effect of masking out repetitive regions is proportionally larger.</p>
+
+<h3 id="the-tempting-but-wrong-conclusion">The tempting but wrong conclusion</h3>
+
+<p>Looking at this table, a natural reaction is:</p>
+
+<blockquote>
+  <p>“GRCh38 removes more reads, so it is better.”</p>
+</blockquote>
+
+<p>This is the wrong conclusion — or at least, it is an incomplete one. The additional reads removed by GRCh38 could represent:</p>
+
+<ol>
+  <li><strong>True human reads</strong> that the masked reference missed — in which case GRCh38 is more sensitive and the additional removals are correct</li>
+  <li><strong>Ambiguous reads</strong> that map to repetitive regions shared between human and microbial genomes — in which case both references are removing something real, but the GRCh38 run is removing more of the microbial co-mapping reads</li>
+  <li><strong>Microbial false positives</strong> — reads from vaginal community members that share short regions of sequence similarity with unmasked repetitive elements</li>
+</ol>
+
+<p>The removal percentage alone cannot distinguish between these three possibilities. That requires the read-level discordance analysis coming on Day 5, where I map discordant reads back to taxonomic databases and ask what organisms they actually come from.</p>
+
+<hr />
+
+<h2 id="computational-performance">Computational performance</h2>
+
+<p>Approximate mean performance across all five samples:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Configuration</th>
+      <th>Mean wall-clock runtime</th>
+      <th>Approximate peak RAM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BBMap GRCh38</td>
+      <td>~77 minutes</td>
+      <td>~45.5 GB</td>
+    </tr>
+    <tr>
+      <td>BBMap masked hg19</td>
+      <td>~56 minutes</td>
+      <td>~44.3 GB</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Two things stand out here.</strong></p>
+
+<p>First, BBMap required substantially more RAM than any other tool in this benchmark. BMTagger used ~8 GB, Bowtie2 used ~4 GB, and BBMap needed ~45 GB. This is the most practically significant limitation of BBMap for host removal: on a shared HPC cluster, allocating 45–50 GB per sample limits how many simultaneous jobs you can run on a given node. At scale — 100 samples — this becomes a scheduling bottleneck.</p>
+
+<p>Second, the masked reference was ~27% faster than GRCh38. Since the masked reference has fewer indexable positions (the N-masked regions are ignored), the mapper processes fewer potential alignment targets per read. Faster runtime with lower sensitivity in repetitive regions — a consistent package.</p>
+
+<hr />
+
+<h2 id="why-the-reference-is-part-of-the-method">Why the reference is part of the method</h2>
+
+<p>This benchmark illustrates a principle that applies well beyond host removal:</p>
+
+<blockquote>
+  <p><strong>The output of a bioinformatics tool is a joint product of the algorithm, the database, the parameters, and the preprocessing. Naming only the tool is an incomplete description.</strong></p>
+</blockquote>
+
+<p>For host removal specifically, a reproducible Methods section should include:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Tool name and version
+✓ Human reference genome (GRCh38, hg19, T2T, etc.)
+✓ Whether the reference was masked, and how
+✓ Key alignment parameters (identity threshold, minhits, etc.)
+✓ How paired-end reads were handled
+✓ How unmapped reads were retained
+</code></pre></div></div>
+
+<p>A Methods section that says only “Human reads were removed using BBMap” does not contain enough information for another researcher to reproduce the analysis — or to understand why their results differ if they attempt to.</p>
+
+<p>A complete description would read more like:</p>
+
+<blockquote>
+  <p><em>Human reads were removed using BBMap (v39.x) mapped against GRCh38.p12, requiring ≥95% nucleotide identity (minid=0.95) and a minimum of 2 k-mer seed hits (minhits=2). Unmapped read pairs were retained for downstream analysis.</em></p>
+</blockquote>
+
+<p>That is a reproducible methods statement.</p>
+
+<hr />
+
+<h2 id="a-framework-for-thinking-about-host-removal">A framework for thinking about host removal</h2>
+
+<p>The benchmark has now tested four configurations across three tools. A useful way to organize them:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Host-removal result =
+    f(algorithm, reference, parameters, preprocessing)
+
+To isolate algorithm effects:
+    → keep reference and parameters constant, vary the tool
+
+To isolate reference effects:
+    → keep algorithm and parameters constant, vary the database
+      (this is what Day 3 tested)
+
+To evaluate end-to-end performance:
+    → use each tool's recommended reference and parameters,
+      compare realistic production configurations
+</code></pre></div></div>
+
+<p>All three comparisons answer different questions. A benchmark that only runs each tool with its default settings on a single reference is measuring something, but it is conflating algorithm, reference, and parameter effects in a way that makes it hard to interpret differences.</p>
+
+<hr />
+
+<h2 id="what-comes-tomorrow">What comes tomorrow</h2>
+
+<p>Day 4 introduces Cleanifier — the newest method in this benchmark and the one that most changed my thinking about the tradeoffs involved.</p>
+
+<p>In the benchmark, Cleanifier produced host-removal percentages close to BMTagger while running in approximately 1.5 minutes per sample. That is not a typo. Where BBMap takes 77 minutes and requires 45 GB of RAM, Cleanifier finished the same sample in under two minutes.</p>
+
+<p>That result was interesting enough that I did not stop at the runtime table. I asked the more important question: what exactly are the reads that Cleanifier removes that the alignment-based tools miss — and vice versa? That read-level investigation became the most analytically interesting part of the benchmark, and it is the focus of Day 4.</p>
+
+<hr />
+
+<p><img src="/assets/img/bm_hc3.png" alt="See your plot" /></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td><strong>Previous posts:</strong> <a href="/blog/human-contamination-removal-vaginal-metagenomics-day1/">Day 1</a> — Benchmark design and why host removal matters</td>
+      <td><a href="/blog/human-contamination-removal-bmtagger-bowtie2-day2/">Day 2</a> — BMTagger vs Bowtie2.</td>
+    </tr>
+  </tbody>
+</table>]]></content><author><name></name></author><category term="metagenomics" /><category term="host-removal" /><category term="BBMap" /><category term="GRCh38" /><category term="masked-reference" /><category term="hg19" /><category term="human-contamination" /><category term="vaginal-microbiome" /><category term="benchmarking" /><category term="reference-database" /><category term="reproducibility" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[Day 3 of the host-read removal benchmark series. Today's lesson is one most bioinformatics tutorials skip: host-removal performance is determined not only by the algorithm but also by the human reference you map against. I ran BBMap twice — once against GRCh38.p12 and once against a repeat-masked hg19 reference — using identical mapping parameters. The same tool, the same sample, the same settings, a different database: removal rates shifted by 3–5 percentage points. This post explains why that happens, what masking actually does, and why your Methods section should always name the reference, not just the tool.]]></summary></entry><entry><title type="html">BMTagger vs Bowtie2 for Human Read Removal — Day 2 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-bmtagger-bowtie2-day2/" rel="alternate" type="text/html" title="BMTagger vs Bowtie2 for Human Read Removal — Day 2 of 5" /><published>2026-09-21T00:00:00-04:00</published><updated>2026-09-21T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/bmtagger-vs-bowtie</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-bmtagger-bowtie2-day2/"><![CDATA[<p>🧬 <em>Day 2 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
 
 <p><a href="https://jojyjohn28.github.io/blog/human-contamination-removal-vaginal-metagenomics-day1/">Yesterday</a>  I introduced the core challenge of host-read removal: the goal is not simply to remove as many human reads as possible, but to do so without discarding genuine microbial reads from the organisms you actually care about. In host associated metagenomics, where community composition can hinge on the relative abundance of a small number of taxa, that distinction is not academic — it determines whether your downstream biology is real or an artifact.</p>
 
@@ -3716,581 +4088,4 @@ CP_Spr01L08  →  L08 suffix = Free-Living (FL)
 
 <p><em>This analysis is still on going , so changes in the workflow can be expected.</em></p>
 
-<p><img src="/assets/img/life-style.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="free-living" /><category term="particle-associated" /><category term="genome-classification" /><category term="lifestyle" /><category term="metagenomics" /><category term="MAGs" /><category term="CAZymes" /><category term="transporters" /><category term="R" /><category term="Python" /><category term="pandas" /><category term="estuarine" /><category term="abundance" /><category term="log2-fold-change" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[You have 2,000 genomes retrieved from metagenomes that sampled two size fractions simultaneously — particle-associated (PA) and free-living (FL). The genomes do not come labelled. How do you know which lifestyle each one actually belongs to? This post walks through a complete genome lifestyle classification workflow: calculating mean abundance and prevalence across fractions, computing log2 fold-change, counting how often each genome dominates in matched PA-FL sample pairs, and then merging those lifestyle assignments with CAZyme and transporter counts using Python. Includes the R and Python scripts, a worked example from real data, and a methods paragraph ready for the manuscript.]]></summary></entry><entry><title type="html">Who Eats Particles and Who Lives Free? CAZyme and Transporter Analysis Across 1,824 Estuarine Genomes</title><link href="https://jojyjohn28.github.io/blog/fl-pa-cazyme-transporter-genome-analysis/" rel="alternate" type="text/html" title="Who Eats Particles and Who Lives Free? CAZyme and Transporter Analysis Across 1,824 Estuarine Genomes" /><published>2026-06-10T00:00:00-04:00</published><updated>2026-06-10T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/fl-pa-cazyme-transporter-genome-analysis</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/fl-pa-cazyme-transporter-genome-analysis/"><![CDATA[<p>A particle of organic matter sinking through an estuary is not just food — it is a habitat. Bacteria that colonize it can anchor themselves to a surface enriched in polymers, produce extracellular enzymes to break those polymers down, and capture the liberated sugars and amino acids through specialized transporters. The free-living bacterium suspended in the water column next to them faces a completely different challenge: the dissolved organic matter it depends on is dilute, chemically diverse, and constantly changing. These two lifestyles impose different selective pressures on genome content.</p>
-
-<p>This post documents an ongoing analysis of 1,824 representative estuarine genomes — annotating their carbohydrate-active enzymes (CAZymes) with dbCAN and their transport systems with the TCDB database, then linking those functional profiles to observed free-living (FL) vs particle-associated (PA) abundance patterns. The hypothesis is simple: PA-associated genomes should carry more and different CAZymes, more polymer-degrading machinery, and more specialized transport systems. FL-associated genomes should be more streamlined. Whether the data supports this is what the analysis will show.</p>
-
-<p>All scripts are available in the companion GitHub repository (link below) and will be updated as the analysis progresses.</p>
-
-<hr />
-
-<h2 id="background-why-cazymes-and-transporters">Background: why CAZymes and transporters?</h2>
-
-<h3 id="cazymes--carbohydrate-active-enzymes">CAZymes — carbohydrate-active enzymes</h3>
-
-<p>Carbohydrates are the most abundant class of organic molecules in marine and estuarine systems. Polysaccharides from phytoplankton cell walls, terrestrial plant material, and microbial biomass make up the bulk of particulate organic carbon. Bacteria that can degrade these polymers occupy a critical ecological position.</p>
-
-<p>CAZymes are classified by the <a href="http://www.cazy.org/">CAZy database</a> into functional families:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Class</th>
-      <th>Full name</th>
-      <th>What it does</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>GH</strong></td>
-      <td>Glycoside Hydrolases</td>
-      <td>Cleave glycosidic bonds — the primary polymer degraders</td>
-    </tr>
-    <tr>
-      <td><strong>GT</strong></td>
-      <td>Glycosyltransferases</td>
-      <td>Build glycosidic bonds — cell wall and EPS synthesis</td>
-    </tr>
-    <tr>
-      <td><strong>PL</strong></td>
-      <td>Polysaccharide Lyases</td>
-      <td>Cleave uronic acid-containing polymers (alginate, pectin)</td>
-    </tr>
-    <tr>
-      <td><strong>CE</strong></td>
-      <td>Carbohydrate Esterases</td>
-      <td>Remove ester substituents from polysaccharides</td>
-    </tr>
-    <tr>
-      <td><strong>AA</strong></td>
-      <td>Auxiliary Activities</td>
-      <td>Oxidative enzymes supporting degradation</td>
-    </tr>
-    <tr>
-      <td><strong>CBM</strong></td>
-      <td>Carbohydrate-Binding Modules</td>
-      <td>Bind substrate without catalysis — target enzymes to substrate</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>A genome with many GH and PL families is equipped for complex polymer degradation. A genome with few GH but many GT is more focused on cell wall maintenance than substrate acquisition.</p>
-
-<h3 id="transporters--tcdb">Transporters — TCDB</h3>
-
-<p>Once a polymer is cleaved into oligosaccharides or monomers, those substrates need to enter the cell. The <strong>Transporter Classification Database (TCDB)</strong> classifies membrane transport systems by mechanism and substrate range. In the context of FL vs PA ecology, three families are particularly informative:</p>
-
-<ul>
-  <li><strong>ABC transporters</strong> — ATP-powered, high-affinity uptake. Excellent for capturing substrates at low concentrations — the free-living niche</li>
-  <li><strong>TBDTs (TonB-dependent transporters)</strong> — outer membrane proteins specialized for capturing large oligosaccharides. Associated with particle degradation in marine bacteria</li>
-  <li><strong>MFS transporters</strong> — major facilitator superfamily; broad substrate range, important in both niches</li>
-</ul>
-
-<p>The prediction is that PA genomes will be enriched in TBDTs (polymer product capture) while FL genomes will be enriched in high-affinity ABC transporters for dissolved substrates.</p>
-
-<hr />
-
-<h2 id="dataset">Dataset</h2>
-
-<ul>
-  <li><strong>1,824 representative estuarine MAGs/genomes</strong> from Chesapeake Bay and Delaware Bay samples</li>
-  <li>Selected as the top 2,000 quality genomes from a larger assembly; 1,824 passed annotation quality checks</li>
-  <li><strong>30 samples</strong> (metagenomes) providing relative abundance data: G08 = Particle-Associated, L08 = Free-Living</li>
-</ul>
-
-<hr />
-
-<h2 id="project-structure">Project structure</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CAZyme_TCDB_genomes/
-├── 00_lists/
-│   ├── genomes_fasta.list          <span class="c"># one genome path per line</span>
-│   └── annotated_1824_genomes.txt  <span class="c"># genome IDs for abundance extraction</span>
-├── 01_proteins/                    <span class="c"># Prodigal protein predictions per genome</span>
-├── 02_dbcan/                       <span class="c"># dbCAN output per genome</span>
-├── 03_tcdb/                        <span class="c"># DIAMOND TCDB results per genome</span>
-└── scripts/                        <span class="c"># all analysis scripts (GitHub repo)</span>
-</code></pre></div></div>
-
-<p>Scripts repository: <a href="https://github.com/JojyJohn/Fl_vs_PA_genome_analysis">github.com/JojyJohn/Fl_vs_PA_genome_analysis</a> <em>(updating as analysis progresses)</em></p>
-
-<hr />
-
-<h2 id="step-1--build-the-genome-list">Step 1 — Build the genome list</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 00_make_genome_list.sh</span>
-find genomes_top2000/genomes_fasta <span class="nt">-name</span> <span class="s2">"*.fna"</span> <span class="se">\</span>
-  | <span class="nb">sort</span> <span class="o">&gt;</span> 00_lists/genomes_fasta.list
-
-<span class="nb">wc</span> <span class="nt">-l</span> 00_lists/genomes_fasta.list   <span class="c"># should be 1824</span>
-</code></pre></div></div>
-
-<p>A flat text file with one genome path per line is the input to every downstream SLURM array job. Line number <code class="language-plaintext highlighter-rouge">N</code> in the file corresponds to <code class="language-plaintext highlighter-rouge">SLURM_ARRAY_TASK_ID=N</code>, so the array index directly selects the genome to process.</p>
-
-<hr />
-
-<h2 id="step-2--protein-prediction-with-prodigal">Step 2 — Protein prediction with Prodigal</h2>
-
-<p>Before annotating functions, we need protein sequences. <a href="https://github.com/hyattpd/Prodigal">Prodigal</a> predicts protein-coding genes from assembled genome sequences using a dynamic programming model of prokaryotic gene structure.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 01_predict_proteins_prodigal.sh</span>
-<span class="c">#!/bin/bash</span>
-<span class="c">#SBATCH --job-name=prodigal_genomes</span>
-<span class="c">#SBATCH --cpus-per-task=4</span>
-<span class="c">#SBATCH --mem=20G</span>
-<span class="c">#SBATCH --time=04:00:00</span>
-<span class="c">#SBATCH --array=1-1824%50</span>
-
-module load prodigal
-
-<span class="nv">BASE</span><span class="o">=</span>/project/bcampb7/camplab/Jojy/Fl_vs_PA_2026_Jojy/CAZyme_TCDB_genomes
-<span class="nv">LIST</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/00_lists/genomes_fasta.list
-
-<span class="nv">GENOME</span><span class="o">=</span><span class="si">$(</span><span class="nb">sed</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">SLURM_ARRAY_TASK_ID</span><span class="k">}</span><span class="s2">p"</span> <span class="k">${</span><span class="nv">LIST</span><span class="k">}</span><span class="si">)</span>
-<span class="nv">GENOME_ID</span><span class="o">=</span><span class="si">$(</span><span class="nb">basename</span> <span class="k">${</span><span class="nv">GENOME</span><span class="k">}</span> .fna<span class="si">)</span>
-<span class="nv">OUTDIR</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/01_proteins/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>
-
-<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>
-
-prodigal <span class="se">\</span>
-  <span class="nt">-i</span> <span class="k">${</span><span class="nv">GENOME</span><span class="k">}</span> <span class="se">\</span>
-  <span class="nt">-a</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>.faa <span class="se">\ </span>  <span class="c"># amino acid sequences → input to dbCAN and DIAMOND</span>
-  <span class="nt">-d</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>.ffn <span class="se">\ </span>  <span class="c"># nucleotide sequences</span>
-  <span class="nt">-o</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>.gff <span class="se">\ </span>  <span class="c"># gene coordinates</span>
-  <span class="nt">-p</span> meta                            <span class="c"># metagenome mode</span>
-</code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">-p meta</code> is important: standard Prodigal mode trains a gene model on the input sequence, which works well for complete genomes but fails for short or fragmented MAG contigs. Metagenome mode uses pre-trained models and is appropriate for assemblies of any size or completeness.</p>
-
-<p>The <code class="language-plaintext highlighter-rouge">%50</code> in <code class="language-plaintext highlighter-rouge">--array=1-1824%50</code> limits simultaneous jobs to 50 — a cluster-polite way to process 1,824 genomes without monopolizing the queue.</p>
-
-<p><strong>Output per genome:</strong></p>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">.faa</code> — protein sequences (input to all downstream annotation)</li>
-  <li><code class="language-plaintext highlighter-rouge">.ffn</code> — nucleotide CDS sequences</li>
-  <li><code class="language-plaintext highlighter-rouge">.gff</code> — gene coordinates</li>
-</ul>
-
-<hr />
-
-<h2 id="step-3--cazyme-annotation-with-dbcan">Step 3 — CAZyme annotation with dbCAN</h2>
-
-<p><a href="https://bcb.unl.edu/dbCAN2/">dbCAN</a> annotates CAZymes using a curated HMM database built from the CAZy family definitions. We use the HMMER tool only (<code class="language-plaintext highlighter-rouge">--tools hmmer</code>) for speed and reliability.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 02_run_dbcan_genomes.sh</span>
-<span class="c">#!/bin/bash</span>
-<span class="c">#SBATCH --job-name=dbcan_genomes</span>
-<span class="c">#SBATCH --cpus-per-task=16</span>
-<span class="c">#SBATCH --mem=100G</span>
-<span class="c">#SBATCH --time=24:00:00</span>
-<span class="c">#SBATCH --array=1-1824%20</span>
-
-conda activate dbcan
-
-<span class="nv">BASE</span><span class="o">=</span>/project/bcampb7/camplab/Jojy/Fl_vs_PA_2026_Jojy/CAZyme_TCDB_genomes
-<span class="nv">DBCAN_DB</span><span class="o">=</span>/project/bcampb7/camplab/Jojy/Fl_vs_PA_2026_Jojy/databases/dbcan
-<span class="nv">LIST</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/00_lists/genomes_fasta.list
-
-<span class="nv">GENOME</span><span class="o">=</span><span class="si">$(</span><span class="nb">sed</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">SLURM_ARRAY_TASK_ID</span><span class="k">}</span><span class="s2">p"</span> <span class="k">${</span><span class="nv">LIST</span><span class="k">}</span><span class="si">)</span>
-<span class="nv">GENOME_ID</span><span class="o">=</span><span class="si">$(</span><span class="nb">basename</span> <span class="k">${</span><span class="nv">GENOME</span><span class="k">}</span> .fna<span class="si">)</span>
-
-<span class="nv">PROTEINS</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/01_proteins/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>.faa
-<span class="nv">OUTDIR</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/02_dbcan/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>
-
-<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>
-
-run_dbcan <span class="se">\</span>
-  <span class="k">${</span><span class="nv">PROTEINS</span><span class="k">}</span> protein <span class="se">\</span>
-  <span class="nt">--out_dir</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span> <span class="se">\</span>
-  <span class="nt">--db_dir</span> <span class="k">${</span><span class="nv">DBCAN_DB</span><span class="k">}</span> <span class="se">\</span>
-  <span class="nt">--dbCANFile</span> <span class="k">${</span><span class="nv">DBCAN_DB</span><span class="k">}</span>/dbCAN-HMMdb-V14.txt <span class="se">\</span>
-  <span class="nt">--hmm_cpu</span> 16 <span class="se">\</span>
-  <span class="nt">--tools</span> hmmer
-</code></pre></div></div>
-
-<p><strong>Key output file:</strong> <code class="language-plaintext highlighter-rouge">overview.txt</code> — one row per predicted CAZyme, with the protein ID, CAZyme family, and E-value. This is what gets concatenated across all 1,824 genomes in Step 6.</p>
-
-<hr />
-
-<h2 id="step-4--transporter-annotation-with-tcdb--diamond">Step 4 — Transporter annotation with TCDB + DIAMOND</h2>
-
-<p>The TCDB database does not have a dedicated annotation tool like dbCAN. Instead, we perform a sequence similarity search using <a href="https://github.com/bbuchfink/diamond">DIAMOND</a> <code class="language-plaintext highlighter-rouge">blastp</code> against the TCDB protein database.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 03_run_tcdb_genomes.sh</span>
-<span class="c">#!/bin/bash</span>
-<span class="c">#SBATCH --job-name=tcdb_genomes</span>
-<span class="c">#SBATCH --cpus-per-task=16</span>
-<span class="c">#SBATCH --mem=100G</span>
-<span class="c">#SBATCH --time=12:00:00</span>
-<span class="c">#SBATCH --array=1-1824%30</span>
-
-module load diamond
-
-<span class="nv">BASE</span><span class="o">=</span>/project/bcampb7/camplab/Jojy/Fl_vs_PA_2026_Jojy/CAZyme_TCDB_genomes
-<span class="nv">TCDB_DB</span><span class="o">=</span>/project/bcampb7/camplab/Jojy/Fl_vs_PA_2026_Jojy/databases/tcdb/tcdb
-<span class="nv">LIST</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/00_lists/genomes_fasta.list
-
-<span class="nv">GENOME</span><span class="o">=</span><span class="si">$(</span><span class="nb">sed</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">SLURM_ARRAY_TASK_ID</span><span class="k">}</span><span class="s2">p"</span> <span class="k">${</span><span class="nv">LIST</span><span class="k">}</span><span class="si">)</span>
-<span class="nv">GENOME_ID</span><span class="o">=</span><span class="si">$(</span><span class="nb">basename</span> <span class="k">${</span><span class="nv">GENOME</span><span class="k">}</span> .fna<span class="si">)</span>
-
-<span class="nv">PROTEINS</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/01_proteins/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>.faa
-<span class="nv">OUTDIR</span><span class="o">=</span><span class="k">${</span><span class="nv">BASE</span><span class="k">}</span>/03_tcdb
-
-<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>
-
-diamond blastp <span class="se">\</span>
-  <span class="nt">--db</span> <span class="k">${</span><span class="nv">TCDB_DB</span><span class="k">}</span> <span class="se">\</span>
-  <span class="nt">--query</span> <span class="k">${</span><span class="nv">PROTEINS</span><span class="k">}</span> <span class="se">\</span>
-  <span class="nt">--out</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">GENOME_ID</span><span class="k">}</span>_tcdb.tsv <span class="se">\</span>
-  <span class="nt">--outfmt</span> 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle <span class="se">\</span>
-  <span class="nt">--evalue</span> 1e-5 <span class="se">\</span>
-  <span class="nt">--query-cover</span> 50 <span class="se">\</span>
-  <span class="nt">--subject-cover</span> 50 <span class="se">\</span>
-  <span class="nt">--threads</span> 16 <span class="se">\</span>
-  <span class="nt">--sensitive</span>
-</code></pre></div></div>
-
-<p><strong>Filtering thresholds:</strong> <code class="language-plaintext highlighter-rouge">--evalue 1e-5</code>, <code class="language-plaintext highlighter-rouge">--query-cover 50</code>, <code class="language-plaintext highlighter-rouge">--subject-cover 50</code> are conservative but standard for functional annotation. The bidirectional coverage filter (query <em>and</em> subject must each have ≥50% coverage) reduces false positives from partial domain matches.</p>
-
-<p>The <code class="language-plaintext highlighter-rouge">stitle</code> field in the output captures the TCDB subject title, which encodes the transporter family classification. This is parsed downstream to assign each hit to a TCDB family class.</p>
-
-<hr />
-
-<h2 id="step-5--fl-vs-pa-genome-classification">Step 5 — FL vs PA genome classification</h2>
-
-<h3 id="extract-abundance-for-the-1824-annotated-genomes">Extract abundance for the 1,824 annotated genomes</h3>
-
-<p>The full abundance table covers 25,838 genomes. We extract only the 1,824 that passed annotation:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># extract_1824_abundance_and_classify.py
-</span><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
-
-<span class="c1"># Load full abundance table
-</span><span class="n">abund</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="sh">"</span><span class="s">genome_abundance_table_approachA.tsv</span><span class="sh">"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">"</span><span class="se">\t</span><span class="sh">"</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="c1"># Load the list of annotated genomes
-</span><span class="n">genome_list</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="sh">"</span><span class="s">00_lists/annotated_1824_genomes.txt</span><span class="sh">"</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="sh">"</span><span class="s">genome</span><span class="sh">"</span><span class="p">])</span>
-
-<span class="c1"># Filter to annotated genomes only
-</span><span class="n">abund_1824</span> <span class="o">=</span> <span class="n">abund</span><span class="p">.</span><span class="n">loc</span><span class="p">[</span><span class="n">abund</span><span class="p">.</span><span class="n">index</span><span class="p">.</span><span class="nf">isin</span><span class="p">(</span><span class="n">genome_list</span><span class="p">[</span><span class="sh">"</span><span class="s">genome</span><span class="sh">"</span><span class="p">])]</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Retained </span><span class="si">{</span><span class="nf">len</span><span class="p">(</span><span class="n">abund_1824</span><span class="p">)</span><span class="si">}</span><span class="s"> genomes from </span><span class="si">{</span><span class="nf">len</span><span class="p">(</span><span class="n">abund</span><span class="p">)</span><span class="si">}</span><span class="s"> total</span><span class="sh">"</span><span class="p">)</span>
-
-<span class="c1"># Identify PA and FL samples by naming convention
-</span><span class="n">pa_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">abund_1824</span><span class="p">.</span><span class="n">columns</span> <span class="k">if</span> <span class="sh">"</span><span class="s">G08</span><span class="sh">"</span> <span class="ow">in</span> <span class="n">c</span><span class="p">]</span>   <span class="c1"># Particle-associated
-</span><span class="n">fl_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">abund_1824</span><span class="p">.</span><span class="n">columns</span> <span class="k">if</span> <span class="sh">"</span><span class="s">L08</span><span class="sh">"</span> <span class="ow">in</span> <span class="n">c</span><span class="p">]</span>   <span class="c1"># Free-living
-</span>
-<span class="c1"># Calculate mean abundance per lifestyle
-</span><span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">mean_PA</span><span class="sh">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">abund_1824</span><span class="p">[</span><span class="n">pa_cols</span><span class="p">].</span><span class="nf">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">mean_FL</span><span class="sh">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">abund_1824</span><span class="p">[</span><span class="n">fl_cols</span><span class="p">].</span><span class="nf">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c1"># Log2 fold change: positive = PA-enriched, negative = FL-enriched
-</span><span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">log2_PA_FL</span><span class="sh">"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">(</span><span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">mean_PA</span><span class="sh">"</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">).</span><span class="nf">apply</span><span class="p">(</span><span class="n">pd</span><span class="p">.</span><span class="n">np</span><span class="p">.</span><span class="n">log2</span><span class="p">)</span> <span class="o">-</span>
-    <span class="p">(</span><span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">mean_FL</span><span class="sh">"</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">).</span><span class="nf">apply</span><span class="p">(</span><span class="n">pd</span><span class="p">.</span><span class="n">np</span><span class="p">.</span><span class="n">log2</span><span class="p">)</span>
-<span class="p">)</span>
-
-<span class="c1"># Classify
-</span><span class="k">def</span> <span class="nf">classify</span><span class="p">(</span><span class="n">log2fc</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">log2fc</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sh">"</span><span class="s">PA-associated</span><span class="sh">"</span>
-    <span class="k">elif</span> <span class="n">log2fc</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sh">"</span><span class="s">FL-associated</span><span class="sh">"</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sh">"</span><span class="s">Generalist</span><span class="sh">"</span>
-
-<span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">lifestyle</span><span class="sh">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">log2_PA_FL</span><span class="sh">"</span><span class="p">].</span><span class="nf">apply</span><span class="p">(</span><span class="n">classify</span><span class="p">)</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="n">abund_1824</span><span class="p">[</span><span class="sh">"</span><span class="s">lifestyle</span><span class="sh">"</span><span class="p">].</span><span class="nf">value_counts</span><span class="p">())</span>
-
-<span class="n">abund_1824</span><span class="p">[[</span><span class="sh">"</span><span class="s">mean_PA</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">mean_FL</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">log2_PA_FL</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">lifestyle</span><span class="sh">"</span><span class="p">]].</span><span class="nf">to_csv</span><span class="p">(</span>
-    <span class="sh">"</span><span class="s">genome_lifestyle_classification.tsv</span><span class="sh">"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">"</span><span class="se">\t</span><span class="sh">"</span>
-<span class="p">)</span>
-</code></pre></div></div>
-
-<h3 id="classification-results">Classification results</h3>
-
-<table>
-  <thead>
-    <tr>
-      <th>Lifestyle</th>
-      <th>Genomes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Generalist</td>
-      <td>1,233</td>
-    </tr>
-    <tr>
-      <td>PA-associated</td>
-      <td>337</td>
-    </tr>
-    <tr>
-      <td>FL-associated</td>
-      <td>254</td>
-    </tr>
-    <tr>
-      <td><strong>Total</strong></td>
-      <td><strong>1,824</strong></td>
-    </tr>
-  </tbody>
-</table>
-
-<p>The majority of genomes are generalists — consistent with the ecological reality that most estuarine bacteria are not strictly confined to one lifestyle. The 337 PA-associated and 254 FL-associated genomes are the primary targets for functional comparison.</p>
-
-<hr />
-
-<h2 id="step-6--concatenate-annotation-results">Step 6 — Concatenate annotation results</h2>
-
-<h3 id="dbcan">dbCAN</h3>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># concatenate_dbcan_tcdb.py (dbCAN section)
-</span><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
-<span class="kn">from</span> <span class="n">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-
-<span class="n">dbcan_dir</span> <span class="o">=</span> <span class="nc">Path</span><span class="p">(</span><span class="sh">"</span><span class="s">02_dbcan</span><span class="sh">"</span><span class="p">)</span>
-<span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">dbcan_dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="sh">"</span><span class="s">*/overview.txt</span><span class="sh">"</span><span class="p">):</span>
-    <span class="n">genome</span> <span class="o">=</span> <span class="nb">file</span><span class="p">.</span><span class="n">parent</span><span class="p">.</span><span class="n">name</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">"</span><span class="se">\t</span><span class="sh">"</span><span class="p">)</span>
-    <span class="n">df</span><span class="p">.</span><span class="nf">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="sh">"</span><span class="s">Genome</span><span class="sh">"</span><span class="p">,</span> <span class="n">genome</span><span class="p">)</span>
-    <span class="n">dfs</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-
-<span class="n">combined</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">combined</span><span class="p">.</span><span class="nf">to_csv</span><span class="p">(</span><span class="sh">"</span><span class="s">all_dbcan_overview_with_genome.tsv</span><span class="sh">"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">"</span><span class="se">\t</span><span class="sh">"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Total CAZyme annotations: </span><span class="si">{</span><span class="nf">len</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
-<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Genomes represented: </span><span class="si">{</span><span class="n">combined</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nf">nunique</span><span class="p">()</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
-</code></pre></div></div>
-
-<h3 id="tcdb">TCDB</h3>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># concatenate_dbcan_tcdb.py (TCDB section)
-</span><span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sh">"</span><span class="s">qseqid</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">sseqid</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">pident</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">length</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">mismatch</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">gapopen</span><span class="sh">"</span><span class="p">,</span>
-        <span class="sh">"</span><span class="s">qstart</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">qend</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">sstart</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">send</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">evalue</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">bitscore</span><span class="sh">"</span><span class="p">,</span><span class="sh">"</span><span class="s">stitle</span><span class="sh">"</span><span class="p">]</span>
-
-<span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="nc">Path</span><span class="p">(</span><span class="sh">"</span><span class="s">03_tcdb</span><span class="sh">"</span><span class="p">).</span><span class="nf">glob</span><span class="p">(</span><span class="sh">"</span><span class="s">*_tcdb.tsv</span><span class="sh">"</span><span class="p">):</span>
-    <span class="n">genome</span> <span class="o">=</span> <span class="nb">file</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sh">"</span><span class="s">_tcdb.tsv</span><span class="sh">"</span><span class="p">,</span> <span class="sh">""</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">"</span><span class="se">\t</span><span class="sh">"</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
-    <span class="n">df</span><span class="p">.</span><span class="nf">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="sh">"</span><span class="s">Genome</span><span class="sh">"</span><span class="p">,</span> <span class="n">genome</span><span class="p">)</span>
-    <span class="n">dfs</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-
-<span class="n">combined_tcdb</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">combined_tcdb</span><span class="p">.</span><span class="nf">to_csv</span><span class="p">(</span><span class="sh">"</span><span class="s">all_tcdb_with_genome.tsv</span><span class="sh">"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">"</span><span class="se">\t</span><span class="sh">"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="step-7--genome-size-calculation">Step 7 — Genome size calculation</h2>
-
-<p>Genome size is expected to differ between FL and PA lifestyles — streamlined FL genomes vs. larger, more metabolically flexible PA genomes. We calculate it directly from the FASTA files:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># calculate_genome_sizes.py
-</span><span class="kn">from</span> <span class="n">Bio</span> <span class="kn">import</span> <span class="n">SeqIO</span>
-<span class="kn">import</span> <span class="n">os</span>
-
-<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="k">for</span> <span class="n">fasta</span> <span class="ow">in</span> <span class="nf">open</span><span class="p">(</span><span class="sh">"</span><span class="s">00_lists/genomes_fasta.list</span><span class="sh">"</span><span class="p">):</span>
-    <span class="n">fasta</span> <span class="o">=</span> <span class="n">fasta</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
-    <span class="n">genome</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="nf">basename</span><span class="p">(</span><span class="n">fasta</span><span class="p">).</span><span class="nf">replace</span><span class="p">(</span><span class="sh">"</span><span class="s">.fna</span><span class="sh">"</span><span class="p">,</span> <span class="sh">""</span><span class="p">)</span>
-    <span class="n">total_bp</span><span class="p">,</span> <span class="n">contigs</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">SeqIO</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="n">fasta</span><span class="p">,</span> <span class="sh">"</span><span class="s">fasta</span><span class="sh">"</span><span class="p">):</span>
-        <span class="n">total_bp</span> <span class="o">+=</span> <span class="nf">len</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="n">seq</span><span class="p">)</span>
-        <span class="n">contigs</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="n">results</span><span class="p">.</span><span class="nf">append</span><span class="p">({</span>
-        <span class="sh">"</span><span class="s">Genome</span><span class="sh">"</span><span class="p">:</span> <span class="n">genome</span><span class="p">,</span>
-        <span class="sh">"</span><span class="s">Genome_size_bp</span><span class="sh">"</span><span class="p">:</span> <span class="n">total_bp</span><span class="p">,</span>
-        <span class="sh">"</span><span class="s">Genome_size_Mbp</span><span class="sh">"</span><span class="p">:</span> <span class="nf">round</span><span class="p">(</span><span class="n">total_bp</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-        <span class="sh">"</span><span class="s">Num_contigs</span><span class="sh">"</span><span class="p">:</span> <span class="n">contigs</span>
-    <span class="p">})</span>
-
-<span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
-<span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">).</span><span class="nf">to_csv</span><span class="p">(</span><span class="sh">"</span><span class="s">genome_sizes.tsv</span><span class="sh">"</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">"</span><span class="se">\t</span><span class="sh">"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="building-the-integrated-analysis-table">Building the integrated analysis table</h2>
-
-<p>The final merged table brings together everything:</p>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span><span class="w">
-
-</span><span class="n">lifestyle</span><span class="w">  </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read_tsv</span><span class="p">(</span><span class="s2">"genome_lifestyle_classification.tsv"</span><span class="p">)</span><span class="w">
-</span><span class="n">cazymes</span><span class="w">    </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read_tsv</span><span class="p">(</span><span class="s2">"all_dbcan_overview_with_genome.tsv"</span><span class="p">)</span><span class="w">
-</span><span class="n">tcdb</span><span class="w">       </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read_tsv</span><span class="p">(</span><span class="s2">"all_tcdb_with_genome.tsv"</span><span class="p">)</span><span class="w">
-</span><span class="n">sizes</span><span class="w">      </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read_tsv</span><span class="p">(</span><span class="s2">"genome_sizes.tsv"</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Summarize CAZyme counts per genome and family class</span><span class="w">
-</span><span class="n">cazyme_counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">cazymes</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">mutate</span><span class="p">(</span><span class="n">family_class</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str_extract</span><span class="p">(</span><span class="n">HMMER</span><span class="p">,</span><span class="w"> </span><span class="s2">"^[A-Z]+"</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">group_by</span><span class="p">(</span><span class="n">Genome</span><span class="p">,</span><span class="w"> </span><span class="n">family_class</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">summarise</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="p">(),</span><span class="w"> </span><span class="n">.groups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"drop"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">pivot_wider</span><span class="p">(</span><span class="n">names_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">family_class</span><span class="p">,</span><span class="w"> </span><span class="n">values_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">values_fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Summarize TCDB transporter family counts per genome</span><span class="w">
-</span><span class="n">tcdb_counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tcdb</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">mutate</span><span class="p">(</span><span class="w">
-    </span><span class="n">tcdb_class</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str_extract</span><span class="p">(</span><span class="n">sseqid</span><span class="p">,</span><span class="w"> </span><span class="s2">"^[0-9]+\\.[A-Z]"</span><span class="p">),</span><span class="w">
-    </span><span class="n">family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">case_when</span><span class="p">(</span><span class="w">
-      </span><span class="n">str_detect</span><span class="p">(</span><span class="n">stitle</span><span class="p">,</span><span class="w"> </span><span class="s2">"ABC"</span><span class="p">)</span><span class="w">  </span><span class="o">~</span><span class="w"> </span><span class="s2">"ABC"</span><span class="p">,</span><span class="w">
-      </span><span class="n">str_detect</span><span class="p">(</span><span class="n">stitle</span><span class="p">,</span><span class="w"> </span><span class="s2">"TBDT|TonB"</span><span class="p">)</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="s2">"TBDT"</span><span class="p">,</span><span class="w">
-      </span><span class="n">str_detect</span><span class="p">(</span><span class="n">stitle</span><span class="p">,</span><span class="w"> </span><span class="s2">"MFS"</span><span class="p">)</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="s2">"MFS"</span><span class="p">,</span><span class="w">
-      </span><span class="kc">TRUE</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="s2">"Other"</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-  </span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">group_by</span><span class="p">(</span><span class="n">Genome</span><span class="p">,</span><span class="w"> </span><span class="n">family</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">summarise</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="p">(),</span><span class="w"> </span><span class="n">.groups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"drop"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">pivot_wider</span><span class="p">(</span><span class="n">names_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">family</span><span class="p">,</span><span class="w"> </span><span class="n">values_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">values_fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Merge all tables</span><span class="w">
-</span><span class="n">integrated</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lifestyle</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">left_join</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span><span class="w">        </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Genome"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">left_join</span><span class="p">(</span><span class="n">cazyme_counts</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Genome"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">left_join</span><span class="p">(</span><span class="n">tcdb_counts</span><span class="p">,</span><span class="w">   </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Genome"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">mutate</span><span class="p">(</span><span class="n">across</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">is.numeric</span><span class="p">),</span><span class="w"> </span><span class="o">~</span><span class="n">replace_na</span><span class="p">(</span><span class="n">.x</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)))</span><span class="w">
-
-</span><span class="n">write_tsv</span><span class="p">(</span><span class="n">integrated</span><span class="p">,</span><span class="w"> </span><span class="s2">"genome_integrated_FL_PA_analysis.tsv"</span><span class="p">)</span><span class="w">
-</span></code></pre></div></div>
-
-<hr />
-
-<h2 id="planned-statistical-analyses">Planned statistical analyses</h2>
-
-<p>With the integrated table built, the comparisons of interest are:</p>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">rstatix</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Kruskal-Wallis test across three lifestyle groups</span><span class="w">
-</span><span class="c1"># (non-parametric, appropriate for skewed count distributions)</span><span class="w">
-</span><span class="n">kruskal_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">integrated</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">pivot_longer</span><span class="p">(</span><span class="w">
-    </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">Genome_size_Mbp</span><span class="p">,</span><span class="w"> </span><span class="n">GH</span><span class="p">,</span><span class="w"> </span><span class="n">GT</span><span class="p">,</span><span class="w"> </span><span class="n">PL</span><span class="p">,</span><span class="w"> </span><span class="n">CBM</span><span class="p">,</span><span class="w"> </span><span class="n">AA</span><span class="p">,</span><span class="w"> </span><span class="n">ABC</span><span class="p">,</span><span class="w"> </span><span class="n">TBDT</span><span class="p">,</span><span class="w"> </span><span class="n">MFS</span><span class="p">),</span><span class="w">
-    </span><span class="n">names_to</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">"metric"</span><span class="p">,</span><span class="w">
-    </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"value"</span><span class="w">
-  </span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">group_by</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">kruskal_test</span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">lifestyle</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Post-hoc pairwise Wilcoxon tests with BH correction</span><span class="w">
-</span><span class="n">pairwise_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">integrated</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">pivot_longer</span><span class="p">(</span><span class="w">
-    </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">Genome_size_Mbp</span><span class="p">,</span><span class="w"> </span><span class="n">GH</span><span class="p">,</span><span class="w"> </span><span class="n">GT</span><span class="p">,</span><span class="w"> </span><span class="n">PL</span><span class="p">,</span><span class="w"> </span><span class="n">CBM</span><span class="p">,</span><span class="w"> </span><span class="n">AA</span><span class="p">,</span><span class="w"> </span><span class="n">ABC</span><span class="p">,</span><span class="w"> </span><span class="n">TBDT</span><span class="p">,</span><span class="w"> </span><span class="n">MFS</span><span class="p">),</span><span class="w">
-    </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"metric"</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"value"</span><span class="w">
-  </span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">group_by</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">wilcox_test</span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">lifestyle</span><span class="p">,</span><span class="w"> </span><span class="n">p.adjust.method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"BH"</span><span class="p">)</span><span class="w">
-</span></code></pre></div></div>
-
-<hr />
-
-<h2 id="biological-hypotheses-being-tested">Biological hypotheses being tested</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Prediction</th>
-      <th>Direction</th>
-      <th>Metric</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>PA genomes have larger genomes</td>
-      <td>PA &gt; FL</td>
-      <td><code class="language-plaintext highlighter-rouge">Genome_size_Mbp</code></td>
-    </tr>
-    <tr>
-      <td>PA genomes encode more CAZymes</td>
-      <td>PA &gt; FL</td>
-      <td><code class="language-plaintext highlighter-rouge">GH</code>, <code class="language-plaintext highlighter-rouge">PL</code>, <code class="language-plaintext highlighter-rouge">CBM</code> total</td>
-    </tr>
-    <tr>
-      <td>PA genomes are richer in polymer lyases</td>
-      <td>PA &gt; FL</td>
-      <td><code class="language-plaintext highlighter-rouge">PL</code></td>
-    </tr>
-    <tr>
-      <td>PA genomes carry more TBDTs</td>
-      <td>PA &gt; FL</td>
-      <td><code class="language-plaintext highlighter-rouge">TBDT</code></td>
-    </tr>
-    <tr>
-      <td>FL genomes are enriched in ABC transporters</td>
-      <td>FL &gt; PA</td>
-      <td><code class="language-plaintext highlighter-rouge">ABC</code></td>
-    </tr>
-    <tr>
-      <td>Generalists intermediate</td>
-      <td>PA &gt; Gen &gt; FL</td>
-      <td>all metrics</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>These are directional hypotheses — the analysis will test whether the data supports them, and document cases where it does not. The most interesting results are likely to be the exceptions: PA genomes without CAZyme enrichment, FL genomes with unexpectedly complex transport systems. Those outliers tell the most nuanced story about lifestyle flexibility in estuarine microbiomes.</p>
-
-<hr />
-
-<h2 id="repository-and-reproducibility">Repository and reproducibility</h2>
-
-<p>Current scripts:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Script</th>
-      <th>Purpose</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">00_make_genome_list.sh</code></td>
-      <td>Generate sorted genome path list</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">01_predict_proteins_prodigal.sh</code></td>
-      <td>SLURM array: Prodigal protein prediction</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">02_run_dbcan_genomes.sh</code></td>
-      <td>SLURM array: dbCAN CAZyme annotation</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">03_run_tcdb_genomes.sh</code></td>
-      <td>SLURM array: DIAMOND TCDB transporter search</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">calculate_genome_sizes.py</code></td>
-      <td>Calculate genome size from FASTA</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">concatenate_dbcan_tcdb.py</code></td>
-      <td>Merge per-genome annotation outputs</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">extract_1824_abundance_and_classify.py</code></td>
-      <td>Extract abundance and classify FL/PA/Generalist</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">run_dbcan_hmm_genome.sh</code></td>
-      <td>Single-genome dbCAN wrapper for testing</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>The repository will be updated as downstream analyses (statistical comparisons, figures, integrated table generation) are completed.
-Please see <a href="https://github.com/jojyjohn28/Size_Fractionated_Microbiome_Analysis/tree/main/day07_genome_based_substrate">7th Day repo</a>**</p>
-
-<hr />
-
-<p><em>Analysis ongoing — results and scripts will be updated as the project progresses. dbCAN version: HMMdb-V14. TCDB accessed May 2026. Genome dataset: 1,824 representative MAGs from Chesapeake Bay and Delaware Bay estuarine metagenomes.</em></p>
-
-<p><img src="/assets/img/gen_sub.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="CAZymes" /><category term="dbCAN" /><category term="TCDB" /><category term="transporters" /><category term="free-living" /><category term="particle-associated" /><category term="estuarine" /><category term="metagenomics" /><category term="MAGs" /><category term="Prodigal" /><category term="DIAMOND" /><category term="SLURM" /><category term="genome-ecology" /><category term="comparative-genomics" /><category term="R" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[Free-living and particle-associated bacteria occupy fundamentally different ecological niches — and their genomes should reflect that. Particle-attached microbes need enzymes to degrade complex polymers and transporters to capture the breakdown products. Free-living cells in the open water column face a different challenge: competing for dilute dissolved organic matter with a small, streamlined genome. This post documents a genome-scale workflow for annotating CAZymes (carbohydrate-active enzymes) and TCDB transporters across 1,824 representative estuarine genomes, classifying each genome by its FL vs PA abundance pattern, and testing whether lifestyle predicts functional repertoire.]]></summary></entry></feed>
+<p><img src="/assets/img/life-style.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="free-living" /><category term="particle-associated" /><category term="genome-classification" /><category term="lifestyle" /><category term="metagenomics" /><category term="MAGs" /><category term="CAZymes" /><category term="transporters" /><category term="R" /><category term="Python" /><category term="pandas" /><category term="estuarine" /><category term="abundance" /><category term="log2-fold-change" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[You have 2,000 genomes retrieved from metagenomes that sampled two size fractions simultaneously — particle-associated (PA) and free-living (FL). The genomes do not come labelled. How do you know which lifestyle each one actually belongs to? This post walks through a complete genome lifestyle classification workflow: calculating mean abundance and prevalence across fractions, computing log2 fold-change, counting how often each genome dominates in matched PA-FL sample pairs, and then merging those lifestyle assignments with CAZyme and transporter counts using Python. Includes the R and Python scripts, a worked example from real data, and a methods paragraph ready for the manuscript.]]></summary></entry></feed>
