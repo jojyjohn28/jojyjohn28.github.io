@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-06T10:25:51-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-06T10:25:51-04:00</published><updated>2026-10-06T10:25:51-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-08T10:01:28-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-08T10:01:28-04:00</published><updated>2026-10-08T10:01:28-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -766,7 +766,388 @@ run_dbcan <span class="nt">--tools</span> all ...
 
 <p>Last updated: February 2026</p>
 
-<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">BBMap and the Human Reference Problem: Why Your Database Choice Matters as Much as Your Tool — Day 3 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-bbmap-reference-day3/" rel="alternate" type="text/html" title="BBMap and the Human Reference Problem: Why Your Database Choice Matters as Much as Your Tool — Day 3 of 5" /><published>2026-10-06T00:00:00-04:00</published><updated>2026-10-06T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/bbmap</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-bbmap-reference-day3/"><![CDATA[<p>🧬 <em>Day 3 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em>
+<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/" rel="alternate" type="text/html" title="Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5" /><published>2026-10-08T00:00:00-04:00</published><updated>2026-10-08T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/cleanifier-human-read-removal</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/"><![CDATA[<p>🧬 <em>Day 4 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+
+<p>The first three days of this benchmark established a clear pattern: BMTagger removed the most reads, Bowtie2 was faster and operationally simpler, and BBMap’s output shifted meaningfully depending on which human reference it used. Runtimes ranged from 50 to 77 minutes per sample. Memory requirements peaked at 45 GB for BBMap.</p>
+
+<p>Then I ran Cleanifier. The runtime for Sample 1 — a 41 million read-pair library — came back at 1 minute and 34 seconds.</p>
+
+<p>That number changed the conversation.</p>
+
+<p>A tool that runs in 1.5 minutes while removing roughly the same percentage of reads as a tool that takes 73 minutes is not a minor improvement. It changes what is computationally feasible at scale. But it also raises an important question that a runtime table cannot answer: <strong>if Cleanifier removes slightly more reads than the alignment-based tools, and does so much faster, are those extra removed reads actually human — or are some of them microbial?</strong></p>
+
+<p>This post documents the read-level analysis I ran to answer that question.</p>
+
+<hr />
+
+<h2 id="what-cleanifier-is">What Cleanifier is</h2>
+
+<p><a href="https://github.com/smaegol/cleanifier">Cleanifier</a> takes a fundamentally different approach from the alignment tools tested on Days 2 and 3. Rather than aligning reads to a single linear human reference genome, it uses a probabilistic index built from multiple human sequence sources:</p>
+
+<ul>
+  <li>T2T (Telomere-to-Telomere) complete assembly</li>
+  <li>Human pangenome sequences</li>
+  <li>HLA and variant sequences</li>
+  <li>cDNA-related content</li>
+</ul>
+
+<p>This broader representation of human genomic diversity is why Cleanifier can be both faster and potentially more sensitive than a single-reference aligner — it classifies reads probabilistically against a richer picture of human sequence space rather than performing base-by-base alignment against one reference.</p>
+
+<hr />
+
+<h2 id="running-cleanifier">Running Cleanifier</h2>
+
+<p>The command is clean and straightforward:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/bin/time <span class="nt">-v</span> <span class="nt">-o</span> <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_cleanifier.time.txt <span class="se">\</span>
+  cleanifier filter <span class="se">\</span>
+    <span class="nt">--index</span> human_probabilistic_index <span class="se">\</span>
+    <span class="nt">--fastq</span>  <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R1.fastp.fastq.gz <span class="se">\</span>
+    <span class="nt">--pairs</span>  <span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span>_R2.fastp.fastq.gz <span class="se">\</span>
+    <span class="nt">--prefix</span> <span class="k">${</span><span class="nv">OUTDIR</span><span class="k">}</span>/<span class="k">${</span><span class="nv">SAMPLE</span><span class="k">}</span> <span class="se">\</span>
+    <span class="nt">--threshold</span> 0.5 <span class="se">\</span>
+    <span class="nt">--compression</span> gz <span class="se">\</span>
+    <span class="nt">--compression-threads</span> 16
+</code></pre></div></div>
+
+<p><strong>Key parameters:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Value</th>
+      <th>What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--index</code></td>
+      <td>Probabilistic human index</td>
+      <td>The pre-built multi-source human index</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--threshold 0.5</code></td>
+      <td>Classification cutoff</td>
+      <td>Reads with probability ≥ 0.5 of being human are removed</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--compression gz</code></td>
+      <td>Output format</td>
+      <td>Writes gzipped FASTQ directly</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--compression-threads 16</code></td>
+      <td>Parallel compression</td>
+      <td>Compresses output while classifying — contributes to the runtime advantage</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <code class="language-plaintext highlighter-rouge">--threshold</code> value is worth noting. Lowering it (e.g., 0.3) would remove more reads but increase false-positive risk. Raising it (e.g., 0.7) would be more conservative. For this benchmark, 0.5 was used as the default.</p>
+
+<hr />
+
+<h2 id="removal-percentages-cleanifier-vs-bmtagger">Removal percentages: Cleanifier vs BMTagger</h2>
+
+<p>Across the five benchmark samples:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sample</th>
+      <th>BMTagger</th>
+      <th>Cleanifier</th>
+      <th>Difference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sample 1</td>
+      <td>94.88%</td>
+      <td>95.73%</td>
+      <td>+0.85%</td>
+    </tr>
+    <tr>
+      <td>Sample 2</td>
+      <td>97.91%</td>
+      <td>98.88%</td>
+      <td>+0.97%</td>
+    </tr>
+    <tr>
+      <td>Sample 3</td>
+      <td>22.51%</td>
+      <td>22.72%</td>
+      <td>+0.21%</td>
+    </tr>
+    <tr>
+      <td>Sample 4</td>
+      <td>10.52%</td>
+      <td>10.61%</td>
+      <td>+0.09%</td>
+    </tr>
+    <tr>
+      <td>Sample 5</td>
+      <td>86.07%</td>
+      <td>86.83%</td>
+      <td>+0.76%</td>
+    </tr>
+    <tr>
+      <td><strong>Mean</strong></td>
+      <td><strong>62.38%</strong></td>
+      <td><strong>62.95%</strong></td>
+      <td><strong>+0.57%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Cleanifier removed slightly more reads than BMTagger in every sample. The difference is largest in the high-host samples (Samples 1, 2, and 5) and negligible in the low-host sample (Sample 4) — a pattern consistent with what was seen when comparing BBMap references on Day 3.</p>
+
+<hr />
+
+<h2 id="the-runtime-comparison">The runtime comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tool</th>
+      <th>Mean wall-clock runtime</th>
+      <th>Approximate peak RAM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BMTagger</td>
+      <td>~73.2 min</td>
+      <td>~8.0 GB</td>
+    </tr>
+    <tr>
+      <td>Bowtie2</td>
+      <td>~50.7 min</td>
+      <td>~4.0 GB</td>
+    </tr>
+    <tr>
+      <td>BBMap GRCh38</td>
+      <td>~77.3 min</td>
+      <td>~45.5 GB</td>
+    </tr>
+    <tr>
+      <td>BBMap masked hg19</td>
+      <td>~55.6 min</td>
+      <td>~44.3 GB</td>
+    </tr>
+    <tr>
+      <td><strong>Cleanifier</strong></td>
+      <td><strong>~1.56 min</strong></td>
+      <td><strong>~6.6 GB</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The ~47× runtime advantage over BMTagger is real and reproducible across all five samples. At scale — 100 samples, 200 samples — this is the difference between a preprocessing step that takes a day of cluster time and one that takes under an hour.</p>
+
+<p>The memory requirement (~6.6 GB) is also well within the range of most HPC node configurations, making Cleanifier far easier to schedule than BBMap at scale.</p>
+
+<p>At this point, the obvious summary would be:</p>
+
+<blockquote>
+  <p><em>“Cleanifier removes at least as many human reads as BMTagger while running 47× faster — it is the clear winner.”</em></p>
+</blockquote>
+
+<p>But that conclusion skips the question that matters most for downstream biology: are those extra removed reads genuinely human, or does the probabilistic classification approach introduce microbial false positives?</p>
+
+<hr />
+
+<h2 id="read-level-discordance-analysis">Read-level discordance analysis</h2>
+
+<p>To answer this, I reconstructed read-pair-level classifications for BMTagger and Cleanifier across all five samples. Every original fastp-preprocessed read pair was assigned to one of four categories:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>BMTagger decision</th>
+      <th>Cleanifier decision</th>
+      <th>Category</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Remove</td>
+      <td>Remove</td>
+      <td><strong>Both remove</strong> — high confidence human</td>
+    </tr>
+    <tr>
+      <td>Remove</td>
+      <td>Keep</td>
+      <td><strong>BMTagger-only</strong> — BMTagger removes, Cleanifier retains</td>
+    </tr>
+    <tr>
+      <td>Keep</td>
+      <td>Remove</td>
+      <td><strong>Cleanifier-only</strong> — Cleanifier removes, BMTagger retains</td>
+    </tr>
+    <tr>
+      <td>Keep</td>
+      <td>Keep</td>
+      <td><strong>Neither removes</strong> — retained by both</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Across approximately 194.5 million total read pairs:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Read pairs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Both remove</td>
+      <td>126,193,291</td>
+    </tr>
+    <tr>
+      <td>BMTagger-only</td>
+      <td>204,189</td>
+    </tr>
+    <tr>
+      <td>Cleanifier-only</td>
+      <td>1,373,154</td>
+    </tr>
+    <tr>
+      <td>Neither removes</td>
+      <td>66,717,868</td>
+    </tr>
+    <tr>
+      <td><strong>Total discordant</strong></td>
+      <td><strong>1,577,343</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Overall disagreement: 1,577,343 / 194,488,502 ≈ 0.81%</strong></p>
+
+<p>The two methods agree on more than 99% of read pairs. But the disagreement is strikingly asymmetric: approximately <strong>87% of all discordant pairs are Cleanifier-only removals</strong> — reads that Cleanifier removes but BMTagger retains.</p>
+
+<p>The 1.37 million Cleanifier-only read pairs are the population that demands scrutiny.</p>
+
+<hr />
+
+<h2 id="what-are-the-cleanifier-only-reads">What are the Cleanifier-only reads?</h2>
+
+<p>The 1,373,154 Cleanifier-only read pairs correspond to 2,746,308 individual sequences. These were extracted and screened against <code class="language-plaintext highlighter-rouge">core_nt</code> to ask: do any of these reads have credible microbial matches?</p>
+
+<p>The initial screen identified <strong>79,202 sequences</strong> with candidate prokaryotic evidence — about 2.9% of the Cleanifier-only pool.</p>
+
+<p>That initial hit rate sounds concerning. But accepting the top bacterial hit would be too permissive. Human and microbial sequences can produce ambiguous matches for short alignments, conserved regions, low-complexity sequence, and regions where the reference database itself contains contamination. A credible false-positive claim requires competing evidence — the same read must produce stronger evidence for a microbial origin than for a eukaryotic one.</p>
+
+<p>After evaluating bacterial-candidate reads against competing prokaryotic and eukaryotic evidence:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Classification</th>
+      <th>Sequences</th>
+      <th>% of candidates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Confident bacterial</td>
+      <td>4,319</td>
+      <td>5.45%</td>
+    </tr>
+    <tr>
+      <td>Eukaryotic supported</td>
+      <td>59,536</td>
+      <td>75.17%</td>
+    </tr>
+    <tr>
+      <td>Ambiguous</td>
+      <td>13,209</td>
+      <td>16.68%</td>
+    </tr>
+    <tr>
+      <td>Prokaryotic short/weak</td>
+      <td>2,138</td>
+      <td>2.70%</td>
+    </tr>
+    <tr>
+      <td><strong>Total</strong></td>
+      <td><strong>79,202</strong></td>
+      <td><strong>100%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Three quarters of initial bacterial-looking candidates had better eukaryotic support when competing evidence was considered. That is reassuring — it suggests the initial hits were largely due to conserved or repetitive regions with eukaryotic origins, not genuine microbial contamination of the removed pool.</p>
+
+<p>The 4,319 confident bacterial sequences represent the true false-positive concern.</p>
+
+<hr />
+
+<h2 id="how-large-is-the-confirmed-bacterial-fraction">How large is the confirmed bacterial fraction?</h2>
+
+<p>Relative to all Cleanifier-only individual sequences:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>4,319 / 2,746,308 ≈ 0.157%
+</code></pre></div></div>
+
+<p>Numerically, this is very small. Cleanifier is not indiscriminately removing large numbers of microbial reads.</p>
+
+<p>However — and this matters — the biologically important question is not only about percentages. It is about which organisms those reads come from, and whether their removal affects downstream community interpretation.</p>
+
+<p>Among the confirmed bacterial sequences, several reads matched organisms relevant to host-associated microbial communities, including organisms in genera that can be biologically important in the sample type being studied. The strongest single-organism signal within the confirmed bacterial set came from one taxon in particular — appearing across multiple benchmark samples.</p>
+
+<p>931 confirmed sequences mapped to this organism across three samples. As an absolute number, that is tiny relative to 194 million total read pairs. But if this organism is a biologically important community member in your study system — one that you are specifically trying to quantify or compare between groups — its systematic underrepresentation is not a rounding error. It is a bias that compounds across samples.</p>
+
+<hr />
+
+<h2 id="the-reciprocal-control-bmtagger-only-reads">The reciprocal control: BMTagger-only reads</h2>
+
+<p>At this point it would be tempting to declare Cleanifier the tool with the specificity problem and BMTagger the cleaner baseline. But this comparison only holds if BMTagger’s exclusive removals are genuinely human.</p>
+
+<p>BMTagger exclusively removed <strong>204,189 read pairs</strong> — reads that Cleanifier retains but BMTagger discards. These 408,378 individual sequences require the same screening framework:</p>
+
+<ul>
+  <li>How many produce confident bacterial hits?</li>
+  <li>How many have better eukaryotic support?</li>
+  <li>Are any of them from biologically important host-associated organisms?</li>
+</ul>
+
+<p>The reciprocal control is essential before any specificity claim can be made. If BMTagger-only reads also contain a small confirmed microbial population — even a smaller one — then both tools have measurable false-positive rates, and the comparison shifts from “which tool is specific?” to “which tool has an acceptable false-positive rate given its other advantages?”</p>
+
+<p>That analysis is the last piece of the benchmark, and it forms the core of tomorrow’s Day 5 summary.</p>
+
+<hr />
+
+<h2 id="what-day-4-established">What Day 4 established</h2>
+
+<p>Cleanifier’s runtime advantage is genuine and large. At ~47× faster than BMTagger with comparable removal rates and a memory footprint that fits comfortably on standard HPC nodes, it changes what is feasible for preprocessing large cohorts.</p>
+
+<p>The false-positive analysis reveals something more nuanced than a simple pass/fail verdict. The vast majority of Cleanifier-only reads have eukaryotic support or are ambiguous — not microbial. A small but confirmed bacterial population does exist among Cleanifier’s exclusive removals. Whether that population represents an acceptable tradeoff depends on the study system, the organisms of interest, and the sequencing depth available.</p>
+
+<p>The honest framing is:</p>
+
+<blockquote>
+  <p><strong>A ~0.16% confirmed bacterial signal among Cleanifier-exclusive removals may be negligible for most applications — but it is not zero, and it is not evenly distributed across all organisms.</strong></p>
+</blockquote>
+
+<p>That distinction is what the Day 5 comparison table will need to make explicit.</p>
+
+<hr />
+
+<h2 id="what-comes-tomorrow">What comes tomorrow</h2>
+
+<p>Day 5 brings the complete comparison: all five methods side by side, with removal rates, runtime, RAM, read-level agreement, the reciprocal BMTagger-only screen, and a practical recommendation for researchers working with high-host-content metagenomes.</p>
+
+<p>The final question is not “which tool removed the highest percentage?” It is which tool gives the best practical balance across all the dimensions that actually matter for reproducible, biologically interpretable research.</p>
+
+<hr />
+
+<p><img src="/assets/img/cl_hc4.pmg" alt="See your plot" /></p>]]></content><author><name></name></author><category term="metagenomics" /><category term="host-removal" /><category term="Cleanifier" /><category term="BMTagger" /><category term="false-positives" /><category term="human-contamination" /><category term="benchmarking" /><category term="read-discordance" /><category term="microbial-specificity" /><category term="reproducibility" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[Day 4 of the host-read removal benchmark. Cleanifier finished each sample in under two minutes — roughly 47 times faster than BMTagger — while removing a nearly identical percentage of reads. But a faster tool that removes more reads raises an important question: are those extra removed reads actually human? This post documents a read-level discordance analysis comparing Cleanifier and BMTagger on approximately 194 million read pairs, screening the reads each tool removes exclusively against a nucleotide database to ask whether any confirmed microbial signal is present among them.]]></summary></entry><entry><title type="html">BBMap and the Human Reference Problem: Why Your Database Choice Matters as Much as Your Tool — Day 3 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-bbmap-reference-day3/" rel="alternate" type="text/html" title="BBMap and the Human Reference Problem: Why Your Database Choice Matters as Much as Your Tool — Day 3 of 5" /><published>2026-10-06T00:00:00-04:00</published><updated>2026-10-06T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/bbmap</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-bbmap-reference-day3/"><![CDATA[<p>🧬 <em>Day 3 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em>
 <a href="/blog/human-contamination-removal-vaginal-metagenomics-day1/">Day 1</a> framed the benchmark. <a href="/blog/human-contamination-removal-bmtagger-bowtie2-day2/">Day 2</a> showed that two well-known alignment tools — BMTagger and Bowtie2 — produce noticeably different removal rates even when both use GRCh38 as the reference. The natural next question was: how much of that difference is the <strong>algorithm</strong>, and how much is the <strong>reference</strong>?</p>
 
 <p>Today’s post answers that directly. I ran BBMap twice — same samples, same mapping parameters, same tool — against two different human references: the standard GRCh38.p12 and a repeat-masked hg19. The only thing that changed between the two runs was the database.</p>
@@ -3720,372 +4101,4 @@ GCA_000153745
 
 <p><em>Posted as Day 94 of Daily Bioinformatics from Jojy’s Desk.</em></p>
 
-<p><img src="/assets/img/excel.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="excel" /><category term="spreadsheets" /><category term="bioinformatics" /><category term="metadata" /><category term="pivot-tables" /><category term="VLOOKUP" /><category term="XLOOKUP" /><category term="COUNTIF" /><category term="MAGs" /><category term="taxonomy" /><category term="differential-abundance" /><category term="data-wrangling" /><category term="beginners" /><category term="productivity" /><summary type="html"><![CDATA[Let's be honest. Every bioinformatician uses Excel. Metadata lives in Excel. Collaborators send Excel files. You do a quick check in Excel before you write the R code. This post covers the Excel skills I reach for every single day — filters, freeze panes, conditional formatting, pivot tables, VLOOKUP, XLOOKUP, COUNTIF, SUMIF, text functions — with real examples from MAG tables, taxonomy summaries, differential abundance results, and sample metadata. Plus: an honest answer to Excel vs R vs Python, because pretending you never use spreadsheets is just not true.]]></summary></entry><entry><title type="html">Free-living or Particle-attached? Classifying 2,000 Estuarine Genomes by Lifestyle from Paired Metagenomes</title><link href="https://jojyjohn28.github.io/blog/fl-pa-genome-lifestyle-classification/" rel="alternate" type="text/html" title="Free-living or Particle-attached? Classifying 2,000 Estuarine Genomes by Lifestyle from Paired Metagenomes" /><published>2026-06-12T00:00:00-04:00</published><updated>2026-06-12T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/fl-Classifying-Genomes-by-Lifestyle</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/fl-pa-genome-lifestyle-classification/"><![CDATA[<p>You ran a metagenome from a size-fractionated water sample. The particle-associated (PA) fraction — everything retained on a larger filter — went into one library. The free-living (FL) fraction — the smaller cells that passed through — went into another. You assembled, binned, and dereplicated everything into about 2,000 representative genomes. Now you want to know: which of these genomes actually belongs to the particle-associated lifestyle, and which is free-living?</p>
-
-<p>The genomes themselves do not carry a label. A genome binned from a PA library might be from an organism that is genuinely PA-adapted — anchored to particles, producing extracellular enzymes — or it might just be a free-living organism that happened to be captured in the PA fraction that day. The way to separate these is not to look at where the genome came from during assembly. It is to look at how the genome’s <em>abundance</em> behaves across many samples: does it consistently show up at higher levels in PA fractions, or FL fractions, or does it not care?</p>
-
-<p>This post documents exactly that classification workflow, applied to a dataset of 2,000 genomes across 36 paired PA/FL metagenomes from Chesapeake and Delaware Bay. The output — a lifestyle assignment for each genome — feeds directly into downstream functional comparisons of genome size, CAZyme content, and transporter repertoires.</p>
-
-<p>All scripts are in the <a href="https://github.com/jojyjohn28/Size_Fractionated_Microbiome_Analysis/tree/main/day08_lifestyle_classification">companion repository</a></p>
-
-<hr />
-
-<h2 id="the-core-logic">The core logic</h2>
-
-<p>For each genome, we have an abundance value in every sample. Samples come in matched PA-FL pairs: <code class="language-plaintext highlighter-rouge">CP_Spr01G08</code> (PA) and <code class="language-plaintext highlighter-rouge">CP_Spr01L08</code> (FL) are the two fractions of the same water sample collected at the same time and location.</p>
-
-<p>The classification uses three complementary metrics:</p>
-
-<p><strong>1. Mean abundance comparison</strong> — Is the average abundance across all PA samples higher than the average across all FL samples?</p>
-
-<p><strong>2. Log₂ fold-change</strong> — How large is the difference? log₂(mean_PA / mean_FL) &gt; 0 means PA-biased; &lt; 0 means FL-biased.</p>
-
-<p><strong>3. Paired dominance count</strong> — In how many <em>matched pairs</em> was this genome more abundant in the PA sample than in the FL sample from the same collection event? This accounts for the temporal and spatial structure of the sampling design.</p>
-
-<p>Together these metrics tell you not just <em>which</em> fraction a genome prefers on average, but <em>how consistently</em> it expresses that preference across independent sampling events.</p>
-
-<hr />
-
-<h2 id="sample-naming-convention">Sample naming convention</h2>
-
-<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CP_Spr01G08  →  G08 suffix = Particle-Associated (PA)
-CP_Spr01L08  →  L08 suffix = Free-Living (FL)
-</code></pre></div></div>
-
-<p>The base before the suffix (<code class="language-plaintext highlighter-rouge">CP_Spr01</code>) identifies the matched pair. This base-name extraction is how the pairing is done programmatically.</p>
-
-<hr />
-
-<h2 id="input-file">Input file</h2>
-
-<p>The abundance table is an Excel file with:</p>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">Genome</code> — genome identifier (matching the genome FASTA filename without extension)</li>
-  <li><code class="language-plaintext highlighter-rouge">Genome_size_Mbp</code> — total genome size in megabases</li>
-  <li><code class="language-plaintext highlighter-rouge">Num_contigs</code> — number of contigs in the assembly</li>
-  <li>One column per sample — relative abundance values from CoverM</li>
-</ul>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>| Genome           | Genome_size_Mbp | Num_contigs | CP_Spr01G08 | CP_Spr01L08 | ... |
-|------------------|-----------------|-------------|-------------|-------------|-----|
-| GB_GCA_000153445 | 2.14            | 32          | 0.0012      | 0.0001      | ... |
-| GB_GCA_000153745 | 1.81            | 19          | 0.0001      | 0.0045      | ... |
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="r-workflow">R workflow</h2>
-
-<h3 id="libraries">Libraries</h3>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">readxl</span><span class="p">)</span><span class="w">
-</span><span class="n">library</span><span class="p">(</span><span class="n">dplyr</span><span class="p">)</span><span class="w">
-</span><span class="n">library</span><span class="p">(</span><span class="n">openxlsx</span><span class="p">)</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="step-1--read-the-abundance-table">Step 1 — Read the abundance table</h3>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read_excel</span><span class="p">(</span><span class="w">
-  </span><span class="s2">"Abd_updated_new.xlsx"</span><span class="w">
-</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Identify PA and FL sample columns by suffix</span><span class="w">
-</span><span class="n">pa_cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">grep</span><span class="p">(</span><span class="s2">"G08$"</span><span class="p">,</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">df</span><span class="p">),</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
-</span><span class="n">fl_cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">grep</span><span class="p">(</span><span class="s2">"L08$"</span><span class="p">,</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">df</span><span class="p">),</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
-
-</span><span class="n">cat</span><span class="p">(</span><span class="s2">"PA columns:"</span><span class="p">,</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="n">pa_cols</span><span class="p">),</span><span class="w"> </span><span class="s2">"\n"</span><span class="p">)</span><span class="w">   </span><span class="c1"># 19</span><span class="w">
-</span><span class="n">cat</span><span class="p">(</span><span class="s2">"FL columns:"</span><span class="p">,</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="n">fl_cols</span><span class="p">),</span><span class="w"> </span><span class="s2">"\n"</span><span class="p">)</span><span class="w">   </span><span class="c1"># 17</span><span class="w">
-</span></code></pre></div></div>
-
-<p>The dataset has 19 PA columns and 17 FL columns. This is common: not every PA sample has a surviving FL library and vice versa. The unequal column count does not prevent the mean calculation — <code class="language-plaintext highlighter-rouge">rowMeans()</code> handles it cleanly — but it does mean that only 17 matched pairs exist for the paired dominance analysis.</p>
-
-<h3 id="step-2--mean-abundance-prevalence-and-log-fold-change">Step 2 — Mean abundance, prevalence, and log₂ fold-change</h3>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">mutate</span><span class="p">(</span><span class="w">
-    </span><span class="c1"># Mean abundance across all samples in each fraction</span><span class="w">
-    </span><span class="n">Mean_PA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowMeans</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">all_of</span><span class="p">(</span><span class="n">pa_cols</span><span class="p">)),</span><span class="w"> </span><span class="n">na.rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">),</span><span class="w">
-    </span><span class="n">Mean_FL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowMeans</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">all_of</span><span class="p">(</span><span class="n">fl_cols</span><span class="p">)),</span><span class="w"> </span><span class="n">na.rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">),</span><span class="w">
-
-    </span><span class="c1"># Prevalence: how many samples was this genome detected in?</span><span class="w">
-    </span><span class="n">Prev_PA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowSums</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">all_of</span><span class="p">(</span><span class="n">pa_cols</span><span class="p">))</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="n">na.rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">),</span><span class="w">
-    </span><span class="n">Prev_FL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowSums</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">all_of</span><span class="p">(</span><span class="n">fl_cols</span><span class="p">))</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="n">na.rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">),</span><span class="w">
-
-    </span><span class="n">Total_Prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Prev_PA</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Prev_FL</span><span class="p">,</span><span class="w">
-
-    </span><span class="c1"># Log2 fold-change: positive = PA-biased, negative = FL-biased</span><span class="w">
-    </span><span class="c1"># Pseudocount prevents log(0)</span><span class="w">
-    </span><span class="n">log2_PA_FL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log2</span><span class="p">((</span><span class="n">Mean_PA</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1e-9</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">Mean_FL</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1e-9</span><span class="p">))</span><span class="w">
-  </span><span class="p">)</span><span class="w">
-</span></code></pre></div></div>
-
-<p>The pseudocount <code class="language-plaintext highlighter-rouge">1e-9</code> is small enough to be negligible for genomes with real signal, but prevents <code class="language-plaintext highlighter-rouge">log(0/0) = NaN</code> for genomes that were absent from one fraction entirely.</p>
-
-<p><strong>Important distinction:</strong> <code class="language-plaintext highlighter-rouge">Prev_PA = 19</code> does not mean the genome was more abundant in PA than FL in 19 samples. It means it was <em>detected</em> (abundance &gt; 0) in 19 PA samples. A genome could be detected in all PA samples but still have higher FL abundance in most of them. The paired dominance count in Step 4 is what captures actual directional dominance.</p>
-
-<h3 id="step-3--lifestyle-classification">Step 3 — Lifestyle classification</h3>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">mutate</span><span class="p">(</span><span class="w">
-    </span><span class="n">Lifestyle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">case_when</span><span class="p">(</span><span class="w">
-      </span><span class="n">Mean_PA</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mean_FL</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="s2">"PA_associated"</span><span class="p">,</span><span class="w">
-      </span><span class="n">Mean_FL</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mean_PA</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="s2">"FL_associated"</span><span class="p">,</span><span class="w">
-      </span><span class="kc">TRUE</span><span class="w">              </span><span class="o">~</span><span class="w"> </span><span class="s2">"Equal"</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-  </span><span class="p">)</span><span class="w">
-
-</span><span class="n">table</span><span class="p">(</span><span class="n">df2</span><span class="o">$</span><span class="n">Lifestyle</span><span class="p">)</span><span class="w">
-</span></code></pre></div></div>
-
-<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FL_associated   PA_associated
-          233             767
-</code></pre></div></div>
-
-<p>767 genomes show higher average abundance in the PA fraction; 233 show higher average abundance in FL. The PA-heavy skew reflects the composition of the sampling design — PA filters capture a larger and more diverse biomass than the FL fraction in most estuarine environments.</p>
-
-<h3 id="step-4--paired-dominance-analysis">Step 4 — Paired dominance analysis</h3>
-
-<p>This step asks: <em>in matched sample pairs, how consistently does this genome favour one fraction?</em></p>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Match PA and FL columns by base name</span><span class="w">
-</span><span class="n">pa_base</span><span class="w">     </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sub</span><span class="p">(</span><span class="s2">"G08$"</span><span class="p">,</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="n">pa_cols</span><span class="p">)</span><span class="w">
-</span><span class="n">fl_base</span><span class="w">     </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sub</span><span class="p">(</span><span class="s2">"L08$"</span><span class="p">,</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="n">fl_cols</span><span class="p">)</span><span class="w">
-</span><span class="n">common_base</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">intersect</span><span class="p">(</span><span class="n">pa_base</span><span class="p">,</span><span class="w"> </span><span class="n">fl_base</span><span class="p">)</span><span class="w">
-
-</span><span class="n">cat</span><span class="p">(</span><span class="s2">"Matched pairs:"</span><span class="p">,</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="n">common_base</span><span class="p">),</span><span class="w"> </span><span class="s2">"\n"</span><span class="p">)</span><span class="w">   </span><span class="c1"># 17</span><span class="w">
-
-</span><span class="n">matched_pa_cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">paste0</span><span class="p">(</span><span class="n">common_base</span><span class="p">,</span><span class="w"> </span><span class="s2">"G08"</span><span class="p">)</span><span class="w">
-</span><span class="n">matched_fl_cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">paste0</span><span class="p">(</span><span class="n">common_base</span><span class="p">,</span><span class="w"> </span><span class="s2">"L08"</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Initialise counters</span><span class="w">
-</span><span class="n">df2</span><span class="o">$</span><span class="n">PA_Higher_Count</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0</span><span class="w">
-</span><span class="n">df2</span><span class="o">$</span><span class="n">FL_Higher_Count</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0</span><span class="w">
-</span><span class="n">df2</span><span class="o">$</span><span class="n">Equal_Count</span><span class="w">     </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0</span><span class="w">
-
-</span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nf">seq_along</span><span class="p">(</span><span class="n">matched_pa_cols</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
-  </span><span class="n">pa_vec</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="p">[[</span><span class="n">matched_pa_cols</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span><span class="w">
-  </span><span class="n">fl_vec</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="p">[[</span><span class="n">matched_fl_cols</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span><span class="w">
-
-  </span><span class="n">df2</span><span class="o">$</span><span class="n">PA_Higher_Count</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">PA_Higher_Count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">as.integer</span><span class="p">(</span><span class="n">pa_vec</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">fl_vec</span><span class="p">)</span><span class="w">
-  </span><span class="n">df2</span><span class="o">$</span><span class="n">FL_Higher_Count</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">FL_Higher_Count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">as.integer</span><span class="p">(</span><span class="n">fl_vec</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">pa_vec</span><span class="p">)</span><span class="w">
-  </span><span class="n">df2</span><span class="o">$</span><span class="n">Equal_Count</span><span class="w">     </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">Equal_Count</span><span class="w">     </span><span class="o">+</span><span class="w"> </span><span class="nf">as.integer</span><span class="p">(</span><span class="n">pa_vec</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">fl_vec</span><span class="p">)</span><span class="w">
-</span><span class="p">}</span><span class="w">
-
-</span><span class="n">df2</span><span class="o">$</span><span class="n">Total_Paired_Comparisons</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">PA_Higher_Count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">FL_Higher_Count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">Equal_Count</span><span class="w">
-
-</span><span class="n">df2</span><span class="o">$</span><span class="n">PA_Dominance_Percent</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">
-  </span><span class="m">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">PA_Higher_Count</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">Total_Paired_Comparisons</span><span class="w">
-
-</span><span class="n">df2</span><span class="o">$</span><span class="n">FL_Dominance_Percent</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">
-  </span><span class="m">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">FL_Higher_Count</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">df2</span><span class="o">$</span><span class="n">Total_Paired_Comparisons</span><span class="w">
-</span></code></pre></div></div>
-
-<p>A genome with <code class="language-plaintext highlighter-rouge">PA_Higher_Count = 15</code> out of 17 pairs (88%) is reliably PA-associated across the full temporal and spatial range of the dataset. A genome with <code class="language-plaintext highlighter-rouge">PA_Higher_Count = 9</code> out of 17 (53%) is barely tilted toward PA — its lifestyle classification is much less confident.</p>
-
-<p>This paired dominance metric is the one to report alongside the mean-based <code class="language-plaintext highlighter-rouge">Lifestyle</code> column when describing individual genomes of interest in the manuscript.</p>
-
-<h3 id="step-5--save-outputs">Step 5 — Save outputs</h3>
-
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Full table with all new columns</span><span class="w">
-</span><span class="n">write.xlsx</span><span class="p">(</span><span class="w">
-  </span><span class="n">df2</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"Abd_updated_new_with_lifestyle.xlsx"</span><span class="p">,</span><span class="w">
-  </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="w">
-</span><span class="p">)</span><span class="w">
-
-</span><span class="n">write.csv</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span><span class="w"> </span><span class="s2">"Abd_updated_new_with_lifestyle.csv"</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
-
-</span><span class="c1"># Reduced metadata file — for merging with CAZyme and transporter results</span><span class="w">
-</span><span class="n">metadata_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
-  </span><span class="n">select</span><span class="p">(</span><span class="w">
-    </span><span class="n">Genome</span><span class="p">,</span><span class="w"> </span><span class="n">Genome_size_Mbp</span><span class="p">,</span><span class="w"> </span><span class="n">Num_contigs</span><span class="p">,</span><span class="w">
-    </span><span class="n">Mean_PA</span><span class="p">,</span><span class="w"> </span><span class="n">Mean_FL</span><span class="p">,</span><span class="w"> </span><span class="n">Prev_PA</span><span class="p">,</span><span class="w"> </span><span class="n">Prev_FL</span><span class="p">,</span><span class="w"> </span><span class="n">Total_Prev</span><span class="p">,</span><span class="w">
-    </span><span class="n">log2_PA_FL</span><span class="p">,</span><span class="w"> </span><span class="n">Lifestyle</span><span class="p">,</span><span class="w">
-    </span><span class="n">PA_Higher_Count</span><span class="p">,</span><span class="w"> </span><span class="n">FL_Higher_Count</span><span class="p">,</span><span class="w"> </span><span class="n">Equal_Count</span><span class="p">,</span><span class="w">
-    </span><span class="n">Total_Paired_Comparisons</span><span class="p">,</span><span class="w"> </span><span class="n">PA_Dominance_Percent</span><span class="p">,</span><span class="w"> </span><span class="n">FL_Dominance_Percent</span><span class="w">
-  </span><span class="p">)</span><span class="w">
-
-</span><span class="n">write.csv</span><span class="p">(</span><span class="n">metadata_df</span><span class="p">,</span><span class="w"> </span><span class="s2">"genome_metadata_lifestyle.csv"</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
-</span></code></pre></div></div>
-
-<hr />
-
-<h2 id="merging-lifestyle-assignments-with-functional-annotations-python">Merging lifestyle assignments with functional annotations (Python)</h2>
-
-<p>Once lifestyle assignments exist in <code class="language-plaintext highlighter-rouge">genome_metadata_lifestyle.csv</code>, they need to be joined with CAZyme counts (from dbCAN) and transporter counts (from TCDB DIAMOND hits). Python pandas handles this cleanly.</p>
-
-<h3 id="merge-cazyme-counts-with-lifestyle">Merge CAZyme counts with lifestyle</h3>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
-
-<span class="c1"># Load feature table (CAZyme counts per genome)
-</span><span class="n">cazy</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_excel</span><span class="p">(</span><span class="sh">'</span><span class="s">cazy_genome.xlsx</span><span class="sh">'</span><span class="p">)</span>
-
-<span class="c1"># Load lifestyle reference
-</span><span class="n">lifestyle</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_excel</span><span class="p">(</span><span class="sh">'</span><span class="s">life_style_reference.xlsx</span><span class="sh">'</span><span class="p">)</span>
-
-<span class="c1"># Clean column names and IDs — essential step
-</span><span class="n">cazy</span><span class="p">.</span><span class="n">columns</span>      <span class="o">=</span> <span class="n">cazy</span><span class="p">.</span><span class="n">columns</span><span class="p">.</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
-<span class="n">lifestyle</span><span class="p">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">lifestyle</span><span class="p">.</span><span class="n">columns</span><span class="p">.</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
-
-<span class="c1"># IDs must be strings — Excel sometimes reads genome accessions as floats
-</span><span class="n">cazy</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">]</span>      <span class="o">=</span> <span class="n">cazy</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
-<span class="n">lifestyle</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">lifestyle</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
-
-<span class="c1"># Merge on Genome ID
-</span><span class="n">merged</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="n">cazy</span><span class="p">,</span> <span class="n">lifestyle</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="sh">'</span><span class="s">left</span><span class="sh">'</span><span class="p">,</span> <span class="n">indicator</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-<span class="c1"># Check how many matched
-</span><span class="nf">print</span><span class="p">(</span><span class="n">merged</span><span class="p">[</span><span class="sh">'</span><span class="s">_merge</span><span class="sh">'</span><span class="p">].</span><span class="nf">value_counts</span><span class="p">())</span>
-
-<span class="c1"># Keep matched rows only
-</span><span class="n">matched</span> <span class="o">=</span> <span class="n">merged</span><span class="p">[</span><span class="n">merged</span><span class="p">[</span><span class="sh">'</span><span class="s">_merge</span><span class="sh">'</span><span class="p">]</span> <span class="o">==</span> <span class="sh">'</span><span class="s">both</span><span class="sh">'</span><span class="p">].</span><span class="nf">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="sh">'</span><span class="s">_merge</span><span class="sh">'</span><span class="p">)</span>
-
-<span class="n">matched</span><span class="p">.</span><span class="nf">to_excel</span><span class="p">(</span><span class="sh">'</span><span class="s">CAZy_with_lifestyle.xlsx</span><span class="sh">'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Saved </span><span class="si">{</span><span class="nf">len</span><span class="p">(</span><span class="n">matched</span><span class="p">)</span><span class="si">}</span><span class="s"> genomes with lifestyle annotations.</span><span class="sh">"</span><span class="p">)</span>
-</code></pre></div></div>
-
-<h3 id="merge-transporter-counts-with-lifestyle">Merge transporter counts with lifestyle</h3>
-
-<p>The same pattern applies to transporter counts. The transporter file (<code class="language-plaintext highlighter-rouge">transporters.tsv</code>) has one row per genome with summarized counts per TCDB family:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Load transporter summary (from DIAMOND TCDB hits, summarized per genome)
-</span><span class="n">transporters</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="sh">'</span><span class="s">transporters.tsv</span><span class="sh">'</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sh">'</span><span class="se">\t</span><span class="sh">'</span><span class="p">)</span>
-<span class="n">lifestyle</span>     <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="sh">'</span><span class="s">genome_metadata_lifestyle.csv</span><span class="sh">'</span><span class="p">)</span>
-
-<span class="c1"># Clean IDs
-</span><span class="n">transporters</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">transporters</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
-<span class="n">lifestyle</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">]</span>    <span class="o">=</span> <span class="n">lifestyle</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="nf">strip</span><span class="p">()</span>
-
-<span class="c1"># Merge
-</span><span class="n">transport_lifestyle</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span>
-    <span class="n">transporters</span><span class="p">,</span> <span class="n">lifestyle</span><span class="p">[[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">Lifestyle</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">log2_PA_FL</span><span class="sh">'</span><span class="p">,</span>
-                              <span class="sh">'</span><span class="s">PA_Dominance_Percent</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">Genome_size_Mbp</span><span class="sh">'</span><span class="p">]],</span>
-    <span class="n">on</span><span class="o">=</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="sh">'</span><span class="s">left</span><span class="sh">'</span>
-<span class="p">)</span>
-
-<span class="c1"># Save
-</span><span class="n">transport_lifestyle</span><span class="p">.</span><span class="nf">to_csv</span><span class="p">(</span><span class="sh">'</span><span class="s">transporters_with_lifestyle.csv</span><span class="sh">'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-
-<span class="c1"># Quick summary: mean ABC transporter count by lifestyle
-</span><span class="nf">print</span><span class="p">(</span>
-    <span class="n">transport_lifestyle</span><span class="p">.</span><span class="nf">groupby</span><span class="p">(</span><span class="sh">'</span><span class="s">Lifestyle</span><span class="sh">'</span><span class="p">)[</span><span class="sh">'</span><span class="s">ABC_gene_count</span><span class="sh">'</span><span class="p">].</span><span class="nf">describe</span><span class="p">()</span>
-<span class="p">)</span>
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">indicator=True</code> + <code class="language-plaintext highlighter-rouge">_merge</code> check is the pandas equivalent of R’s alignment check — always run it. If many rows are <code class="language-plaintext highlighter-rouge">left_only</code> (present in the feature table but not in the lifestyle reference), it means there is an ID mismatch that needs tracing before proceeding.</p>
-
-<h3 id="common-id-mismatch-causes">Common ID mismatch causes</h3>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Diagnose mismatches: find IDs in CAZy table not in lifestyle reference
-</span><span class="n">unmatched</span> <span class="o">=</span> <span class="n">cazy</span><span class="p">[</span><span class="o">~</span><span class="n">cazy</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nf">isin</span><span class="p">(</span><span class="n">lifestyle</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">])]</span>
-<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="si">{</span><span class="nf">len</span><span class="p">(</span><span class="n">unmatched</span><span class="p">)</span><span class="si">}</span><span class="s"> genomes in CAZy not found in lifestyle reference</span><span class="sh">"</span><span class="p">)</span>
-<span class="nf">print</span><span class="p">(</span><span class="n">unmatched</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nf">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-
-<span class="c1"># Common causes:
-# 1. Trailing whitespace — fixed by .str.strip() above
-# 2. Version suffix mismatch: "GB_GCA_000153445.1" vs "GB_GCA_000153445"
-#    Fix: strip version
-</span><span class="n">cazy</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">]</span>      <span class="o">=</span> <span class="n">cazy</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sa">r</span><span class="sh">'</span><span class="s">\.\d+$</span><span class="sh">'</span><span class="p">,</span> <span class="sh">''</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">lifestyle</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">lifestyle</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sa">r</span><span class="sh">'</span><span class="s">\.\d+$</span><span class="sh">'</span><span class="p">,</span> <span class="sh">''</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-<span class="c1"># 3. Excel float conversion: "1234567.0" instead of "1234567"
-#    Fix: convert to int first
-</span><span class="n">cazy</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cazy</span><span class="p">[</span><span class="sh">'</span><span class="s">Genome</span><span class="sh">'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sa">r</span><span class="sh">'</span><span class="s">\.0$</span><span class="sh">'</span><span class="p">,</span> <span class="sh">''</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="what-the-output-looks-like">What the output looks like</h2>
-
-<p>From the images above, the final merged table has:</p>
-
-<ul>
-  <li>Each genome in its own row with the lifestyle assignment (<code class="language-plaintext highlighter-rouge">PA_associated</code> or <code class="language-plaintext highlighter-rouge">FL_associated</code>)</li>
-  <li>Genome name in GTDB format (e.g., <code class="language-plaintext highlighter-rouge">s__Luminipleurotus</code> → cyanobacteria, <code class="language-plaintext highlighter-rouge">s__HIMB30</code> → SAR11, a canonical free-living marine oligotroph)</li>
-  <li>Functional counts (ABC transporter gene count, CAZyme family counts) alongside the lifestyle label</li>
-</ul>
-
-<p>This table is the input to every downstream statistical comparison: Wilcoxon tests comparing genome size, total GH count, TBDT count, and ABC transporter count between PA and FL lifestyle groups.</p>
-
-<hr />
-
-<h2 id="output-columns-reference">Output columns reference</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Column</th>
-      <th>Meaning</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Genome</code></td>
-      <td>Genome identifier</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Genome_size_Mbp</code></td>
-      <td>Total assembled genome size (Mbp)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Mean_PA</code></td>
-      <td>Mean relative abundance across all PA samples</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Mean_FL</code></td>
-      <td>Mean relative abundance across all FL samples</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Prev_PA</code></td>
-      <td>Number of PA samples where the genome was detected (abundance &gt; 0)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Prev_FL</code></td>
-      <td>Number of FL samples where the genome was detected</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Total_Prev</code></td>
-      <td>Total sample detections (PA + FL combined)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">log2_PA_FL</code></td>
-      <td>log₂(mean_PA / mean_FL) — positive = PA-biased, negative = FL-biased</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Lifestyle</code></td>
-      <td>Final classification: <code class="language-plaintext highlighter-rouge">PA_associated</code> or <code class="language-plaintext highlighter-rouge">FL_associated</code></td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">PA_Higher_Count</code></td>
-      <td>Matched pairs where PA abundance &gt; FL abundance</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">FL_Higher_Count</code></td>
-      <td>Matched pairs where FL abundance &gt; PA abundance</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Equal_Count</code></td>
-      <td>Matched pairs where abundances were equal</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">Total_Paired_Comparisons</code></td>
-      <td>Total matched pairs (17 in this dataset)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">PA_Dominance_Percent</code></td>
-      <td>% of matched pairs where genome was PA-dominant</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">FL_Dominance_Percent</code></td>
-      <td>% of matched pairs where genome was FL-dominant</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr />
-
-<p><em>This analysis is still on going , so changes in the workflow can be expected.</em></p>
-
-<p><img src="/assets/img/life-style.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="free-living" /><category term="particle-associated" /><category term="genome-classification" /><category term="lifestyle" /><category term="metagenomics" /><category term="MAGs" /><category term="CAZymes" /><category term="transporters" /><category term="R" /><category term="Python" /><category term="pandas" /><category term="estuarine" /><category term="abundance" /><category term="log2-fold-change" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[You have 2,000 genomes retrieved from metagenomes that sampled two size fractions simultaneously — particle-associated (PA) and free-living (FL). The genomes do not come labelled. How do you know which lifestyle each one actually belongs to? This post walks through a complete genome lifestyle classification workflow: calculating mean abundance and prevalence across fractions, computing log2 fold-change, counting how often each genome dominates in matched PA-FL sample pairs, and then merging those lifestyle assignments with CAZyme and transporter counts using Python. Includes the R and Python scripts, a worked example from real data, and a methods paragraph ready for the manuscript.]]></summary></entry></feed>
+<p><img src="/assets/img/excel.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="excel" /><category term="spreadsheets" /><category term="bioinformatics" /><category term="metadata" /><category term="pivot-tables" /><category term="VLOOKUP" /><category term="XLOOKUP" /><category term="COUNTIF" /><category term="MAGs" /><category term="taxonomy" /><category term="differential-abundance" /><category term="data-wrangling" /><category term="beginners" /><category term="productivity" /><summary type="html"><![CDATA[Let's be honest. Every bioinformatician uses Excel. Metadata lives in Excel. Collaborators send Excel files. You do a quick check in Excel before you write the R code. This post covers the Excel skills I reach for every single day — filters, freeze panes, conditional formatting, pivot tables, VLOOKUP, XLOOKUP, COUNTIF, SUMIF, text functions — with real examples from MAG tables, taxonomy summaries, differential abundance results, and sample metadata. Plus: an honest answer to Excel vs R vs Python, because pretending you never use spreadsheets is just not true.]]></summary></entry></feed>
