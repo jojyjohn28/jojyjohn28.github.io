@@ -24,7 +24,7 @@ tags:
   ]
 ---
 
-🧬 *Day 100 of Daily Bioinformatics from Jojy's Desk*
+🧬 *Day 104of Daily Bioinformatics from Jojy's Desk*
 
 If you have a Windows laptop, do you need to install Linux before you can start learning bioinformatics?
 
