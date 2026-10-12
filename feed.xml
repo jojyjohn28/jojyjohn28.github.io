@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-08T10:01:28-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-08T10:01:28-04:00</published><updated>2026-10-08T10:01:28-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-12T12:52:26-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-12T12:52:26-04:00</published><updated>2026-10-12T12:52:26-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -766,7 +766,630 @@ run_dbcan <span class="nt">--tools</span> all ...
 
 <p>Last updated: February 2026</p>
 
-<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/" rel="alternate" type="text/html" title="Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5" /><published>2026-10-08T00:00:00-04:00</published><updated>2026-10-08T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/cleanifier-human-read-removal</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/"><![CDATA[<p>🧬 <em>Day 4 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Speed, Sensitivity, and Microbial Specificity: The Final Host-Removal Benchmark — Day 5 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-benchmark-final-day5/" rel="alternate" type="text/html" title="Speed, Sensitivity, and Microbial Specificity: The Final Host-Removal Benchmark — Day 5 of 5" /><published>2026-10-12T00:00:00-04:00</published><updated>2026-10-12T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/human_contamination-removal-day5</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-benchmark-final-day5/"><![CDATA[<p>🧬 <em>Day 5 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+
+<p>This series started with a deceptively simple question: which tool should you use to remove human reads from a host-associated metagenome? Over four days, that question expanded considerably. The benchmark moved from timing comparisons and removal percentages to read-level concordance and the practical question of whether differences in filtering change downstream microbiome profiles. Today I bring all of that together.</p>
+
+<p>The central lesson is one worth stating upfront: <strong>host-removal benchmarking should not be reduced to a single percentage column</strong>. The percentage of reads removed is necessary information — but it is not sufficient. A tool that removes more reads is not automatically better. A tool that runs faster is not automatically acceptable. The question is whether differences in filtering affect the microbial signal that downstream analyses are intended to measure.</p>
+
+<hr />
+
+<h2 id="the-benchmark-dataset">The benchmark dataset</h2>
+
+<p>Five anonymized paired-end metagenomes processed after standardized fastp preprocessing. Total input across all samples:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>194,488,502 read pairs
+</code></pre></div></div>
+
+<p>Host content varied substantially:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sample</th>
+      <th>Input read pairs</th>
+      <th>Host content</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sample 1</td>
+      <td>41,644,670</td>
+      <td>Very high (~95%)</td>
+    </tr>
+    <tr>
+      <td>Sample 2</td>
+      <td>43,344,280</td>
+      <td>Very high (~98%)</td>
+    </tr>
+    <tr>
+      <td>Sample 3</td>
+      <td>41,089,173</td>
+      <td>Moderate (~22%)</td>
+    </tr>
+    <tr>
+      <td>Sample 4</td>
+      <td>31,349,380</td>
+      <td>Low (~10%)</td>
+    </tr>
+    <tr>
+      <td>Sample 5</td>
+      <td>37,060,999</td>
+      <td>High (~86%)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This range was deliberate. A host-removal method needs to perform sensibly in both microbe-rich and host-dominated samples. A tool that looks excellent on a low-host sample may behave differently when 95% of the library is human.</p>
+
+<hr />
+
+<h2 id="human-read-removal-rates">Human-read removal rates</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sample</th>
+      <th>BMTagger</th>
+      <th>Bowtie2</th>
+      <th>BBMap GRCh38</th>
+      <th>BBMap masked hg19</th>
+      <th>Cleanifier</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sample 1</td>
+      <td>94.88%</td>
+      <td>89.76%</td>
+      <td>89.85%</td>
+      <td>85.57%</td>
+      <td><strong>95.73%</strong></td>
+    </tr>
+    <tr>
+      <td>Sample 2</td>
+      <td>97.91%</td>
+      <td>94.82%</td>
+      <td>93.26%</td>
+      <td>88.44%</td>
+      <td><strong>98.88%</strong></td>
+    </tr>
+    <tr>
+      <td>Sample 3</td>
+      <td>22.51%</td>
+      <td>21.72%</td>
+      <td>21.25%</td>
+      <td>20.19%</td>
+      <td><strong>22.72%</strong></td>
+    </tr>
+    <tr>
+      <td>Sample 4</td>
+      <td>10.52%</td>
+      <td>10.14%</td>
+      <td>9.83%</td>
+      <td>9.30%</td>
+      <td><strong>10.61%</strong></td>
+    </tr>
+    <tr>
+      <td>Sample 5</td>
+      <td>86.07%</td>
+      <td>83.71%</td>
+      <td>82.19%</td>
+      <td>78.71%</td>
+      <td><strong>86.83%</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Mean</strong></td>
+      <td><strong>62.38%</strong></td>
+      <td><strong>60.03%</strong></td>
+      <td><strong>59.28%</strong></td>
+      <td><strong>56.44%</strong></td>
+      <td><strong>62.95%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>A consistent ranking emerged across all five samples:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cleanifier ≈ BMTagger
+      &gt;
+Bowtie2 ≈ BBMap GRCh38
+      &gt;
+BBMap masked hg19
+</code></pre></div></div>
+
+<p>BBMap with the masked hg19 reference consistently removed fewer reads than BBMap with GRCh38.p12. This comparison illustrates the importance of documenting the exact reference: the two runs differed in both genome assembly and masking, so the observed difference cannot be attributed to masking alone. That was the central methodological lesson of Day 3.</p>
+
+<p><strong>But more removal is not automatically better.</strong> The table above does not tell you whether the reads each tool removes are genuinely human. That question required a different kind of analysis.</p>
+
+<hr />
+
+<h2 id="computational-performance">Computational performance</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tool</th>
+      <th>Mean wall-clock runtime</th>
+      <th>Approximate peak RAM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BMTagger</td>
+      <td>~73.2 min</td>
+      <td>~8.0 GB</td>
+    </tr>
+    <tr>
+      <td>Bowtie2</td>
+      <td>~50.7 min</td>
+      <td>~4.0 GB</td>
+    </tr>
+    <tr>
+      <td>BBMap GRCh38</td>
+      <td>~77.3 min</td>
+      <td>~45.5 GB</td>
+    </tr>
+    <tr>
+      <td>BBMap masked hg19</td>
+      <td>~55.6 min</td>
+      <td>~44.3 GB</td>
+    </tr>
+    <tr>
+      <td><strong>Cleanifier</strong></td>
+      <td><strong>~1.56 min</strong></td>
+      <td><strong>~6.6 GB</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Cleanifier was approximately <strong>47× faster than BMTagger</strong> while producing nearly identical overall removal rates. For larger cohorts, this runtime difference can substantially reduce aggregate compute time, although total wall-clock completion depends on scheduling, parallelism, and I/O.</p>
+
+<p>BBMap’s RAM requirement (~45 GB) stands out as a practical constraint. On a shared HPC cluster, scheduling 45 GB per job limits how many samples run simultaneously and requires careful resource planning. Cleanifier’s ~6.6 GB footprint is comparatively easy to schedule on typical HPC nodes.</p>
+
+<hr />
+
+<h2 id="read-level-discordance-analysis">Read-level discordance analysis</h2>
+
+<p>Removal percentages describe aggregate behavior. They do not reveal what happens at the level of individual reads. To go deeper, I reconstructed read-pair-level classifications for BMTagger and Cleanifier — the two tools that removed the most reads — across all 194.5 million pairs.</p>
+
+<p>Every read pair was placed into one of four categories:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>BMTagger</th>
+      <th>Cleanifier</th>
+      <th>Category</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Remove</td>
+      <td>Remove</td>
+      <td>Both remove — concordant removal</td>
+    </tr>
+    <tr>
+      <td>Remove</td>
+      <td>Keep</td>
+      <td>BMTagger-only</td>
+    </tr>
+    <tr>
+      <td>Keep</td>
+      <td>Remove</td>
+      <td>Cleanifier-only</td>
+    </tr>
+    <tr>
+      <td>Keep</td>
+      <td>Keep</td>
+      <td>Neither removes — concordant retention</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The result:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Read pairs</th>
+      <th>% of total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Both remove</td>
+      <td>126,193,291</td>
+      <td>64.88%</td>
+    </tr>
+    <tr>
+      <td>BMTagger-only</td>
+      <td>204,189</td>
+      <td>0.10%</td>
+    </tr>
+    <tr>
+      <td>Cleanifier-only</td>
+      <td>1,373,154</td>
+      <td>0.71%</td>
+    </tr>
+    <tr>
+      <td>Neither removes</td>
+      <td>66,717,868</td>
+      <td>34.31%</td>
+    </tr>
+    <tr>
+      <td><strong>Total discordant</strong></td>
+      <td><strong>1,577,343</strong></td>
+      <td><strong>0.81%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The two methods agree on <strong>99.19%</strong> of all read pairs. That level of concordance is reassuring — the two tools are largely making the same calls. But the disagreement is sharply asymmetric: <strong>~87% of all discordant pairs are Cleanifier-only removals</strong> — reads that Cleanifier removes but BMTagger retains. The asymmetry is worth documenting, but disagreement alone does not establish which classification is correct or whether a downstream taxonomic result changes.</p>
+
+<hr />
+
+<h2 id="do-different-filtering-decisions-change-downstream-taxonomy">Do different filtering decisions change downstream taxonomy?</h2>
+
+<p>The discordance analysis identifies <em>where</em> BMTagger and Cleanifier make different decisions. It does not, by itself, tell us whether those differences alter the community profile that a researcher would report. That is why an additional downstream comparison is valuable.</p>
+
+<p>In this benchmark, the retained reads from BMTagger and Cleanifier were taken forward for taxonomic profiling. <strong>The downstream taxonomic profiles examined did not show noticeable differences between the two workflows.</strong> This observation is important because a small read-level disagreement need not produce a meaningful change in the taxa represented in the final abundance table. It should not, however, be interpreted as proof that every read was classified correctly or that all possible downstream analyses will agree.</p>
+
+<h3 id="a-simple-illustration-using-five-fictional-taxa">A simple illustration using five fictional taxa</h3>
+
+<p>The table below is a <strong>toy example for explanation only</strong>. These are <strong>invented taxa labels and invented relative abundances</strong>, not measurements from the benchmark or an export of the taxonomy results. It shows what near-identical downstream profiles can look like even when the upstream host-removal tools do not classify every read pair identically.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Illustrative taxon</th>
+      <th style="text-align: right">BMTagger workflow</th>
+      <th style="text-align: right">Cleanifier workflow</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Taxon 1</td>
+      <td style="text-align: right">40.0%</td>
+      <td style="text-align: right">40.1%</td>
+    </tr>
+    <tr>
+      <td>Taxon 2</td>
+      <td style="text-align: right">30.0%</td>
+      <td style="text-align: right">29.9%</td>
+    </tr>
+    <tr>
+      <td>Taxon 3</td>
+      <td style="text-align: right">15.0%</td>
+      <td style="text-align: right">15.0%</td>
+    </tr>
+    <tr>
+      <td>Taxon 4</td>
+      <td style="text-align: right">10.0%</td>
+      <td style="text-align: right">10.0%</td>
+    </tr>
+    <tr>
+      <td>Taxon 5</td>
+      <td style="text-align: right">5.0%</td>
+      <td style="text-align: right">5.0%</td>
+    </tr>
+    <tr>
+      <td><strong>Total</strong></td>
+      <td style="text-align: right"><strong>100.0%</strong></td>
+      <td style="text-align: right"><strong>100.0%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><em>Illustrative values only; do not cite this table as empirical benchmark data.</em></p>
+
+<p>The useful comparison is not merely the number of reads retained. It is whether the major taxa, their relative abundances, and the biological interpretation remain stable after the filtering step. In the profiles examined here, the downstream results were similar despite differences in read-level decisions.</p>
+
+<p>For a formal publication, this comparison could be expanded with paired taxon-abundance plots, rank correlations, compositional distances, and sample-level concordance. Those additional quantitative results are <strong>not presented here</strong>; the observation above is deliberately limited to the downstream profiles that were examined.</p>
+
+<hr />
+
+<h2 id="beyond-host-read-removal-what-else-can-cleanifier-do">Beyond host-read removal: what else can Cleanifier do?</h2>
+
+<p>The five-sample benchmark above evaluated <strong>human DNA read filtering</strong>. While preparing the final comparison, I also looked more closely at what Cleanifier can do outside that specific use case. Its underlying idea is general: compare sequencing reads with a reference index built from sequences that we want to identify or exclude. The biological interpretation depends entirely on the index being used.</p>
+
+<p>Cleanifier uses <strong>spaced-seed (gapped k-mer) matching</strong> rather than conventional base-by-base alignment. Its published implementation supports paired-end and single-end FASTQ, compressed reads, a fast sampling mode, a more sensitive mode, and custom indexes. These are documented software capabilities, <strong>not additional experiments performed in this benchmark</strong>.</p>
+
+<h3 id="1-count-likely-host-reads-before-deciding-to-remove-them">1. Count likely host reads before deciding to remove them</h3>
+
+<p>Not every analysis needs to begin by immediately writing a new host-depleted FASTQ. Sometimes the first question is simply: <em>How much of this sequencing library appears to be host-derived?</em></p>
+
+<p>Cleanifier includes a <code class="language-plaintext highlighter-rouge">--count</code> option that performs classification <strong>without writing filtered read files</strong>. This can be useful for an initial survey of a sequencing batch, for comparing the host-read burden across samples, or for prioritizing samples that might need deeper sequencing. The exact statistics printed by a particular release should be checked with its <code class="language-plaintext highlighter-rouge">--help</code> output and captured in the run log.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Example: classify/count against a human index, without writing filtered FASTQ</span>
+cleanifier filter <span class="se">\</span>
+  <span class="nt">--index</span> /path/to/human_index <span class="se">\</span>
+  <span class="nt">--fastq</span> sample_R1.fastq.gz <span class="se">\</span>
+  <span class="nt">--pairs</span> sample_R2.fastq.gz <span class="se">\</span>
+  <span class="nt">--prefix</span> sample_host_screen <span class="se">\</span>
+  <span class="nt">--count</span> 2&gt;&amp;1 | <span class="nb">tee </span>sample_host_screen.log
+</code></pre></div></div>
+
+<p>This produces an <strong>index-based estimate of the host-associated fraction</strong>, not an independent ground-truth measurement of host DNA. A count-only screening result can help plan a project, but it should not replace host filtering when the downstream data-sharing or analysis workflow requires decontaminated reads.</p>
+
+<h3 id="2-explore-how-much-sequencing-effort-is-going-into-host-dna">2. Explore how much sequencing effort is going into host DNA</h3>
+
+<p>Host-read counts can inform quality control and study design. For example, a host-dominated library may contain tens of millions of sequenced pairs but comparatively few reads available for microbial profiling. Across a cohort, a simple table of input pairs, pairs flagged as host, and pairs retained can help identify samples where sequencing depth or extraction efficiency deserves attention.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Illustrative sample</th>
+      <th style="text-align: right">Input pairs</th>
+      <th style="text-align: right">Pairs flagged as host</th>
+      <th style="text-align: right">Estimated host fraction</th>
+      <th style="text-align: right">Pairs not flagged</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Example A</td>
+      <td style="text-align: right">10,000,000</td>
+      <td style="text-align: right">9,000,000</td>
+      <td style="text-align: right">90%</td>
+      <td style="text-align: right">1,000,000</td>
+    </tr>
+    <tr>
+      <td>Example B</td>
+      <td style="text-align: right">10,000,000</td>
+      <td style="text-align: right">5,000,000</td>
+      <td style="text-align: right">50%</td>
+      <td style="text-align: right">5,000,000</td>
+    </tr>
+    <tr>
+      <td>Example C</td>
+      <td style="text-align: right">10,000,000</td>
+      <td style="text-align: right">1,000,000</td>
+      <td style="text-align: right">10%</td>
+      <td style="text-align: right">9,000,000</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><em>Hypothetical numbers for teaching only; not outputs from the five-sample benchmark.</em></p>
+
+<p>This is especially useful when comparing libraries with very different host backgrounds. However, <strong>read fractions are not cell fractions or microbial biomass measurements</strong>: genome sizes, extraction efficiency, amplification, and sequencing biases affect those relationships. Where absolute microbial load is important, complementary measurements such as qPCR may be necessary.</p>
+
+<h3 id="3-remove-ribosomal-rna-from-metatranscriptomic-data">3. Remove ribosomal RNA from metatranscriptomic data</h3>
+
+<p>A particularly interesting extension is <strong>rRNA depletion for metatranscriptomics</strong>. Cleanifier’s project documentation provides a downloadable <strong>ribosomal reference index</strong>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Download the documented rRNA index (requires Cleanifier and an existing directory)</span>
+<span class="nb">mkdir</span> <span class="nt">-p</span> cleanifier_rrna_index
+cleanifier download <span class="nt">--version</span> ribosomal <span class="nt">--checksum</span> <span class="nt">--dir</span> cleanifier_rrna_index
+</code></pre></div></div>
+
+<p>In a microbial metatranscriptomics workflow, rRNA can dominate the sequencing output even after laboratory depletion. A computational rRNA-filtering step can enrich the reads available for downstream <strong>mRNA-focused functional and expression analyses</strong>. Importantly, the rRNA index is different from the human pangenome index: <strong>using a human index does not automatically remove rRNA</strong>, and rRNA filtering does not by itself remove human DNA or human mRNA.</p>
+
+<p>A conceptual workflow is:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Metatranscriptomic FASTQ
+        |
+        v
+Read quality control / adapter trimming
+        |
+        v
+Screen or filter unwanted host sequences
+        |
+        v
+Screen or filter rRNA using an rRNA reference index
+        |
+        v
+Retained non-rRNA reads for microbial transcript profiling
+        |
+        v
+Gene / pathway expression analysis
+</code></pre></div></div>
+
+<p>The order of host and rRNA screening may vary with the project. For RNA studies, one should also consider <strong>host mRNA</strong>: a human-sequence index containing cDNA-related content may help flag host-derived transcripts, but this is not equivalent to a validated, comprehensive host-transcript depletion pipeline. The appropriate reference, strandedness, sample type, and sensitivity must be evaluated separately. We <strong>did not benchmark host mRNA removal or rRNA depletion</strong> in the five DNA metagenomes presented here.</p>
+
+<h3 id="4-build-a-custom-index-for-another-unwanted-sequence-class">4. Build a custom index for another unwanted sequence class</h3>
+
+<p>The underlying Cleanifier method is not restricted to the provided human index. Its documentation describes building custom indexes. Depending on the scientific objective, a researcher could explore an index of known unwanted sequences, such as a particular host reference, technical contaminants, or a defined reference collection.</p>
+
+<p>This is a <strong>potential application requiring validation</strong>, not a claim that Cleanifier automatically identifies every contaminant. A custom reference will only recognize sequences represented by the index and sufficiently similar to them under the chosen settings. A poorly chosen reference can remove legitimate biological reads.</p>
+
+<h3 id="5-tune-the-sensitivityretention-tradeoff">5. Tune the sensitivity–retention tradeoff</h3>
+
+<p>The default <code class="language-plaintext highlighter-rouge">--threshold 0.5</code> controls how much of a read is covered by index-matching spaced seeds before it is filtered; it is <strong>not a 50% probability that the read is human</strong>. A lower threshold may increase removal sensitivity at the cost of retaining fewer non-target reads. A higher threshold may be more conservative. The <code class="language-plaintext highlighter-rouge">--sensitive</code> option checks all eligible spaced seeds rather than the default sampled subset.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Example of the more sensitive matching mode</span>
+cleanifier filter <span class="se">\</span>
+  <span class="nt">--index</span> /path/to/human_index <span class="se">\</span>
+  <span class="nt">--fastq</span> sample_R1.fastq.gz <span class="se">\</span>
+  <span class="nt">--pairs</span> sample_R2.fastq.gz <span class="se">\</span>
+  <span class="nt">--prefix</span> sample_sensitive <span class="se">\</span>
+  <span class="nt">--threshold</span> 0.5 <span class="se">\</span>
+  <span class="nt">--sensitive</span>
+</code></pre></div></div>
+
+<p>These settings can be worth testing on representative samples, especially when the research question involves low-abundance taxa. <strong>The reported 47× speed advantage comes from the benchmarked configuration; it should not be assumed for other thresholds, modes, indexes, or RNA workflows.</strong></p>
+
+<h3 id="6-plan-scalable-screening-on-shared-computing-infrastructure">6. Plan scalable screening on shared computing infrastructure</h3>
+
+<p>Cleanifier’s documentation also describes loading an index into shared memory for reuse by multiple processes. In an HPC setting, avoiding repeated loading of a large index may improve throughput when many samples are processed on the same node. Actual gains depend on filesystem behavior, node memory, process concurrency, and how jobs are scheduled.</p>
+
+<p>This suggests a practical separation of tasks: <strong>count first for a quick batch-level QC overview, filter when clean FASTQ files are required, and choose a reference index appropriate to the biological material</strong>. It also makes sense to keep an auditable per-sample record of the index version, parameters, input counts, retained counts, and runtime.</p>
+
+<h3 id="what-was-tested-here-and-what-remains-an-application-idea">What was tested here, and what remains an application idea?</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Cleanifier application</th>
+      <th>Status in this post</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Human-read removal from paired-end DNA metagenomes</td>
+      <td><strong>Benchmarked on five samples</strong></td>
+    </tr>
+    <tr>
+      <td>Read-pair agreement with BMTagger</td>
+      <td><strong>Measured across ~194.5 million pairs</strong></td>
+    </tr>
+    <tr>
+      <td>Downstream taxonomic comparison</td>
+      <td><strong>Examined for BMTagger vs Cleanifier</strong></td>
+    </tr>
+    <tr>
+      <td>Count-only screening (<code class="language-plaintext highlighter-rouge">--count</code>)</td>
+      <td>Documented capability; example only</td>
+    </tr>
+    <tr>
+      <td>rRNA filtering for metatranscriptomics</td>
+      <td>Documented index; <strong>not tested here</strong></td>
+    </tr>
+    <tr>
+      <td>Host mRNA screening in RNA data</td>
+      <td>Possible application to validate; <strong>not tested here</strong></td>
+    </tr>
+    <tr>
+      <td>Custom host or contaminant indexes</td>
+      <td>Documented capability; <strong>not tested here</strong></td>
+    </tr>
+    <tr>
+      <td>Sensitive mode / threshold tuning</td>
+      <td>Documented options; <strong>not benchmarked here</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Further reading:</strong> <a href="https://gitlab.com/rahmannlab/cleanifier">Cleanifier documentation</a>, <a href="https://pypi.org/project/cleanifier/">Cleanifier on PyPI</a>, and the <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12758600/">Cleanifier methods paper</a>.</p>
+
+<hr />
+
+<h2 id="integrated-comparison">Integrated comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dimension</th>
+      <th>BMTagger</th>
+      <th>Bowtie2</th>
+      <th>BBMap GRCh38</th>
+      <th>BBMap masked hg19</th>
+      <th>Cleanifier</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Host removal rate</td>
+      <td>Very high</td>
+      <td>High</td>
+      <td>High</td>
+      <td>More conservative</td>
+      <td>Very high</td>
+    </tr>
+    <tr>
+      <td>Runtime</td>
+      <td>Slow</td>
+      <td>Moderate</td>
+      <td>Slow</td>
+      <td>Moderate</td>
+      <td><strong>Extremely fast</strong></td>
+    </tr>
+    <tr>
+      <td>Peak RAM</td>
+      <td>Moderate</td>
+      <td>Low</td>
+      <td>Very high</td>
+      <td>Very high</td>
+      <td>Moderate</td>
+    </tr>
+    <tr>
+      <td>Workflow complexity</td>
+      <td>High (requires decompressed input, post-processing)</td>
+      <td>Low</td>
+      <td>Moderate</td>
+      <td>Moderate</td>
+      <td>Low</td>
+    </tr>
+    <tr>
+      <td>Reference strategy</td>
+      <td>GRCh38.p12</td>
+      <td>GRCh38.p12</td>
+      <td>GRCh38.p12</td>
+      <td>Repeat-masked hg19</td>
+      <td>T2T + pangenome probabilistic</td>
+    </tr>
+    <tr>
+      <td>Downstream taxonomy comparison</td>
+      <td>Similar to Cleanifier in profiles examined</td>
+      <td>Not assessed here</td>
+      <td>Not assessed here</td>
+      <td>Not assessed here</td>
+      <td>Similar to BMTagger in profiles examined</td>
+    </tr>
+    <tr>
+      <td>Scalability at 100+ samples</td>
+      <td>Limited by runtime</td>
+      <td>Feasible</td>
+      <td>Limited by RAM</td>
+      <td>Limited by RAM</td>
+      <td><strong>Highly practical</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="a-practical-decision-framework">A practical decision framework</h2>
+
+<p>Before choosing a host-removal tool, ask five questions:</p>
+
+<p><strong>1. Sensitivity — how much residual human sequence is acceptable?</strong>
+The percentage of reads removed is a useful starting point, but it is not a direct measurement of human-read sensitivity without an independent truth set. In high-host samples, percentage-point differences can represent many read pairs, so downstream requirements and residual-host validation should guide acceptable thresholds.</p>
+
+<p><strong>2. Biological preservation — do filtering differences change the microbiome result?</strong>
+Compare downstream taxonomic profiles on the same samples after each host-removal workflow. Similar profiles can be reassuring, but they are not a substitute for independent sensitivity or specificity validation. A benchmark on one sample type may not generalize to another.</p>
+
+<p><strong>3. Compute cost — what is feasible at your intended scale?</strong>
+If you are processing 10 samples, BBMap’s 45 GB RAM requirement is an inconvenience. If you are processing 500 samples with limited cluster allocation, it may be a genuine barrier. Cleanifier’s throughput advantage becomes increasingly important as cohort size grows.</p>
+
+<p><strong>4. Reproducibility — can the exact method be documented?</strong>
+A complete host-removal description includes: tool name and version, reference genome identity, whether the reference was masked, key alignment or filtering parameters, and how paired-end reads were handled. Report the retained-read definition and any downstream comparison used to evaluate biological consistency. “We used Bowtie2” is not a reproducible methods statement.</p>
+
+<p><strong>5. Workflow integration — how does it fit into your pipeline?</strong>
+BMTagger requires decompressed input and produces read-ID lists rather than FASTQ output — extra steps that compound across many samples. Bowtie2 and Cleanifier write paired gzipped FASTQ directly in a single command. At cohort scale, operational simplicity is not a cosmetic concern.</p>
+
+<hr />
+
+<h2 id="the-lesson-the-benchmark-taught">The lesson the benchmark taught</h2>
+
+<p>I started this series expecting to produce a table showing which tool removes the most human reads most quickly. What I produced instead was a multi-layered analysis that revealed something more nuanced.</p>
+
+<p>Cleanifier’s ~47× runtime advantage was striking, but the follow-up comparison was equally important: the tools differed on 0.81% of read pairs, yet the downstream taxonomic profiles examined did not show noticeable differences. This puts the computational advantage in biological context without claiming that the tools are identical in every respect.</p>
+
+<p>The benchmark evolved from:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Which tool removes the most human reads?
+</code></pre></div></div>
+
+<p>into:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Do the reads on which tools disagree
+change the downstream biological interpretation?
+</code></pre></div></div>
+
+<p>That second question is why benchmarking should extend beyond software timing. Removal percentage and runtime are the starting points; downstream biological consistency adds a crucial layer of evidence.</p>
+
+<hr />
+
+<p>If you work with host-associated metagenomes, the strongest recommendation from this series is to benchmark host-removal methods on your own sample type before committing to a production workflow. Generic benchmarks are useful starting points, and downstream consistency should be checked for the biological questions that matter in each study.</p>
+
+<hr />
+
+<p><em>Sample identifiers remain anonymized throughout this series. All timing measurements were made using <code class="language-plaintext highlighter-rouge">/usr/bin/time -v</code> on an HPC cluster with standardized fastp-preprocessed inputs.</em></p>
+
+<p><img src="/assets/img/hc-day5.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="metagenomics" /><category term="host-removal" /><category term="benchmarking" /><category term="BMTagger" /><category term="Bowtie2" /><category term="BBMap" /><category term="Cleanifier" /><category term="human-contamination" /><category term="microbial-specificity" /><category term="read-discordance" /><category term="reproducibility" /><category term="HPC" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[The final post in a 5-day series benchmarking BMTagger, Bowtie2, BBMap (GRCh38 and masked hg19), and Cleanifier for human read removal from high-host-content metagenomes. Today brings the integrated comparison: removal rates, runtime, RAM, read-level agreement across 194 million read pairs, a downstream taxonomy comparison, additional Cleanifier capabilities (including count-only screening and rRNA filtering), and a practical decision framework. The key lesson is that filtering performance must be evaluated alongside biological results.]]></summary></entry><entry><title type="html">Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/" rel="alternate" type="text/html" title="Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5" /><published>2026-10-08T00:00:00-04:00</published><updated>2026-10-08T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/cleanifier-human-read-removal</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/"><![CDATA[<p>🧬 <em>Day 4 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
 
 <p>The first three days of this benchmark established a clear pattern: BMTagger removed the most reads, Bowtie2 was faster and operationally simpler, and BBMap’s output shifted meaningfully depending on which human reference it used. Runtimes ranged from 50 to 77 minutes per sample. Memory requirements peaked at 45 GB for BBMap.</p>
 
@@ -3408,697 +4031,4 @@ Zenodo. https://doi.org/10.5281/zenodo.20704347</p>
   </li>
 </ol>
 
-<p><img src="/assets/img/doi.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="zenodo" /><category term="DOI" /><category term="ORCID" /><category term="open-science" /><category term="reproducibility" /><category term="scholarly-impact" /><category term="github" /><category term="bioinformatics" /><category term="career" /><category term="educational-resources" /><category term="workflow" /><category term="QIIME2" /><category term="metagenomics" /><category term="amplicon" /><category term="beginners" /><summary type="html"><![CDATA[A peer-reviewed paper is not the only thing that counts as a scholarly contribution. The workflow you spent six months developing, the tutorial series that helped 200 students understand QIIME2, the reproducible pipeline that three other labs are now using — these are real contributions to science. They should be citable, findable, and part of your academic record. This post covers how to archive bioinformatics workflows on Zenodo, get a permanent DOI, add resources to your ORCID, CV, and website, and why this matters for faculty applications, grants, and building long-term scholarly impact.]]></summary></entry><entry><title type="html">Excel Skills Every Bioinformatician Should Know (And Isn’t Embarrassed to Use)</title><link href="https://jojyjohn28.github.io/blog/excel-skills-bioinformaticians/" rel="alternate" type="text/html" title="Excel Skills Every Bioinformatician Should Know (And Isn’t Embarrassed to Use)" /><published>2026-06-13T00:00:00-04:00</published><updated>2026-06-13T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/excel-skills-bioinformaticians</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/excel-skills-bioinformaticians/"><![CDATA[<p>🧬 <em>Day 94 of Daily Bioinformatics from Jojy’s Desk</em></p>
-
-<p>Let’s get something out of the way. Many bioinformaticians act like they never open Excel. They write blog posts entirely about R and Python and bash and act like spreadsheets are a sign of weakness.</p>
-
-<p>In reality, this is how most bioinformatics projects actually work:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Metadata         →   Excel
-Quick inspection →   Excel
-Analysis         →   R
-Automation       →   Python
-HPC jobs         →   Bash
-</code></pre></div></div>
-
-<p>Metadata lives in Excel. Collaborators send Excel files. You do a quick sanity check in a spreadsheet before you write the script. That is not a failure. That is pragmatic.</p>
-
-<p>This post covers the Excel skills I use constantly when working with MAG abundance tables, taxonomy summaries, differential abundance results, and sample metadata — all the real files that come up in a microbial ecology project. No judgment. Just skills.</p>
-
-<hr />
-
-<h2 id="part-1--the-everyday-tools">Part 1 — The everyday tools</h2>
-
-<h3 id="freeze-panes">Freeze panes</h3>
-
-<p>The first thing I do when I open a large genome table or metadata file. If you scroll right or down, you lose the headers and the sample names.</p>
-
-<p><strong>How:</strong> Select the cell just below your header row AND just to the right of your ID column. For a typical genome table where column A is Genome and row 1 is the header, click cell B2.</p>
-
-<p><strong>Then:</strong> <code class="language-plaintext highlighter-rouge">View → Freeze Panes → Freeze Panes</code></p>
-
-<p>Now row 1 and column A stay visible no matter how far you scroll. For a table with 2,000 genomes and 30 samples, this is essential.</p>
-
-<hr />
-
-<h3 id="filters">Filters</h3>
-
-<p>Filters let you show only the rows that match a condition without deleting anything.</p>
-
-<p><strong>How:</strong> Click anywhere in your table → <code class="language-plaintext highlighter-rouge">Data → Filter</code> (or <code class="language-plaintext highlighter-rouge">Ctrl + Shift + L</code>)</p>
-
-<p>Arrow dropdowns appear on every column header. Click one to filter by value, text, or condition.</p>
-
-<p><strong>Real example — differential abundance results:</strong></p>
-
-<p>You have a DESeq2 output table with 2,000 MAGs. You want to see only the significant ones:</p>
-
-<ol>
-  <li>Filter the <code class="language-plaintext highlighter-rouge">padj</code> column → Number Filters → Less Than → <code class="language-plaintext highlighter-rouge">0.05</code></li>
-  <li>Filter the <code class="language-plaintext highlighter-rouge">log2FoldChange</code> column → Number Filters → Greater Than → <code class="language-plaintext highlighter-rouge">1</code></li>
-</ol>
-
-<p>Now you are looking at only the PA-enriched significant MAGs. No R required for this first pass.</p>
-
-<p><strong>Real example — taxonomy table:</strong></p>
-
-<p>You have a GTDB taxonomy table. You want to see all Proteobacteria:</p>
-
-<ol>
-  <li>Filter the <code class="language-plaintext highlighter-rouge">Phylum</code> column → Text Filters → Contains → <code class="language-plaintext highlighter-rouge">Proteobacteria</code></li>
-</ol>
-
-<hr />
-
-<h3 id="sorting">Sorting</h3>
-
-<p><strong>How:</strong> Select your data → <code class="language-plaintext highlighter-rouge">Data → Sort</code></p>
-
-<p>Multi-level sorting is the useful part. In a MAG results table:</p>
-
-<ol>
-  <li>Sort by <code class="language-plaintext highlighter-rouge">Lifestyle</code> (A→Z) to group PA and FL together</li>
-  <li>Then within each group, sort by <code class="language-plaintext highlighter-rouge">log2_PA_FL</code> (largest to smallest)</li>
-</ol>
-
-<p>This gives you a ranked list within each lifestyle category without writing a single line of R.</p>
-
-<p><strong>Quick sort:</strong> Click any cell in a column → <code class="language-plaintext highlighter-rouge">Data → Sort A→Z</code> or <code class="language-plaintext highlighter-rouge">Sort Z→A</code> for a one-click sort on that column.</p>
-
-<hr />
-
-<h3 id="conditional-formatting">Conditional formatting</h3>
-
-<p>Colour-codes cells based on their value. The fastest way to visually scan a large table.</p>
-
-<p><strong>Real example — heatmap on an abundance matrix:</strong></p>
-
-<p>You have 20 genomes × 15 samples. Select the data range (not the headers), then:</p>
-
-<p><code class="language-plaintext highlighter-rouge">Home → Conditional Formatting → Color Scales → Green-White-Red</code></p>
-
-<p>High abundance = green, zero = white, rare = red. Instant visual heatmap without ggplot2.</p>
-
-<p><strong>Real example — flag significant results:</strong></p>
-
-<p>In a DESeq2 results table, select the <code class="language-plaintext highlighter-rouge">padj</code> column:</p>
-
-<p><code class="language-plaintext highlighter-rouge">Home → Conditional Formatting → Highlight Cell Rules → Less Than → 0.05 → Red fill</code></p>
-
-<p>Now every significant result is highlighted in red. You can scan 2,000 rows in seconds.</p>
-
-<p><strong>Real example — flag PA-enriched vs FL-enriched:</strong></p>
-
-<p>Select the <code class="language-plaintext highlighter-rouge">log2FoldChange</code> column:</p>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">New Rule → Format cells that are Greater Than → 1 → Blue fill</code> (PA-enriched)</li>
-  <li><code class="language-plaintext highlighter-rouge">New Rule → Format cells that are Less Than → -1 → Orange fill</code> (FL-enriched)</li>
-</ul>
-
-<hr />
-
-<h3 id="remove-duplicates">Remove duplicates</h3>
-
-<p>Essential when merging annotation tables where the same genome might appear multiple times.</p>
-
-<p><strong>How:</strong> Select your data → <code class="language-plaintext highlighter-rouge">Data → Remove Duplicates</code></p>
-
-<p>Choose which columns define a duplicate. If your genome table has <code class="language-plaintext highlighter-rouge">Genome</code> as the ID, check only that column. Excel will remove rows where the Genome ID appears more than once and tell you how many rows were removed.</p>
-
-<p><strong>Warning:</strong> Always work on a copy. Remove duplicates cannot be undone once you save.</p>
-
-<hr />
-
-<h3 id="text-to-columns">Text to columns</h3>
-
-<p>When you receive a file where multiple pieces of information are packed into one cell — like a GTDB taxonomy string — Text to Columns splits it into separate columns.</p>
-
-<p><strong>Example — splitting GTDB taxonomy:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>d__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Pseudomonadales;f__Pseudomonadaceae;g__Pseudomonas;s__Pseudomonas_aeruginosa
-</code></pre></div></div>
-
-<p>Select the taxonomy column → <code class="language-plaintext highlighter-rouge">Data → Text to Columns → Delimited → Semicolon → Finish</code></p>
-
-<p>Each taxonomic level lands in its own column. Then use Find &amp; Replace (below) to strip the <code class="language-plaintext highlighter-rouge">d__</code>, <code class="language-plaintext highlighter-rouge">p__</code>, <code class="language-plaintext highlighter-rouge">c__</code> prefixes.</p>
-
-<hr />
-
-<h3 id="find--replace">Find &amp; Replace</h3>
-
-<p><code class="language-plaintext highlighter-rouge">Ctrl + H</code> opens Find &amp; Replace. The power move is using it for batch cleaning.</p>
-
-<p><strong>Strip GTDB prefixes:</strong></p>
-
-<ul>
-  <li>Find: <code class="language-plaintext highlighter-rouge">d__</code> → Replace with: <em>(nothing)</em> → Replace All</li>
-  <li>Repeat for <code class="language-plaintext highlighter-rouge">p__</code>, <code class="language-plaintext highlighter-rouge">c__</code>, <code class="language-plaintext highlighter-rouge">o__</code>, <code class="language-plaintext highlighter-rouge">f__</code>, <code class="language-plaintext highlighter-rouge">g__</code>, <code class="language-plaintext highlighter-rouge">s__</code></li>
-</ul>
-
-<p><strong>Fix Windows line ending issues in sample names:</strong></p>
-
-<ul>
-  <li>Find: <code class="language-plaintext highlighter-rouge">_</code> → Replace: <code class="language-plaintext highlighter-rouge">-</code> (or vice versa) to standardize naming</li>
-</ul>
-
-<p><strong>Clean up antiSMASH BGC class names:</strong></p>
-
-<ul>
-  <li>Find: <code class="language-plaintext highlighter-rouge">-</code> → Replace: <code class="language-plaintext highlighter-rouge">.</code> (makes <code class="language-plaintext highlighter-rouge">lanthipeptide-class-i</code> → <code class="language-plaintext highlighter-rouge">lanthipeptide.class.i</code>)</li>
-</ul>
-
-<p><strong>Replace sample name conventions:</strong></p>
-
-<ul>
-  <li>Find: <code class="language-plaintext highlighter-rouge">G08</code> → Replace: <code class="language-plaintext highlighter-rouge">PA</code> across an entire metadata file</li>
-</ul>
-
-<hr />
-
-<h3 id="data-validation--prevent-errors-before-they-happen">Data validation — prevent errors before they happen</h3>
-
-<p>Data validation restricts what can be entered in a cell. For metadata tables that feed into R or Python, this prevents the typos and inconsistencies that cause silent errors downstream.</p>
-
-<p><strong>Real example — metadata lifestyle column:</strong></p>
-
-<p>You want the <code class="language-plaintext highlighter-rouge">Lifestyle</code> column to only accept <code class="language-plaintext highlighter-rouge">PA_associated</code> or <code class="language-plaintext highlighter-rouge">FL_associated</code>.</p>
-
-<p>Select the <code class="language-plaintext highlighter-rouge">Lifestyle</code> column → <code class="language-plaintext highlighter-rouge">Data → Data Validation → Allow: List → Source: PA_associated,FL_associated</code></p>
-
-<p>Now if anyone types <code class="language-plaintext highlighter-rouge">pa associated</code> or <code class="language-plaintext highlighter-rouge">FL associated</code> by mistake, Excel blocks it.</p>
-
-<p><strong>Real example — numeric-only columns:</strong></p>
-
-<p>Select the <code class="language-plaintext highlighter-rouge">Salinity</code> column → <code class="language-plaintext highlighter-rouge">Data → Data Validation → Allow: Decimal → between 0 and 50</code></p>
-
-<p>Prevents someone accidentally typing a sample name in the salinity column.</p>
-
-<hr />
-
-<h2 id="part-2--pivot-tables-for-microbiome-and-genomics-data">Part 2 — Pivot tables for microbiome and genomics data</h2>
-
-<p>Pivot tables are the most underused feature in Excel for biological data. They let you summarize, reshape, and explore large tables without writing any code.</p>
-
-<h3 id="the-core-idea">The core idea</h3>
-
-<p>You have a long-format table (one row per observation). A pivot table collapses it into a summary matrix.</p>
-
-<p><strong>Example — taxonomy abundance table (long format):</strong></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Sample</th>
-      <th>Phylum</th>
-      <th>Abundance</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>S1</td>
-      <td>Proteobacteria</td>
-      <td>40</td>
-    </tr>
-    <tr>
-      <td>S1</td>
-      <td>Bacteroidota</td>
-      <td>25</td>
-    </tr>
-    <tr>
-      <td>S2</td>
-      <td>Proteobacteria</td>
-      <td>35</td>
-    </tr>
-    <tr>
-      <td>S2</td>
-      <td>Bacteroidota</td>
-      <td>30</td>
-    </tr>
-  </tbody>
-</table>
-
-<p><strong>After pivot table:</strong></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Phylum</th>
-      <th>S1</th>
-      <th>S2</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Proteobacteria</td>
-      <td>40</td>
-      <td>35</td>
-    </tr>
-    <tr>
-      <td>Bacteroidota</td>
-      <td>25</td>
-      <td>30</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>This is your abundance matrix — the input to every R microbiome analysis — assembled in thirty seconds without any code.</p>
-
-<h3 id="how-to-create-a-pivot-table">How to create a pivot table</h3>
-
-<ol>
-  <li>Click anywhere in your data table</li>
-  <li><code class="language-plaintext highlighter-rouge">Insert → PivotTable → New Worksheet → OK</code></li>
-  <li>In the PivotTable Fields panel on the right:
-    <ul>
-      <li>Drag <code class="language-plaintext highlighter-rouge">Phylum</code> → <strong>Rows</strong></li>
-      <li>Drag <code class="language-plaintext highlighter-rouge">Sample</code> → <strong>Columns</strong></li>
-      <li>Drag <code class="language-plaintext highlighter-rouge">Abundance</code> → <strong>Values</strong> (set to Sum)</li>
-    </ul>
-  </li>
-</ol>
-
-<p>Done. Your wide-format abundance matrix is ready.</p>
-
-<h3 id="real-bioinformatics-examples">Real bioinformatics examples</h3>
-
-<p><strong>Count genomes per phylum per lifestyle:</strong></p>
-
-<p>Columns: <code class="language-plaintext highlighter-rouge">Phylum</code>, <code class="language-plaintext highlighter-rouge">Lifestyle</code>, <code class="language-plaintext highlighter-rouge">Genome</code></p>
-
-<ul>
-  <li>Rows: <code class="language-plaintext highlighter-rouge">Phylum</code></li>
-  <li>Columns: <code class="language-plaintext highlighter-rouge">Lifestyle</code></li>
-  <li>Values: Count of <code class="language-plaintext highlighter-rouge">Genome</code></li>
-</ul>
-
-<p>Instant summary: how many PA_associated vs FL_associated genomes per phylum.</p>
-
-<p><strong>Summarize CAZyme families per lifestyle:</strong></p>
-
-<p>Columns: <code class="language-plaintext highlighter-rouge">Lifestyle</code>, <code class="language-plaintext highlighter-rouge">GH</code>, <code class="language-plaintext highlighter-rouge">GT</code>, <code class="language-plaintext highlighter-rouge">PL</code>, <code class="language-plaintext highlighter-rouge">CBM</code></p>
-
-<ul>
-  <li>Rows: <code class="language-plaintext highlighter-rouge">Lifestyle</code></li>
-  <li>Values: Average of <code class="language-plaintext highlighter-rouge">GH</code>, Average of <code class="language-plaintext highlighter-rouge">GT</code>, etc.</li>
-</ul>
-
-<p>Mean CAZyme counts per lifestyle group — the same table you would get from <code class="language-plaintext highlighter-rouge">group_by(Lifestyle) %&gt;% summarise(mean_GH = mean(GH))</code> in R, assembled in Excel in 30 seconds.</p>
-
-<p><strong>Count significant DEGs per population:</strong></p>
-
-<p>From a DESeq2 results file with a <code class="language-plaintext highlighter-rouge">Population</code> column and <code class="language-plaintext highlighter-rouge">Significant</code> column:</p>
-
-<ul>
-  <li>Rows: <code class="language-plaintext highlighter-rouge">Population</code></li>
-  <li>Values: Count of <code class="language-plaintext highlighter-rouge">Significant</code> (filtered to TRUE)</li>
-</ul>
-
-<p>Per-population significant gene count table, publication-ready in one pivot.</p>
-
-<hr />
-
-<h2 id="part-3--formulas-that-save-hours">Part 3 — Formulas that save hours</h2>
-
-<h3 id="countif--count-cells-meeting-a-condition">COUNTIF — count cells meeting a condition</h3>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=COUNTIF(range, criteria)
-</code></pre></div></div>
-
-<p><strong>Count PA-associated genomes:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=COUNTIF(D:D, "PA_associated")
-</code></pre></div></div>
-
-<p><strong>Count significant MAGs (padj &lt; 0.05):</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=COUNTIF(E:E, "&lt;0.05")
-</code></pre></div></div>
-
-<p><strong>Count how many samples contain Proteobacteria:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=COUNTIF(B:B, "*Proteobacteria*")
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">*</code> wildcard matches any text containing the word.</p>
-
-<hr />
-
-<h3 id="sumif--sum-values-meeting-a-condition">SUMIF — sum values meeting a condition</h3>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=SUMIF(range, criteria, sum_range)
-</code></pre></div></div>
-
-<p><strong>Total abundance of Proteobacteria across all samples:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=SUMIF(B:B, "Proteobacteria", C:C)
-</code></pre></div></div>
-
-<p><strong>Total GH CAZymes in PA-associated genomes:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=SUMIF(D:D, "PA_associated", F:F)
-</code></pre></div></div>
-
-<p>Where column D is <code class="language-plaintext highlighter-rouge">Lifestyle</code> and column F is <code class="language-plaintext highlighter-rouge">GH_count</code>.</p>
-
-<hr />
-
-<h3 id="if--conditional-logic">IF — conditional logic</h3>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=IF(condition, value_if_true, value_if_false)
-</code></pre></div></div>
-
-<p><strong>Classify log2FC direction:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=IF(C2&gt;1, "PA-enriched", IF(C2&lt;-1, "FL-enriched", "neutral"))
-</code></pre></div></div>
-
-<p><strong>Flag significant results:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=IF(E2&lt;0.05, "significant", "ns")
-</code></pre></div></div>
-
-<p><strong>Add lifestyle label based on mean abundance comparison:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=IF(B2&gt;C2, "PA_associated", IF(C2&gt;B2, "FL_associated", "Equal"))
-</code></pre></div></div>
-
-<p>This is exactly the classification logic from the R script, implemented in Excel for a quick check.</p>
-
-<hr />
-
-<h3 id="xlookup--the-modern-replacement-for-vlookup">XLOOKUP — the modern replacement for VLOOKUP</h3>
-
-<p>XLOOKUP is VLOOKUP without the limitations. It can look left, does not need columns to be in order, and has better error handling.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found])
-</code></pre></div></div>
-
-<p><strong>Add taxonomy to a MAG results table:</strong></p>
-
-<p>You have a DESeq2 results table with genome IDs in column A. Your GTDB taxonomy table is on Sheet2 with genome IDs in column A and phylum in column B.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=XLOOKUP(A2, Sheet2!A:A, Sheet2!B:B, "Not found")
-</code></pre></div></div>
-
-<p>This pulls the phylum for each genome ID. No R merge required for a quick check.</p>
-
-<p><strong>Add lifestyle classification to a CAZyme table:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=XLOOKUP(A2, lifestyle_table!A:A, lifestyle_table!E:E, "unclassified")
-</code></pre></div></div>
-
-<p>Where <code class="language-plaintext highlighter-rouge">lifestyle_table!E:E</code> is the <code class="language-plaintext highlighter-rouge">Lifestyle</code> column of your classification output.</p>
-
-<p><strong>VLOOKUP (classic version — still works everywhere):</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=VLOOKUP(A2, Sheet2!A:B, 2, FALSE)
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">2</code> means return column 2 of the lookup range. The <code class="language-plaintext highlighter-rouge">FALSE</code> means exact match. VLOOKUP only looks right (the lookup column must be the leftmost column of your range), which is why XLOOKUP replaced it.</p>
-
-<hr />
-
-<h3 id="index--match--the-flexible-lookup-combination">INDEX + MATCH — the flexible lookup combination</h3>
-
-<p>When XLOOKUP is not available (older Excel versions), INDEX + MATCH does the same job:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=INDEX(return_range, MATCH(lookup_value, lookup_range, 0))
-</code></pre></div></div>
-
-<p><strong>Look up a genome’s phylum:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=INDEX(Sheet2!B:B, MATCH(A2, Sheet2!A:A, 0))
-</code></pre></div></div>
-
-<p>The <code class="language-plaintext highlighter-rouge">0</code> in MATCH means exact match. INDEX returns the value at the matched position.</p>
-
-<hr />
-
-<h3 id="text-functions--cleaning-biological-ids">Text functions — cleaning biological IDs</h3>
-
-<p><strong>LEFT, RIGHT, MID — extract parts of a string:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=LEFT(A2, 10)          → first 10 characters
-=RIGHT(A2, 5)          → last 5 characters
-=MID(A2, 4, 8)         → 8 characters starting at position 4
-</code></pre></div></div>
-
-<p><strong>Extract the sample base name (strip G08/L08 suffix):</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=LEFT(A2, LEN(A2)-3)
-</code></pre></div></div>
-
-<p>If <code class="language-plaintext highlighter-rouge">A2</code> = <code class="language-plaintext highlighter-rouge">CP_Spr01G08</code>, this returns <code class="language-plaintext highlighter-rouge">CP_Spr01</code>.</p>
-
-<p><strong>Extract accession number from a genome name:</strong></p>
-
-<p>If <code class="language-plaintext highlighter-rouge">A2</code> = <code class="language-plaintext highlighter-rouge">GB_GCA_000153445.1</code>:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=MID(A2, 4, 13)        → GCA_000153445
-</code></pre></div></div>
-
-<p><strong>CONCAT / TEXTJOIN — combine text:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=CONCAT(A2, "_", B2)
-</code></pre></div></div>
-
-<p>Combine sample name and fraction: <code class="language-plaintext highlighter-rouge">CP_Spr01</code> + <code class="language-plaintext highlighter-rouge">_</code> + <code class="language-plaintext highlighter-rouge">PA</code> → <code class="language-plaintext highlighter-rouge">CP_Spr01_PA</code></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=TEXTJOIN(";", TRUE, B2:H2)
-</code></pre></div></div>
-
-<p>Rejoin taxonomy levels back into a GTDB string after splitting them.</p>
-
-<p><strong>UNIQUE — list unique values (Excel 365 / 2021+):</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=UNIQUE(B:B)
-</code></pre></div></div>
-
-<p>In a taxonomy column, this spills all unique phylum names into a new column. The equivalent of <code class="language-plaintext highlighter-rouge">unique()</code> in R or <code class="language-plaintext highlighter-rouge">df['Phylum'].unique()</code> in Python — useful for a fast sanity check before you run the analysis.</p>
-
-<hr />
-
-<h2 id="part-4--flash-fill">Part 4 — Flash Fill</h2>
-
-<p>Flash Fill is pattern recognition for data cleaning. You show Excel one or two examples of what you want, and it fills the rest automatically.</p>
-
-<p><strong>Example — standardize genome names:</strong></p>
-
-<p>Column A has mixed formats:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GCA_000153445.1
-GCA000153745
-gb_GCA_000156155
-</code></pre></div></div>
-
-<p>Type your desired format in column B for the first two rows:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GCA_000153445
-GCA_000153745
-</code></pre></div></div>
-
-<p>Then press <code class="language-plaintext highlighter-rouge">Ctrl + E</code>. Excel recognizes the pattern and fills the rest.</p>
-
-<p><strong>Example — extract sample IDs from file names:</strong></p>
-
-<p>Column A: <code class="language-plaintext highlighter-rouge">CP_Spr01G08_R1.fastq.gz</code></p>
-
-<p>Type in B1: <code class="language-plaintext highlighter-rouge">CP_Spr01G08</code></p>
-
-<p>Press <code class="language-plaintext highlighter-rouge">Ctrl + E</code>. Excel extracts the sample ID from every filename in the column.</p>
-
-<p>Flash Fill works remarkably well for the kind of ID standardization that you would otherwise spend 20 minutes writing a <code class="language-plaintext highlighter-rouge">sed</code> command for.</p>
-
-<hr />
-
-<h2 id="part-5--excel-vs-r-vs-python-the-honest-answer">Part 5 — Excel vs R vs Python (the honest answer)</h2>
-
-<p>This is the one nobody writes about honestly, so here it is:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Task</th>
-      <th>Best tool</th>
-      <th>Why</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Edit metadata, fix typos, add columns</td>
-      <td><strong>Excel</strong></td>
-      <td>Fast, visual, no code required</td>
-    </tr>
-    <tr>
-      <td>Quick look at a new file</td>
-      <td><strong>Excel</strong></td>
-      <td>Faster than <code class="language-plaintext highlighter-rouge">head</code> + <code class="language-plaintext highlighter-rouge">str()</code></td>
-    </tr>
-    <tr>
-      <td>Share data with a collaborator</td>
-      <td><strong>Excel</strong></td>
-      <td>Everyone can open it</td>
-    </tr>
-    <tr>
-      <td>Statistical analysis (DESeq2, MaAsLin)</td>
-      <td><strong>R</strong></td>
-      <td>Built for it</td>
-    </tr>
-    <tr>
-      <td>Visualization (ggplot2, pheatmap)</td>
-      <td><strong>R</strong></td>
-      <td>Much better than Excel charts</td>
-    </tr>
-    <tr>
-      <td>Microbiome community analysis</td>
-      <td><strong>R</strong></td>
-      <td>vegan, phyloseq, etc.</td>
-    </tr>
-    <tr>
-      <td>Process hundreds of files at once</td>
-      <td><strong>Python</strong></td>
-      <td>Loops, automation, pandas</td>
-    </tr>
-    <tr>
-      <td>HPC job submission</td>
-      <td><strong>Bash</strong></td>
-      <td>The only option</td>
-    </tr>
-    <tr>
-      <td>Machine learning</td>
-      <td><strong>Python</strong></td>
-      <td>scikit-learn, PyTorch</td>
-    </tr>
-    <tr>
-      <td>Quick VLOOKUP / COUNTIF across two tables</td>
-      <td><strong>Excel</strong></td>
-      <td>Faster than writing a merge</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>The key insight: these tools are not competing. They are complementary. The mental model is:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Raw data from instrument / HPC
-          ↓
-     Excel — clean, inspect, share
-          ↓
-     R / Python — analyse, visualize, model
-          ↓
-     Excel — format final table for paper
-</code></pre></div></div>
-
-<p>Most published papers in microbial ecology involved Excel at some point. That is fine. The goal is to get good science done, not to prove that you never use a GUI.</p>
-
-<hr />
-
-<h2 id="summary-cheat-sheet">Summary cheat sheet</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Tool</th>
-      <th>What it does</th>
-      <th>Bioinformatics use case</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Freeze panes</td>
-      <td>Lock headers while scrolling</td>
-      <td>Any large genome or abundance table</td>
-    </tr>
-    <tr>
-      <td>Filters</td>
-      <td>Show rows matching a condition</td>
-      <td>Significant DEGs, specific phyla, one bay</td>
-    </tr>
-    <tr>
-      <td>Sort (multi-level)</td>
-      <td>Order rows by multiple columns</td>
-      <td>Sort by Lifestyle then log2FC</td>
-    </tr>
-    <tr>
-      <td>Conditional formatting</td>
-      <td>Colour-code by value</td>
-      <td>Visual heatmap, flag significant rows</td>
-    </tr>
-    <tr>
-      <td>Remove duplicates</td>
-      <td>Deduplicate rows</td>
-      <td>Clean merged annotation tables</td>
-    </tr>
-    <tr>
-      <td>Text to columns</td>
-      <td>Split one column into many</td>
-      <td>Parse GTDB taxonomy strings</td>
-    </tr>
-    <tr>
-      <td>Find &amp; Replace</td>
-      <td>Batch text substitution</td>
-      <td>Strip GTDB prefixes, fix naming</td>
-    </tr>
-    <tr>
-      <td>Data validation</td>
-      <td>Restrict cell input</td>
-      <td>Prevent metadata typos</td>
-    </tr>
-    <tr>
-      <td>Pivot table</td>
-      <td>Reshape long → wide</td>
-      <td>Build abundance matrix from long format</td>
-    </tr>
-    <tr>
-      <td>COUNTIF</td>
-      <td>Count matching cells</td>
-      <td>Count PA/FL genomes, significant MAGs</td>
-    </tr>
-    <tr>
-      <td>SUMIF</td>
-      <td>Sum with a condition</td>
-      <td>Total CAZymes per lifestyle</td>
-    </tr>
-    <tr>
-      <td>IF</td>
-      <td>Conditional value</td>
-      <td>Classify by log2FC threshold</td>
-    </tr>
-    <tr>
-      <td>XLOOKUP</td>
-      <td>Flexible lookup across tables</td>
-      <td>Add taxonomy or lifestyle to results</td>
-    </tr>
-    <tr>
-      <td>INDEX+MATCH</td>
-      <td>Same as XLOOKUP, wider compatibility</td>
-      <td>Older Excel versions</td>
-    </tr>
-    <tr>
-      <td>LEFT/RIGHT/MID</td>
-      <td>Extract substring</td>
-      <td>Strip suffixes, extract accessions</td>
-    </tr>
-    <tr>
-      <td>CONCAT/TEXTJOIN</td>
-      <td>Combine strings</td>
-      <td>Build GTDB strings, combine IDs</td>
-    </tr>
-    <tr>
-      <td>UNIQUE</td>
-      <td>List unique values</td>
-      <td>Check taxonomy levels present</td>
-    </tr>
-    <tr>
-      <td>Flash Fill</td>
-      <td>Pattern-based autofill</td>
-      <td>Standardize inconsistent IDs</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr />
-
-<p><em>Posted as Day 94 of Daily Bioinformatics from Jojy’s Desk.</em></p>
-
-<p><img src="/assets/img/excel.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="excel" /><category term="spreadsheets" /><category term="bioinformatics" /><category term="metadata" /><category term="pivot-tables" /><category term="VLOOKUP" /><category term="XLOOKUP" /><category term="COUNTIF" /><category term="MAGs" /><category term="taxonomy" /><category term="differential-abundance" /><category term="data-wrangling" /><category term="beginners" /><category term="productivity" /><summary type="html"><![CDATA[Let's be honest. Every bioinformatician uses Excel. Metadata lives in Excel. Collaborators send Excel files. You do a quick check in Excel before you write the R code. This post covers the Excel skills I reach for every single day — filters, freeze panes, conditional formatting, pivot tables, VLOOKUP, XLOOKUP, COUNTIF, SUMIF, text functions — with real examples from MAG tables, taxonomy summaries, differential abundance results, and sample metadata. Plus: an honest answer to Excel vs R vs Python, because pretending you never use spreadsheets is just not true.]]></summary></entry></feed>
+<p><img src="/assets/img/doi.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="zenodo" /><category term="DOI" /><category term="ORCID" /><category term="open-science" /><category term="reproducibility" /><category term="scholarly-impact" /><category term="github" /><category term="bioinformatics" /><category term="career" /><category term="educational-resources" /><category term="workflow" /><category term="QIIME2" /><category term="metagenomics" /><category term="amplicon" /><category term="beginners" /><summary type="html"><![CDATA[A peer-reviewed paper is not the only thing that counts as a scholarly contribution. The workflow you spent six months developing, the tutorial series that helped 200 students understand QIIME2, the reproducible pipeline that three other labs are now using — these are real contributions to science. They should be citable, findable, and part of your academic record. This post covers how to archive bioinformatics workflows on Zenodo, get a permanent DOI, add resources to your ORCID, CV, and website, and why this matters for faculty applications, grants, and building long-term scholarly impact.]]></summary></entry></feed>
