@@ -1,27 +1,14 @@
 ---
 layout: post
 title: "Windows Subsystem for Linux (WSL) for Bioinformatics: A Practical Beginner's Guide"
-date: 2026-10-14
-description: "If you have a Windows laptop and want to learn bioinformatics, you do not need to install a second operating system or configure a virtual machine before your first command. WSL — Windows Subsystem for Linux — puts a real Linux terminal directly on your Windows machine in about ten minutes. This post covers what WSL is, how to install it, RAM and storage realities, VS Code integration, the learning path from Bash to HPC, and the honest limitations: WSL lowers the barrier to learning Linux, but it is not a replacement for an HPC cluster."
+date: 2026-10-12
+description: "A practical beginner's guide to using Windows Subsystem for Linux (WSL) for bioinformatics. Learn how to install Ubuntu on Windows, use Bash, Git, Conda, and VS Code, manage RAM and storage, and build the Linux skills needed to transition from a laptop to HPC."
 comments: true
 giscus_comments: true
 featured: true
+categories: [linux]
 permalink: /blog/wsl-windows-subsystem-linux-bioinformatics/
-tags:
-  [
-    WSL,
-    linux,
-    Windows,
-    bioinformatics,
-    bash,
-    conda,
-    HPC,
-    VS-Code,
-    teaching,
-    beginners,
-    command-line,
-    reproducibility,
-  ]
+tags: [linux, WSL, Windows, Ubuntu, bash, command-line, bioinformatics, conda, VS-Code, HPC, beginners, teaching, reproducibility] 
 ---
 
 🧬 *Day 104of Daily Bioinformatics from Jojy's Desk*
