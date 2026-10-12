@@ -1,5 +1,430 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-12T12:52:26-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-12T12:52:26-04:00</published><updated>2026-10-12T12:52:26-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-12T13:17:21-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html">Windows Subsystem for Linux (WSL) for Bioinformatics: A Practical Beginner’s Guide</title><link href="https://jojyjohn28.github.io/blog/wsl-windows-subsystem-linux-bioinformatics/" rel="alternate" type="text/html" title="Windows Subsystem for Linux (WSL) for Bioinformatics: A Practical Beginner’s Guide" /><published>2026-10-14T00:00:00-04:00</published><updated>2026-10-14T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/windows-subsytem-linux</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/wsl-windows-subsystem-linux-bioinformatics/"><![CDATA[<p>🧬 <em>Day 100 of Daily Bioinformatics from Jojy’s Desk</em></p>
+
+<p>If you have a Windows laptop, do you need to install Linux before you can start learning bioinformatics?</p>
+
+<p>Not necessarily.</p>
+
+<p>A large part of modern bioinformatics happens in a Linux environment — Bash scripting, Conda environments, command-line tools, HPC clusters, workflow managers. Students who use macOS already have a Unix-like terminal. Windows users have traditionally faced a harder choice: dual-boot, a virtual machine, or connect directly to a remote server.</p>
+
+<p>There is a practical middle ground that is often overlooked: <strong>Windows Subsystem for Linux (WSL)</strong>. It puts a real Linux environment directly inside Windows, without replacing or partitioning anything. You keep your Windows applications, your file browser, your Office suite — and you get a Bash terminal running Ubuntu alongside them.</p>
+
+<p>This post is the guide I wish existed for every bioinformatics workshop where half the participants have Windows laptops.</p>
+
+<hr />
+
+<h2 id="what-wsl-actually-is">What WSL actually is</h2>
+
+<p>WSL stands for Windows Subsystem for Linux. It allows you to run a Linux distribution directly on Windows without a traditional virtual machine or dual-boot setup. The current version, WSL 2, runs a real Linux kernel inside a lightweight managed virtual machine. For most practical purposes — Bash, Git, Conda, Python, R, bioinformatics command-line tools — it behaves like a native Linux terminal.</p>
+
+<p>Conceptually, your computer looks like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Windows
+├── Microsoft Office, browser, Windows apps
+├── VS Code
+└── WSL 2
+    └── Ubuntu
+        ├── Bash
+        ├── Git
+        ├── Python / R
+        ├── Conda / Bioconda
+        └── Bioinformatics tools
+</code></pre></div></div>
+
+<p>For a learner, this means: you can keep using Windows while learning and practicing Linux.</p>
+
+<h3 id="wsl-1-vs-wsl-2">WSL 1 vs WSL 2</h3>
+
+<p>WSL 2 is the relevant version for almost everyone. New distributions installed via <code class="language-plaintext highlighter-rouge">wsl --install</code> use WSL 2 by default. WSL 2 uses a real Linux kernel, offers better system-call compatibility, and generally better filesystem performance than WSL 1. Check which version you are running with:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wsl <span class="nt">-l</span> <span class="nt">-v</span>
+</code></pre></div></div>
+
+<p>Use WSL 2 unless you have a specific reason not to.</p>
+
+<hr />
+
+<h2 id="why-not-just-use-virtualbox-or-dual-boot">Why not just use VirtualBox or dual boot?</h2>
+
+<p>All approaches can work. The comparison below is practical, not absolute:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>WSL 2</th>
+      <th>Traditional VM</th>
+      <th>Dual Boot</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Real Linux kernel</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Keep Windows running</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>Windows/Linux file integration</td>
+      <td>Excellent</td>
+      <td>Moderate</td>
+      <td>Limited</td>
+    </tr>
+    <tr>
+      <td>Setup difficulty</td>
+      <td>Low</td>
+      <td>Moderate</td>
+      <td>Higher</td>
+    </tr>
+    <tr>
+      <td>Good for teaching beginners</td>
+      <td>Excellent</td>
+      <td>Good</td>
+      <td>Lower</td>
+    </tr>
+    <tr>
+      <td>Large production analyses</td>
+      <td>Limited by laptop</td>
+      <td>Limited by laptop</td>
+      <td>Limited by laptop</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>WSL is particularly useful for teaching because students do not need to fundamentally change how they use their computer before their first Bash command. The barrier to entry is a single PowerShell command.</p>
+
+<hr />
+
+<h2 id="installation">Installation</h2>
+
+<p>For modern Windows 10 and Windows 11 systems, installation is a single command. Open <strong>PowerShell as Administrator</strong> and run:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This installs WSL 2 and Ubuntu by default. Restart your computer when prompted. After restarting, Ubuntu will launch and ask you to create a Linux username and password — these do not need to match your Windows credentials.</p>
+
+<p>To install a different Linux distribution:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See what is available</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--list</span><span class="w"> </span><span class="nt">--online</span><span class="w">
+
+</span><span class="c"># Install a specific distribution</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w"> </span><span class="nt">-d</span><span class="w"> </span><span class="nx">Ubuntu-22.04</span><span class="w">
+</span></code></pre></div></div>
+
+<p>For beginners, Ubuntu is the best choice — extensive documentation, the largest community, and broad Bioconda support.</p>
+
+<h3 id="verify-the-installation">Verify the installation</h3>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--status</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--version</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">-l</span><span class="w"> </span><span class="nt">-v</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="your-first-linux-commands">Your first Linux commands</h2>
+
+<p>Open Ubuntu from the Start menu. The prompt will look like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>username@computer:~$
+</code></pre></div></div>
+
+<p>Try these immediately:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">pwd</span>                    <span class="c"># print working directory</span>
+<span class="nb">ls</span>                     <span class="c"># list files</span>
+<span class="nb">mkdir </span>bioinformatics   <span class="c"># create a directory</span>
+<span class="nb">cd </span>bioinformatics      <span class="c"># move into it</span>
+<span class="nb">pwd</span>                    <span class="c"># confirm where you are</span>
+<span class="nb">touch </span>test.txt         <span class="c"># create an empty file</span>
+<span class="nb">ls</span> <span class="nt">-lh</span>                 <span class="c"># list with sizes</span>
+</code></pre></div></div>
+
+<p>Then update Ubuntu — do this on any fresh Linux installation before installing anything:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt update
+<span class="nb">sudo </span>apt upgrade
+</code></pre></div></div>
+
+<p>When prompted for a password, type your Linux password. Nothing will appear on screen while you type — this is normal Linux behaviour.</p>
+
+<hr />
+
+<h2 id="the-commands-worth-learning-first">The commands worth learning first</h2>
+
+<p>These appear repeatedly in every bioinformatics workflow:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Navigation and files</span>
+<span class="nb">pwd   ls   cd   mkdir   cp   mv   rm</span>
+
+<span class="c"># Viewing and inspecting data</span>
+<span class="nb">cat   </span>less   <span class="nb">head   tail   wc</span>
+
+<span class="c"># Searching and filtering</span>
+<span class="nb">grep   </span>find   <span class="nb">awk   sed   sort   cut</span>
+
+<span class="c"># Compression and transfer</span>
+<span class="nb">gzip   tar   </span>wget   curl   ssh   rsync
+</code></pre></div></div>
+
+<p>A student who can use these fluently is ready to follow almost any bioinformatics tutorial and ready to connect to an HPC cluster and feel at home.</p>
+
+<hr />
+
+<h2 id="ram-and-storage-the-honest-numbers">RAM and storage: the honest numbers</h2>
+
+<p>WSL does not create computational resources. If your laptop has 16 GB RAM, WSL has access to some fraction of 16 GB RAM. The analysis requirements determine whether that is enough.</p>
+
+<p>By default, WSL 2 can use up to <strong>50% of total Windows memory</strong> (so 8 GB on a 16 GB machine), with processors defaulting to all logical processors available to Windows. These limits are configurable via a <code class="language-plaintext highlighter-rouge">.wslconfig</code> file in your Windows user directory:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[wsl2]
+memory=8GB
+processors=4
+swap=4GB
+</code></pre></div></div>
+
+<p>Do not blindly copy these values — set them based on your computer and workload. The WSL defaults are reasonable for most learning scenarios.</p>
+
+<p>For practical bioinformatics use, here is a realistic RAM guide:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>RAM</th>
+      <th>Practical use in WSL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>8 GB</td>
+      <td>Linux navigation, Git, Python/R, small exercises</td>
+    </tr>
+    <tr>
+      <td>16 GB</td>
+      <td>Recommended starting point for learning bioinformatics tools</td>
+    </tr>
+    <tr>
+      <td>32 GB</td>
+      <td>Comfortable for moderate local analyses</td>
+    </tr>
+    <tr>
+      <td>64 GB+</td>
+      <td>More capable, but still not a replacement for HPC</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Storage follows the same principle. Learning Bash and running small exercises needs a few GB. A real sequencing project needs hundreds of GB to TB — that lives on the HPC, not your laptop.</p>
+
+<hr />
+
+<h2 id="an-important-file-storage-rule">An important file storage rule</h2>
+
+<p>Your Windows C: drive is accessible from WSL at <code class="language-plaintext highlighter-rouge">/mnt/c/</code>. This is convenient, but:</p>
+
+<p><strong>For Linux-heavy bioinformatics work, store files in the Linux filesystem, not under <code class="language-plaintext highlighter-rouge">/mnt/c/</code>.</strong></p>
+
+<p>Linux tools reading and writing files across the Windows/Linux boundary can be significantly slower. Use your Linux home directory instead:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/projects
+<span class="nb">cd</span> ~/projects
+<span class="c"># run your bioinformatics workflows here</span>
+</code></pre></div></div>
+
+<p>To open your current Linux directory in Windows Explorer (when you need to access files from the Windows side):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>explorer.exe <span class="nb">.</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="wsl--vs-code">WSL + VS Code</h2>
+
+<p>This combination is especially good for teaching and development. Students get the familiar VS Code interface on Windows while their code and terminal run inside Linux.</p>
+
+<p>Install VS Code on Windows, then install the <strong>WSL extension</strong> (search “WSL” in the Extensions panel). From any WSL project directory:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>code <span class="nb">.</span>
+</code></pre></div></div>
+
+<p>VS Code opens connected directly to your Linux environment — full IntelliSense, integrated terminal, file browser, all running in Ubuntu. For students who are not yet comfortable living entirely in a terminal, this is a gentler entry point.</p>
+
+<hr />
+
+<h2 id="git-conda-and-bioinformatics-tools">Git, Conda, and bioinformatics tools</h2>
+
+<p><strong>Git:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>git
+git config <span class="nt">--global</span> user.name <span class="s2">"Your Name"</span>
+git config <span class="nt">--global</span> user.email <span class="s2">"your@email.com"</span>
+git <span class="nt">--version</span>
+</code></pre></div></div>
+
+<p>Git skills learned in WSL transfer directly to any Linux server or HPC.</p>
+
+<p><strong>Conda (Miniforge recommended):</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+bash Miniforge3-Linux-x86_64.sh
+<span class="c"># Restart terminal after installation</span>
+conda <span class="nt">--version</span>
+</code></pre></div></div>
+
+<p>From here, create isolated environments exactly as you would on an HPC:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda create <span class="nt">-n</span> bioinfo <span class="nt">-c</span> bioconda fastqc trimmomatic
+conda activate bioinfo
+fastqc <span class="nt">--version</span>
+</code></pre></div></div>
+
+<p>The environment-management concepts are identical to what students will use on a remote Linux server later.</p>
+
+<hr />
+
+<h2 id="wsl-as-a-stepping-stone-to-hpc">WSL as a stepping stone to HPC</h2>
+
+<p>This is the most underappreciated educational value of WSL. A student who learns Linux navigation, Bash scripting, Git, and Conda locally in WSL is prepared to connect to an HPC and not feel completely lost:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Step 1:  Install WSL
+Step 2:  Learn Linux navigation (pwd, ls, cd, mkdir)
+Step 3:  Learn file manipulation (cp, mv, grep, awk)
+Step 4:  Learn Git
+Step 5:  Learn Conda environments
+Step 6:  Run small bioinformatics tools (FastQC, fastp, samtools)
+Step 7:  Write Bash scripts
+Step 8:  SSH into HPC — ssh username@hpc.edu
+Step 9:  Learn SLURM (sbatch, squeue, sacct)
+Step 10: Scale up real analyses
+</code></pre></div></div>
+
+<p>WSL does not need to run your large analysis. It can simply be your local Linux terminal that you use to develop scripts, then SSH into the cluster to run them at scale:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Windows laptop
+      ↓
+    WSL
+      ↓  ssh
+    HPC cluster
+      ├── SLURM
+      ├── Large RAM
+      ├── Many CPUs
+      └── Large storage
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="what-wsl-is-good-for-and-where-it-has-limits">What WSL is good for and where it has limits</h2>
+
+<p><strong>WSL works well for:</strong></p>
+
+<ul>
+  <li>Learning Linux and Bash</li>
+  <li>Learning Git</li>
+  <li>Learning Conda</li>
+  <li>Python and R development</li>
+  <li>Small FASTQ exercises and practice datasets</li>
+  <li>Testing and developing scripts before HPC submission</li>
+  <li>Teaching workshops</li>
+  <li>SSH access to HPC</li>
+</ul>
+
+<p><strong>Think carefully before using WSL for:</strong></p>
+
+<ul>
+  <li>Large reference databases (Kraken2, GTDB-Tk full databases)</li>
+  <li>Moderate genome or metagenome assembly</li>
+  <li>Docker-heavy workflows</li>
+  <li>Large local datasets</li>
+</ul>
+
+<p><strong>Move to HPC or cloud for:</strong></p>
+
+<ul>
+  <li>Hundreds of sequencing samples</li>
+  <li>Large metagenomic assemblies</li>
+  <li>High-memory analyses</li>
+  <li>Highly parallel production pipelines</li>
+  <li>Large MAG workflows</li>
+</ul>
+
+<p>The key point: WSL provides the <em>environment</em>. It does not create computational resources. A 16 GB laptop with WSL is still a 16 GB laptop.</p>
+
+<hr />
+
+<h2 id="useful-wsl-management-commands">Useful WSL management commands</h2>
+
+<p>Run these from PowerShell or Command Prompt, not from inside Ubuntu:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--status</span><span class="w">          </span><span class="c"># check WSL status</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--version</span><span class="w">         </span><span class="c"># WSL version</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">-l</span><span class="w"> </span><span class="nt">-v</span><span class="w">             </span><span class="c"># list distributions and versions</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--update</span><span class="w">          </span><span class="c"># update WSL</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--shutdown</span><span class="w">        </span><span class="c"># shut down all WSL instances</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--list</span><span class="w"> </span><span class="nt">--online</span><span class="w">   </span><span class="c"># see available distributions</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="quick-reference-setup-checklist">Quick reference: setup checklist</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Install WSL (PowerShell as Administrator)</span>
+wsl <span class="nt">--install</span>
+
+<span class="c"># 2. After restarting: update Ubuntu</span>
+<span class="nb">sudo </span>apt update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt upgrade
+
+<span class="c"># 3. Install Git</span>
+<span class="nb">sudo </span>apt <span class="nb">install </span>git
+
+<span class="c"># 4. Install Miniforge (Conda)</span>
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+bash Miniforge3-Linux-x86_64.sh
+
+<span class="c"># 5. Install VS Code on Windows, then connect:</span>
+code <span class="nb">.</span>
+
+<span class="c"># 6. Create your first project directory</span>
+<span class="nb">mkdir</span> <span class="nt">-p</span> ~/projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ~/projects
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="the-honest-summary">The honest summary</h2>
+
+<p>WSL does not replace Linux HPC. It lowers the barrier to learning it.</p>
+
+<p>For a student with a Windows laptop, asking them to install a second operating system or configure a virtual machine before their first Bash command can turn the first bioinformatics lesson into an IT support session. WSL offers a different path: keep Windows, add Linux, start learning immediately.</p>
+
+<p>The commands learned in WSL — <code class="language-plaintext highlighter-rouge">grep</code>, <code class="language-plaintext highlighter-rouge">awk</code>, <code class="language-plaintext highlighter-rouge">sed</code>, Git, Conda, SSH — are the same commands used on every Linux server and HPC cluster. When a student eventually types <code class="language-plaintext highlighter-rouge">ssh username@hpc.edu</code> for the first time, the Linux environment is no longer completely unfamiliar.</p>
+
+<p>That is why WSL has become my first recommendation for Windows users starting out in bioinformatics.</p>
+
+<hr />
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Microsoft Learn — Install WSL</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/setup/environment">Microsoft Learn — Set up a WSL development environment</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/compare-versions">Microsoft Learn — Comparing WSL 1 and WSL 2</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/wsl-config">Microsoft Learn — Advanced settings configuration in WSL (.wslconfig)</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/basic-commands">Microsoft Learn — WSL basic commands</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/disk-space">Microsoft Learn — WSL disk space management</a></li>
+</ul>
+
+<hr />
+
+<p><em>Posted as Day 104 of Daily Bioinformatics from Jojy’s Desk. Small steps at the command line open the door to much larger computational workflows.</em></p>
+
+<p><img src="/assets/img/wsl.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="WSL" /><category term="linux" /><category term="Windows" /><category term="bioinformatics" /><category term="bash" /><category term="conda" /><category term="HPC" /><category term="VS-Code" /><category term="teaching" /><category term="beginners" /><category term="command-line" /><category term="reproducibility" /><summary type="html"><![CDATA[If you have a Windows laptop and want to learn bioinformatics, you do not need to install a second operating system or configure a virtual machine before your first command. WSL — Windows Subsystem for Linux — puts a real Linux terminal directly on your Windows machine in about ten minutes. This post covers what WSL is, how to install it, RAM and storage realities, VS Code integration, the learning path from Bash to HPC, and the honest limitations: WSL lowers the barrier to learning Linux, but it is not a replacement for an HPC cluster.]]></summary></entry><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-12T13:17:21-04:00</published><updated>2026-10-12T13:17:21-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -3709,326 +4134,4 @@ You read this exchange and learn something the manual never told you
 
 <p><em>Posted as Day 96 of Daily Bioinformatics from Jojy’s Desk.</em></p>
 
-<p><img src="/assets/img/bionfo.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="bioinformatics" /><category term="scientific-thinking" /><category term="study-design" /><category term="peer-review" /><category term="GitHub-issues" /><category term="career-development" /><category term="research-methodology" /><category term="critical-thinking" /><category term="metagenomics" /><category term="beginners" /><summary type="html"><![CDATA[Anyone can run a pipeline. Type the command, wait for the job to finish, get a table of results. The hard part of bioinformatics has never been execution — it is deciding what question the pipeline should actually answer. This post is not a tutorial. It is about the thinking that happens before the first command is typed: how to turn a vague curiosity into a testable question, and two underrated sources of analytical maturity that nobody talks about — reviewing manuscripts and reading GitHub issues.]]></summary></entry><entry><title type="html">Your Code Is a Publication: How to Make Bioinformatics Workflows Citable with Zenodo</title><link href="https://jojyjohn28.github.io/blog/zenodo-bioinformatics-workflows-citable/" rel="alternate" type="text/html" title="Your Code Is a Publication: How to Make Bioinformatics Workflows Citable with Zenodo" /><published>2026-06-15T00:00:00-04:00</published><updated>2026-06-15T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/zenodo-bioinformatics-workflows-citable</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/zenodo-bioinformatics-workflows-citable/"><![CDATA[<p>🧬 <em>Day 95 of Daily Bioinformatics from Jojy’s Desk</em></p>
-
-<p>Here is something that took me longer to realize than it should have: <strong>the workflow is the contribution, not just the paper that uses it</strong>.</p>
-
-<p>A peer-reviewed paper gets cited when someone builds on your scientific findings. A well-documented, reproducible workflow gets used — and cited — when someone needs to do the same analysis you did. Those are different kinds of impact, and in modern computational biology, both matter.</p>
-
-<p>The problem is that most bioinformatics workflows live in one of two places: a private HPC folder that nobody else can access, or a GitHub repository that has no permanent identifier and could disappear if the account is deleted. Neither of these is a citable scholarly output.</p>
-
-<p>This post is about fixing that — archiving your work in a way that makes it permanently findable, permanently citable, and part of your formal academic record. The tool for this is Zenodo, and the process takes about 20 minutes.</p>
-
-<hr />
-
-<h2 id="what-counts-as-a-citable-output">What counts as a citable output?</h2>
-
-<p>Academia is slowly catching up to the reality that not all contributions to science look like journal articles. Funding agencies, universities, and professional societies increasingly recognize:</p>
-
-<ul>
-  <li><strong>Software</strong> — analysis tools, R packages, Python libraries</li>
-  <li><strong>Workflows</strong> — documented analysis pipelines with code and instructions</li>
-  <li><strong>Datasets</strong> — curated data products that others can use</li>
-  <li><strong>Educational resources</strong> — tutorials, teaching materials, learning series</li>
-</ul>
-
-<p>The key requirement is that these need a <strong>permanent identifier</strong> — specifically a DOI (Digital Object Identifier), the same kind of identifier that a journal article has — so that they can be cited in a standardized, traceable way.</p>
-
-<p>Zenodo provides this for free.</p>
-
-<hr />
-
-<h2 id="what-is-zenodo">What is Zenodo?</h2>
-
-<p><a href="https://zenodo.org">Zenodo</a> is an open-access repository operated by CERN (yes, the particle physics people). It was built to solve exactly this problem: giving researchers a permanent, citable home for research outputs that do not fit neatly into a journal.</p>
-
-<p>When you upload a workflow or dataset to Zenodo:</p>
-
-<ul>
-  <li>It gets a <strong>permanent DOI</strong> (e.g., <code class="language-plaintext highlighter-rouge">10.5281/zenodo.20703185</code>)</li>
-  <li>The DOI <strong>never expires</strong> — even if the GitHub repository moves or is deleted, the Zenodo record remains</li>
-  <li>The upload is <strong>versioned</strong> — you can update the resource and release new versions, each with its own DOI, while the original DOI always resolves</li>
-  <li>It is <strong>indexed</strong> by DataCite and increasingly by Google Scholar</li>
-  <li>It is <strong>free</strong> for open-access content up to 50 GB per record</li>
-</ul>
-
-<hr />
-
-<h2 id="my-current-published-resource">My current published resource</h2>
-
-<p>My first archived resource is now live:</p>
-
-<p><strong>Bioinformatics Learning Series — Volume 1</strong><br />
-<em>Amplicon Analysis and QIIME2-to-R Workflows</em></p>
-
-<p><strong>DOI:</strong> <a href="https://doi.org/10.5281/zenodo.20703185">10.5281/zenodo.20703185</a><br />
-<strong>GitHub:</strong> <a href="https://github.com/jojyjohn28/bioinformatics-learning-series-volume1">github.com/jojyjohn28/bioinformatics-learning-series-volume1</a></p>
-
-<p><strong>What it contains:</strong></p>
-
-<ul>
-  <li>Amplicon sequencing workflows (16S, ITS)</li>
-  <li>QIIME2 analysis tutorials from raw reads to diversity analysis</li>
-  <li>QIIME2-to-R integration workflows (phyloseq, vegan)</li>
-  <li>Visualization workflows (ggplot2, heatmaps, ordination)</li>
-  <li>Functional prediction resources (PICRUSt2, Tax4Fun)</li>
-  <li>Web-based microbiome analysis tool guides</li>
-</ul>
-
-<p>This is a living educational resource — it will grow as I add more content, and each major version will get its own DOI.</p>
-
-<hr />
-
-<h2 id="how-to-archive-your-own-workflow-on-zenodo">How to archive your own workflow on Zenodo</h2>
-
-<p>The process is straightforward. Here is exactly what I did.</p>
-
-<h3 id="step-1--prepare-your-github-repository">Step 1 — Prepare your GitHub repository</h3>
-
-<p>Before archiving, make sure your repository is in a state worth preserving:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>your-repo/
-├── README.md          # Clear description of what the workflow does
-├── scripts/           # All code, well-commented
-├── data/example/      # Small example dataset if possible
-├── environment.yml    # Conda environment or requirements.txt
-└── LICENSE            # Choose an open license (MIT, CC-BY recommended)
-</code></pre></div></div>
-
-<p>A good README is the most important thing. It should include: what the workflow does, what inputs it requires, how to run it, what outputs it produces, and how to cite it.</p>
-
-<h3 id="step-2--connect-github-to-zenodo">Step 2 — Connect GitHub to Zenodo</h3>
-
-<ol>
-  <li>Go to <a href="https://zenodo.org">zenodo.org</a> and sign in with your GitHub account</li>
-  <li>Go to your Zenodo profile → <strong>GitHub</strong></li>
-  <li>You will see a list of your GitHub repositories</li>
-  <li>Toggle <strong>ON</strong> for the repository you want to archive</li>
-</ol>
-
-<h3 id="step-3--create-a-release-on-github">Step 3 — Create a release on GitHub</h3>
-
-<p>Zenodo archives a specific version — not a live repository. Create a release to trigger the archive:</p>
-
-<ol>
-  <li>On GitHub, go to your repository → <strong>Releases</strong> → <strong>Create a new release</strong></li>
-  <li>Set a version tag: <code class="language-plaintext highlighter-rouge">v1.0.0</code></li>
-  <li>Add release notes describing what is in this version</li>
-  <li>Click <strong>Publish release</strong></li>
-</ol>
-
-<p>Within a few minutes, Zenodo automatically archives the release and assigns a DOI.</p>
-
-<h3 id="step-4--add-metadata-on-zenodo">Step 4 — Add metadata on Zenodo</h3>
-
-<p>Go to your Zenodo record and fill in:</p>
-
-<ul>
-  <li><strong>Title</strong> — descriptive and searchable</li>
-  <li><strong>Authors</strong> — your name, institution, ORCID</li>
-  <li><strong>Description</strong> — what the workflow does, who it is for</li>
-  <li><strong>Keywords</strong> — include tool names (QIIME2, DESeq2, etc.) and analysis type (amplicon, metagenomics, etc.)</li>
-  <li><strong>License</strong> — match your GitHub repository license</li>
-  <li><strong>Resource type</strong> — choose Software or Educational resource</li>
-</ul>
-
-<p>Good metadata is what makes your resource findable. Think about what someone would search for if they needed your workflow.</p>
-
-<h3 id="step-5--copy-the-doi-badge-to-your-readme">Step 5 — Copy the DOI badge to your README</h3>
-
-<p>Zenodo gives you a badge you can embed in your GitHub README:</p>
-
-<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="nv">![DOI</span><span class="p">](</span><span class="sx">https://zenodo.org/badge/DOI/10.5281/zenodo.20703185.svg</span><span class="p">)</span>](https://doi.org/10.5281/zenodo.20703185)
-</code></pre></div></div>
-
-<p>This makes the DOI immediately visible to anyone who visits the repository.</p>
-
-<hr />
-
-<h2 id="adding-the-resource-to-your-academic-profile">Adding the resource to your academic profile</h2>
-
-<h3 id="orcid">ORCID</h3>
-
-<p>ORCID (your persistent researcher identifier) supports software, datasets, and educational resources as work types. This is where it matters most for job applications and grant submissions.</p>
-
-<ol>
-  <li>Log in at <a href="https://orcid.org">orcid.org</a></li>
-  <li>Go to <strong>Works</strong> → <strong>Add Work</strong> → <strong>Add DOI</strong></li>
-  <li>Enter: <code class="language-plaintext highlighter-rouge">10.5281/zenodo.20703185</code></li>
-  <li>ORCID will auto-populate the metadata from Zenodo</li>
-  <li>Set visibility to <strong>Public</strong></li>
-  <li>Save</li>
-</ol>
-
-<p>Your workflow now appears in your ORCID profile alongside your journal articles — as a peer-equal entry in your works list.</p>
-
-<h3 id="google-scholar">Google Scholar</h3>
-
-<p>Google Scholar does not yet have a dedicated section for software or educational resources, but Zenodo records are increasingly being indexed automatically. Check your Google Scholar profile periodically — once the record is indexed, it will appear under your name.</p>
-
-<p>In the meantime:</p>
-
-<ul>
-  <li>Enable <strong>automatic updates</strong> in Google Scholar settings so new indexed works are added to your profile</li>
-  <li>If the record appears, add it manually if the auto-update misses it</li>
-</ul>
-
-<h3 id="your-cv">Your CV</h3>
-
-<p>Create a dedicated section — separate from publications:</p>
-
-<hr />
-
-<p><strong>Software, Workflows, and Educational Resources</strong></p>
-
-<p>John J. (2026). <em>Bioinformatics Learning Series Volume 1: Amplicon Analysis and QIIME2-to-R Workflows.</em> Zenodo. <a href="https://doi.org/10.5281/zenodo.20703185">https://doi.org/10.5281/zenodo.20703185</a></p>
-
-<hr />
-
-<p>This section signals to hiring committees and grant reviewers that you contribute to the community beyond your own papers.</p>
-
-<h3 id="your-website">Your website</h3>
-
-<p>Add a dedicated <strong>Resources</strong> or <strong>Teaching</strong> page that lists each archived workflow with its DOI, description, and link. This is where prospective lab members, collaborators, and people who found you through Google will look for your materials.</p>
-
-<hr />
-
-<h2 id="the-long-term-vision">The long-term vision</h2>
-
-<p>The Bioinformatics Learning Series is planned across three volumes, each targeting a distinct area of environmental metagenomics and microbial ecology:</p>
-
-<h3 id="volume-1--amplicon-analysis-and-qiime2-to-r-workflows">Volume 1 — Amplicon Analysis and QIIME2-to-R Workflows</h3>
-
-<p><strong>Status:</strong> ✅ Published — DOI: <a href="https://doi.org/10.5281/zenodo.20703185">10.5281/zenodo.20703185</a></p>
-
-<p>Amplicon sequencing from raw reads through community analysis, diversity metrics, and R-based visualization.</p>
-
-<hr />
-
-<h3 id="volume-2--metagenomics-and-genome-resolved-microbiology">Volume 2 — Metagenomics and Genome-Resolved Microbiology</h3>
-
-<p><strong>Status</strong>: ✅ Published
-DOI: <a href="https://doi.org/10.5281/zenodo.20704346">10.5281/zenodo.20704347</a></p>
-
-<h2 id="several-other-volumes-are-in-preparation"><em>Several other volumes are in preparation</em></h2>
-
-<h2 id="why-this-matters-beyond-citation-counts">Why this matters beyond citation counts</h2>
-
-<p>I want to be direct about the career dimension here, because it is often not discussed openly.</p>
-
-<p>Citable software, workflows, and educational resources demonstrate things that a publication list alone cannot show:</p>
-
-<p><strong>Community contribution</strong> — Other researchers are using and building on your methods. Downloads and citations of a workflow are evidence of real-world impact that goes beyond the specific paper the workflow was published alongside.</p>
-
-<p><strong>Reproducibility</strong> — Depositing your analysis code and workflow on Zenodo demonstrates a commitment to reproducible science. Grant agencies increasingly require this. Journals increasingly require it. Getting ahead of this is not optional for the next generation of researchers.</p>
-
-<p><strong>Technical breadth</strong> — A workflow repository shows what you can actually do: not just that you ran an analysis and reported results, but that you can document, package, and communicate a computational method well enough that others can use it.</p>
-
-<p><strong>Educational contribution</strong> — Tutorial series and teaching workflows demonstrate that you can communicate complex methods to a broad audience. This is directly relevant to faculty positions, where teaching and mentoring are evaluated alongside research.</p>
-
-<p>For immigration-based applications (O-1, EB1A) specifically, evidence that your work has been adopted by others in the field — measured through downloads, citations, and GitHub stars — can serve as objective evidence of extraordinary ability and recognition. A workflow with 500 downloads and 10 citations is a concrete, quantifiable contribution that can be documented.</p>
-
-<hr />
-
-<h2 id="the-five-output-principle">The five-output principle</h2>
-
-<p>Every major bioinformatics workflow developed during research should ideally produce five things:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. A manuscript (journal article)
-2. A GitHub repository (code and documentation)
-3. A Zenodo DOI (permanent, citable archive)
-4. A blog post or tutorial (accessible explanation)
-5. A reusable educational resource (teaching material)
-</code></pre></div></div>
-
-<p>Most workflows produce only the first one, sometimes the second. The other three take relatively little additional time once the work is done, but they compound in impact over years. A blog post written in two hours in June 2026 might be the resource that helps a PhD student in 2028 get started with metatranscriptomics. That student might cite the Zenodo record. That citation might matter in a grant application.</p>
-
-<p>Build the habit of producing all five outputs, not just the manuscript.</p>
-
-<hr />
-
-<h2 id="tracking-your-impact">Tracking your impact</h2>
-
-<p>Keep a simple spreadsheet:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Resource</th>
-      <th>DOI</th>
-      <th>Downloads</th>
-      <th>Views</th>
-      <th>Citations</th>
-      <th>Last checked</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Volume 1</td>
-      <td>10.5281/zenodo.20703185</td>
-      <td> </td>
-      <td> </td>
-      <td> </td>
-      <td> </td>
-    </tr>
-    <tr>
-      <td>Volume 2</td>
-      <td>TBD</td>
-      <td> </td>
-      <td> </td>
-      <td> </td>
-      <td> </td>
-    </tr>
-    <tr>
-      <td>Volume 3</td>
-      <td>TBD</td>
-      <td> </td>
-      <td> </td>
-      <td> </td>
-      <td> </td>
-    </tr>
-  </tbody>
-</table>
-
-<p>Zenodo provides download and view statistics on every record. Update this quarterly. Over time, this data becomes part of your narrative about community impact — something concrete you can point to in grant applications and job letters.</p>
-
-<hr />
-
-<h2 id="quick-start--20-minutes-to-your-first-zenodo-doi">Quick start — 20 minutes to your first Zenodo DOI</h2>
-
-<p>If you have a GitHub repository with analysis code or tutorial materials:</p>
-
-<ol>
-  <li><strong>Sign in to Zenodo</strong> with your GitHub account</li>
-  <li><strong>Enable the repository</strong> under Zenodo → GitHub</li>
-  <li><strong>Create a GitHub release</strong> (<code class="language-plaintext highlighter-rouge">v1.0.0</code>)</li>
-  <li><strong>Add metadata</strong> on the auto-created Zenodo record</li>
-  <li><strong>Copy the DOI badge</strong> to your README</li>
-  <li><strong>Add the DOI to your ORCID</strong> profile</li>
-  <li><strong>Add a CV section</strong> for Software and Educational Resources</li>
-</ol>
-
-<p>That is it. Your workflow now has a permanent identifier, is archived independently of GitHub, and is part of your citable scholarly record.</p>
-
-<hr />
-
-<p><em>Bioinformatics Learning Series Volume 1 is available at <a href="https://doi.org/10.5281/zenodo.20703185">doi.org/10.5281/zenodo.20703185</a>. Volume 2 (Metagenomics and Genome-Resolved Microbiology) is available at DOI: <a href="https://doi.org/10.5281/zenodo.20704346">10.5281/zenodo.20704347</a></em></p>
-
-<h2 id="citations">citations</h2>
-
-<ol>
-  <li>
-    <p>John J. (2026)
-Bioinformatics Learning Series Volume 1:
-Amplicon Analysis and QIIME2-to-R Workflows.
-Zenodo. DOI: 10.5281/zenodo.20703185</p>
-  </li>
-  <li>
-    <p>John, J. (2026).
-Bioinformatics Learning Series Volume 2:
-Metagenomics and Genome-Resolved Microbiology (Version 1.0.0).
-Zenodo. https://doi.org/10.5281/zenodo.20704347</p>
-  </li>
-</ol>
-
-<p><img src="/assets/img/doi.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="zenodo" /><category term="DOI" /><category term="ORCID" /><category term="open-science" /><category term="reproducibility" /><category term="scholarly-impact" /><category term="github" /><category term="bioinformatics" /><category term="career" /><category term="educational-resources" /><category term="workflow" /><category term="QIIME2" /><category term="metagenomics" /><category term="amplicon" /><category term="beginners" /><summary type="html"><![CDATA[A peer-reviewed paper is not the only thing that counts as a scholarly contribution. The workflow you spent six months developing, the tutorial series that helped 200 students understand QIIME2, the reproducible pipeline that three other labs are now using — these are real contributions to science. They should be citable, findable, and part of your academic record. This post covers how to archive bioinformatics workflows on Zenodo, get a permanent DOI, add resources to your ORCID, CV, and website, and why this matters for faculty applications, grants, and building long-term scholarly impact.]]></summary></entry></feed>
+<p><img src="/assets/img/bionfo.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="bioinformatics" /><category term="scientific-thinking" /><category term="study-design" /><category term="peer-review" /><category term="GitHub-issues" /><category term="career-development" /><category term="research-methodology" /><category term="critical-thinking" /><category term="metagenomics" /><category term="beginners" /><summary type="html"><![CDATA[Anyone can run a pipeline. Type the command, wait for the job to finish, get a table of results. The hard part of bioinformatics has never been execution — it is deciding what question the pipeline should actually answer. This post is not a tutorial. It is about the thinking that happens before the first command is typed: how to turn a vague curiosity into a testable question, and two underrated sources of analytical maturity that nobody talks about — reviewing manuscripts and reading GitHub issues.]]></summary></entry></feed>
