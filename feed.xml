@@ -1,430 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-12T13:17:44-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html">Windows Subsystem for Linux (WSL) for Bioinformatics: A Practical Beginner’s Guide</title><link href="https://jojyjohn28.github.io/blog/wsl-windows-subsystem-linux-bioinformatics/" rel="alternate" type="text/html" title="Windows Subsystem for Linux (WSL) for Bioinformatics: A Practical Beginner’s Guide" /><published>2026-10-14T00:00:00-04:00</published><updated>2026-10-14T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/windows-subsytem-linux</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/wsl-windows-subsystem-linux-bioinformatics/"><![CDATA[<p>🧬 <em>Day 104of Daily Bioinformatics from Jojy’s Desk</em></p>
-
-<p>If you have a Windows laptop, do you need to install Linux before you can start learning bioinformatics?</p>
-
-<p>Not necessarily.</p>
-
-<p>A large part of modern bioinformatics happens in a Linux environment — Bash scripting, Conda environments, command-line tools, HPC clusters, workflow managers. Students who use macOS already have a Unix-like terminal. Windows users have traditionally faced a harder choice: dual-boot, a virtual machine, or connect directly to a remote server.</p>
-
-<p>There is a practical middle ground that is often overlooked: <strong>Windows Subsystem for Linux (WSL)</strong>. It puts a real Linux environment directly inside Windows, without replacing or partitioning anything. You keep your Windows applications, your file browser, your Office suite — and you get a Bash terminal running Ubuntu alongside them.</p>
-
-<p>This post is the guide I wish existed for every bioinformatics workshop where half the participants have Windows laptops.</p>
-
-<hr />
-
-<h2 id="what-wsl-actually-is">What WSL actually is</h2>
-
-<p>WSL stands for Windows Subsystem for Linux. It allows you to run a Linux distribution directly on Windows without a traditional virtual machine or dual-boot setup. The current version, WSL 2, runs a real Linux kernel inside a lightweight managed virtual machine. For most practical purposes — Bash, Git, Conda, Python, R, bioinformatics command-line tools — it behaves like a native Linux terminal.</p>
-
-<p>Conceptually, your computer looks like this:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Windows
-├── Microsoft Office, browser, Windows apps
-├── VS Code
-└── WSL 2
-    └── Ubuntu
-        ├── Bash
-        ├── Git
-        ├── Python / R
-        ├── Conda / Bioconda
-        └── Bioinformatics tools
-</code></pre></div></div>
-
-<p>For a learner, this means: you can keep using Windows while learning and practicing Linux.</p>
-
-<h3 id="wsl-1-vs-wsl-2">WSL 1 vs WSL 2</h3>
-
-<p>WSL 2 is the relevant version for almost everyone. New distributions installed via <code class="language-plaintext highlighter-rouge">wsl --install</code> use WSL 2 by default. WSL 2 uses a real Linux kernel, offers better system-call compatibility, and generally better filesystem performance than WSL 1. Check which version you are running with:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wsl <span class="nt">-l</span> <span class="nt">-v</span>
-</code></pre></div></div>
-
-<p>Use WSL 2 unless you have a specific reason not to.</p>
-
-<hr />
-
-<h2 id="why-not-just-use-virtualbox-or-dual-boot">Why not just use VirtualBox or dual boot?</h2>
-
-<p>All approaches can work. The comparison below is practical, not absolute:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Feature</th>
-      <th>WSL 2</th>
-      <th>Traditional VM</th>
-      <th>Dual Boot</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Real Linux kernel</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-    </tr>
-    <tr>
-      <td>Keep Windows running</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>No</td>
-    </tr>
-    <tr>
-      <td>Windows/Linux file integration</td>
-      <td>Excellent</td>
-      <td>Moderate</td>
-      <td>Limited</td>
-    </tr>
-    <tr>
-      <td>Setup difficulty</td>
-      <td>Low</td>
-      <td>Moderate</td>
-      <td>Higher</td>
-    </tr>
-    <tr>
-      <td>Good for teaching beginners</td>
-      <td>Excellent</td>
-      <td>Good</td>
-      <td>Lower</td>
-    </tr>
-    <tr>
-      <td>Large production analyses</td>
-      <td>Limited by laptop</td>
-      <td>Limited by laptop</td>
-      <td>Limited by laptop</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>WSL is particularly useful for teaching because students do not need to fundamentally change how they use their computer before their first Bash command. The barrier to entry is a single PowerShell command.</p>
-
-<hr />
-
-<h2 id="installation">Installation</h2>
-
-<p>For modern Windows 10 and Windows 11 systems, installation is a single command. Open <strong>PowerShell as Administrator</strong> and run:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w">
-</span></code></pre></div></div>
-
-<p>This installs WSL 2 and Ubuntu by default. Restart your computer when prompted. After restarting, Ubuntu will launch and ask you to create a Linux username and password — these do not need to match your Windows credentials.</p>
-
-<p>To install a different Linux distribution:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See what is available</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--list</span><span class="w"> </span><span class="nt">--online</span><span class="w">
-
-</span><span class="c"># Install a specific distribution</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w"> </span><span class="nt">-d</span><span class="w"> </span><span class="nx">Ubuntu-22.04</span><span class="w">
-</span></code></pre></div></div>
-
-<p>For beginners, Ubuntu is the best choice — extensive documentation, the largest community, and broad Bioconda support.</p>
-
-<h3 id="verify-the-installation">Verify the installation</h3>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--status</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--version</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">-l</span><span class="w"> </span><span class="nt">-v</span><span class="w">
-</span></code></pre></div></div>
-
-<hr />
-
-<h2 id="your-first-linux-commands">Your first Linux commands</h2>
-
-<p>Open Ubuntu from the Start menu. The prompt will look like:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>username@computer:~$
-</code></pre></div></div>
-
-<p>Try these immediately:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">pwd</span>                    <span class="c"># print working directory</span>
-<span class="nb">ls</span>                     <span class="c"># list files</span>
-<span class="nb">mkdir </span>bioinformatics   <span class="c"># create a directory</span>
-<span class="nb">cd </span>bioinformatics      <span class="c"># move into it</span>
-<span class="nb">pwd</span>                    <span class="c"># confirm where you are</span>
-<span class="nb">touch </span>test.txt         <span class="c"># create an empty file</span>
-<span class="nb">ls</span> <span class="nt">-lh</span>                 <span class="c"># list with sizes</span>
-</code></pre></div></div>
-
-<p>Then update Ubuntu — do this on any fresh Linux installation before installing anything:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt update
-<span class="nb">sudo </span>apt upgrade
-</code></pre></div></div>
-
-<p>When prompted for a password, type your Linux password. Nothing will appear on screen while you type — this is normal Linux behaviour.</p>
-
-<hr />
-
-<h2 id="the-commands-worth-learning-first">The commands worth learning first</h2>
-
-<p>These appear repeatedly in every bioinformatics workflow:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Navigation and files</span>
-<span class="nb">pwd   ls   cd   mkdir   cp   mv   rm</span>
-
-<span class="c"># Viewing and inspecting data</span>
-<span class="nb">cat   </span>less   <span class="nb">head   tail   wc</span>
-
-<span class="c"># Searching and filtering</span>
-<span class="nb">grep   </span>find   <span class="nb">awk   sed   sort   cut</span>
-
-<span class="c"># Compression and transfer</span>
-<span class="nb">gzip   tar   </span>wget   curl   ssh   rsync
-</code></pre></div></div>
-
-<p>A student who can use these fluently is ready to follow almost any bioinformatics tutorial and ready to connect to an HPC cluster and feel at home.</p>
-
-<hr />
-
-<h2 id="ram-and-storage-the-honest-numbers">RAM and storage: the honest numbers</h2>
-
-<p>WSL does not create computational resources. If your laptop has 16 GB RAM, WSL has access to some fraction of 16 GB RAM. The analysis requirements determine whether that is enough.</p>
-
-<p>By default, WSL 2 can use up to <strong>50% of total Windows memory</strong> (so 8 GB on a 16 GB machine), with processors defaulting to all logical processors available to Windows. These limits are configurable via a <code class="language-plaintext highlighter-rouge">.wslconfig</code> file in your Windows user directory:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[wsl2]
-memory=8GB
-processors=4
-swap=4GB
-</code></pre></div></div>
-
-<p>Do not blindly copy these values — set them based on your computer and workload. The WSL defaults are reasonable for most learning scenarios.</p>
-
-<p>For practical bioinformatics use, here is a realistic RAM guide:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>RAM</th>
-      <th>Practical use in WSL</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>8 GB</td>
-      <td>Linux navigation, Git, Python/R, small exercises</td>
-    </tr>
-    <tr>
-      <td>16 GB</td>
-      <td>Recommended starting point for learning bioinformatics tools</td>
-    </tr>
-    <tr>
-      <td>32 GB</td>
-      <td>Comfortable for moderate local analyses</td>
-    </tr>
-    <tr>
-      <td>64 GB+</td>
-      <td>More capable, but still not a replacement for HPC</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>Storage follows the same principle. Learning Bash and running small exercises needs a few GB. A real sequencing project needs hundreds of GB to TB — that lives on the HPC, not your laptop.</p>
-
-<hr />
-
-<h2 id="an-important-file-storage-rule">An important file storage rule</h2>
-
-<p>Your Windows C: drive is accessible from WSL at <code class="language-plaintext highlighter-rouge">/mnt/c/</code>. This is convenient, but:</p>
-
-<p><strong>For Linux-heavy bioinformatics work, store files in the Linux filesystem, not under <code class="language-plaintext highlighter-rouge">/mnt/c/</code>.</strong></p>
-
-<p>Linux tools reading and writing files across the Windows/Linux boundary can be significantly slower. Use your Linux home directory instead:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/projects
-<span class="nb">cd</span> ~/projects
-<span class="c"># run your bioinformatics workflows here</span>
-</code></pre></div></div>
-
-<p>To open your current Linux directory in Windows Explorer (when you need to access files from the Windows side):</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>explorer.exe <span class="nb">.</span>
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="wsl--vs-code">WSL + VS Code</h2>
-
-<p>This combination is especially good for teaching and development. Students get the familiar VS Code interface on Windows while their code and terminal run inside Linux.</p>
-
-<p>Install VS Code on Windows, then install the <strong>WSL extension</strong> (search “WSL” in the Extensions panel). From any WSL project directory:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>code <span class="nb">.</span>
-</code></pre></div></div>
-
-<p>VS Code opens connected directly to your Linux environment — full IntelliSense, integrated terminal, file browser, all running in Ubuntu. For students who are not yet comfortable living entirely in a terminal, this is a gentler entry point.</p>
-
-<hr />
-
-<h2 id="git-conda-and-bioinformatics-tools">Git, Conda, and bioinformatics tools</h2>
-
-<p><strong>Git:</strong></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>git
-git config <span class="nt">--global</span> user.name <span class="s2">"Your Name"</span>
-git config <span class="nt">--global</span> user.email <span class="s2">"your@email.com"</span>
-git <span class="nt">--version</span>
-</code></pre></div></div>
-
-<p>Git skills learned in WSL transfer directly to any Linux server or HPC.</p>
-
-<p><strong>Conda (Miniforge recommended):</strong></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-bash Miniforge3-Linux-x86_64.sh
-<span class="c"># Restart terminal after installation</span>
-conda <span class="nt">--version</span>
-</code></pre></div></div>
-
-<p>From here, create isolated environments exactly as you would on an HPC:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda create <span class="nt">-n</span> bioinfo <span class="nt">-c</span> bioconda fastqc trimmomatic
-conda activate bioinfo
-fastqc <span class="nt">--version</span>
-</code></pre></div></div>
-
-<p>The environment-management concepts are identical to what students will use on a remote Linux server later.</p>
-
-<hr />
-
-<h2 id="wsl-as-a-stepping-stone-to-hpc">WSL as a stepping stone to HPC</h2>
-
-<p>This is the most underappreciated educational value of WSL. A student who learns Linux navigation, Bash scripting, Git, and Conda locally in WSL is prepared to connect to an HPC and not feel completely lost:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Step 1:  Install WSL
-Step 2:  Learn Linux navigation (pwd, ls, cd, mkdir)
-Step 3:  Learn file manipulation (cp, mv, grep, awk)
-Step 4:  Learn Git
-Step 5:  Learn Conda environments
-Step 6:  Run small bioinformatics tools (FastQC, fastp, samtools)
-Step 7:  Write Bash scripts
-Step 8:  SSH into HPC — ssh username@hpc.edu
-Step 9:  Learn SLURM (sbatch, squeue, sacct)
-Step 10: Scale up real analyses
-</code></pre></div></div>
-
-<p>WSL does not need to run your large analysis. It can simply be your local Linux terminal that you use to develop scripts, then SSH into the cluster to run them at scale:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Windows laptop
-      ↓
-    WSL
-      ↓  ssh
-    HPC cluster
-      ├── SLURM
-      ├── Large RAM
-      ├── Many CPUs
-      └── Large storage
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="what-wsl-is-good-for-and-where-it-has-limits">What WSL is good for and where it has limits</h2>
-
-<p><strong>WSL works well for:</strong></p>
-
-<ul>
-  <li>Learning Linux and Bash</li>
-  <li>Learning Git</li>
-  <li>Learning Conda</li>
-  <li>Python and R development</li>
-  <li>Small FASTQ exercises and practice datasets</li>
-  <li>Testing and developing scripts before HPC submission</li>
-  <li>Teaching workshops</li>
-  <li>SSH access to HPC</li>
-</ul>
-
-<p><strong>Think carefully before using WSL for:</strong></p>
-
-<ul>
-  <li>Large reference databases (Kraken2, GTDB-Tk full databases)</li>
-  <li>Moderate genome or metagenome assembly</li>
-  <li>Docker-heavy workflows</li>
-  <li>Large local datasets</li>
-</ul>
-
-<p><strong>Move to HPC or cloud for:</strong></p>
-
-<ul>
-  <li>Hundreds of sequencing samples</li>
-  <li>Large metagenomic assemblies</li>
-  <li>High-memory analyses</li>
-  <li>Highly parallel production pipelines</li>
-  <li>Large MAG workflows</li>
-</ul>
-
-<p>The key point: WSL provides the <em>environment</em>. It does not create computational resources. A 16 GB laptop with WSL is still a 16 GB laptop.</p>
-
-<hr />
-
-<h2 id="useful-wsl-management-commands">Useful WSL management commands</h2>
-
-<p>Run these from PowerShell or Command Prompt, not from inside Ubuntu:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--status</span><span class="w">          </span><span class="c"># check WSL status</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--version</span><span class="w">         </span><span class="c"># WSL version</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">-l</span><span class="w"> </span><span class="nt">-v</span><span class="w">             </span><span class="c"># list distributions and versions</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--update</span><span class="w">          </span><span class="c"># update WSL</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--shutdown</span><span class="w">        </span><span class="c"># shut down all WSL instances</span><span class="w">
-</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--list</span><span class="w"> </span><span class="nt">--online</span><span class="w">   </span><span class="c"># see available distributions</span><span class="w">
-</span></code></pre></div></div>
-
-<hr />
-
-<h2 id="quick-reference-setup-checklist">Quick reference: setup checklist</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Install WSL (PowerShell as Administrator)</span>
-wsl <span class="nt">--install</span>
-
-<span class="c"># 2. After restarting: update Ubuntu</span>
-<span class="nb">sudo </span>apt update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt upgrade
-
-<span class="c"># 3. Install Git</span>
-<span class="nb">sudo </span>apt <span class="nb">install </span>git
-
-<span class="c"># 4. Install Miniforge (Conda)</span>
-wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-bash Miniforge3-Linux-x86_64.sh
-
-<span class="c"># 5. Install VS Code on Windows, then connect:</span>
-code <span class="nb">.</span>
-
-<span class="c"># 6. Create your first project directory</span>
-<span class="nb">mkdir</span> <span class="nt">-p</span> ~/projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ~/projects
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="the-honest-summary">The honest summary</h2>
-
-<p>WSL does not replace Linux HPC. It lowers the barrier to learning it.</p>
-
-<p>For a student with a Windows laptop, asking them to install a second operating system or configure a virtual machine before their first Bash command can turn the first bioinformatics lesson into an IT support session. WSL offers a different path: keep Windows, add Linux, start learning immediately.</p>
-
-<p>The commands learned in WSL — <code class="language-plaintext highlighter-rouge">grep</code>, <code class="language-plaintext highlighter-rouge">awk</code>, <code class="language-plaintext highlighter-rouge">sed</code>, Git, Conda, SSH — are the same commands used on every Linux server and HPC cluster. When a student eventually types <code class="language-plaintext highlighter-rouge">ssh username@hpc.edu</code> for the first time, the Linux environment is no longer completely unfamiliar.</p>
-
-<p>That is why WSL has become my first recommendation for Windows users starting out in bioinformatics.</p>
-
-<hr />
-
-<h2 id="references">References</h2>
-
-<ul>
-  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Microsoft Learn — Install WSL</a></li>
-  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/setup/environment">Microsoft Learn — Set up a WSL development environment</a></li>
-  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/compare-versions">Microsoft Learn — Comparing WSL 1 and WSL 2</a></li>
-  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/wsl-config">Microsoft Learn — Advanced settings configuration in WSL (.wslconfig)</a></li>
-  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/basic-commands">Microsoft Learn — WSL basic commands</a></li>
-  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/disk-space">Microsoft Learn — WSL disk space management</a></li>
-</ul>
-
-<hr />
-
-<p><em>Posted as Day 104 of Daily Bioinformatics from Jojy’s Desk. Small steps at the command line open the door to much larger computational workflows.</em></p>
-
-<p><img src="/assets/img/wsl.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="WSL" /><category term="linux" /><category term="Windows" /><category term="bioinformatics" /><category term="bash" /><category term="conda" /><category term="HPC" /><category term="VS-Code" /><category term="teaching" /><category term="beginners" /><category term="command-line" /><category term="reproducibility" /><summary type="html"><![CDATA[If you have a Windows laptop and want to learn bioinformatics, you do not need to install a second operating system or configure a virtual machine before your first command. WSL — Windows Subsystem for Linux — puts a real Linux terminal directly on your Windows machine in about ten minutes. This post covers what WSL is, how to install it, RAM and storage realities, VS Code integration, the learning path from Bash to HPC, and the honest limitations: WSL lowers the barrier to learning Linux, but it is not a replacement for an HPC cluster.]]></summary></entry><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-12T13:17:44-04:00</published><updated>2026-10-12T13:17:44-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-12T13:25:48-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-12T13:25:48-04:00</published><updated>2026-10-12T13:25:48-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -1814,7 +1389,432 @@ change the downstream biological interpretation?
 
 <p><em>Sample identifiers remain anonymized throughout this series. All timing measurements were made using <code class="language-plaintext highlighter-rouge">/usr/bin/time -v</code> on an HPC cluster with standardized fastp-preprocessed inputs.</em></p>
 
-<p><img src="/assets/img/hc-day5.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="metagenomics" /><category term="host-removal" /><category term="benchmarking" /><category term="BMTagger" /><category term="Bowtie2" /><category term="BBMap" /><category term="Cleanifier" /><category term="human-contamination" /><category term="microbial-specificity" /><category term="read-discordance" /><category term="reproducibility" /><category term="HPC" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[The final post in a 5-day series benchmarking BMTagger, Bowtie2, BBMap (GRCh38 and masked hg19), and Cleanifier for human read removal from high-host-content metagenomes. Today brings the integrated comparison: removal rates, runtime, RAM, read-level agreement across 194 million read pairs, a downstream taxonomy comparison, additional Cleanifier capabilities (including count-only screening and rRNA filtering), and a practical decision framework. The key lesson is that filtering performance must be evaluated alongside biological results.]]></summary></entry><entry><title type="html">Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/" rel="alternate" type="text/html" title="Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5" /><published>2026-10-08T00:00:00-04:00</published><updated>2026-10-08T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/cleanifier-human-read-removal</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/"><![CDATA[<p>🧬 <em>Day 4 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+<p><img src="/assets/img/hc-day5.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="metagenomics" /><category term="host-removal" /><category term="benchmarking" /><category term="BMTagger" /><category term="Bowtie2" /><category term="BBMap" /><category term="Cleanifier" /><category term="human-contamination" /><category term="microbial-specificity" /><category term="read-discordance" /><category term="reproducibility" /><category term="HPC" /><category term="bioinformatics" /><category term="beginners" /><summary type="html"><![CDATA[The final post in a 5-day series benchmarking BMTagger, Bowtie2, BBMap (GRCh38 and masked hg19), and Cleanifier for human read removal from high-host-content metagenomes. Today brings the integrated comparison: removal rates, runtime, RAM, read-level agreement across 194 million read pairs, a downstream taxonomy comparison, additional Cleanifier capabilities (including count-only screening and rRNA filtering), and a practical decision framework. The key lesson is that filtering performance must be evaluated alongside biological results.]]></summary></entry><entry><title type="html">Windows Subsystem for Linux (WSL) for Bioinformatics: A Practical Beginner’s Guide</title><link href="https://jojyjohn28.github.io/blog/wsl-windows-subsystem-linux-bioinformatics/" rel="alternate" type="text/html" title="Windows Subsystem for Linux (WSL) for Bioinformatics: A Practical Beginner’s Guide" /><published>2026-10-12T00:00:00-04:00</published><updated>2026-10-12T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/windows-subsytem-linux</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/wsl-windows-subsystem-linux-bioinformatics/"><![CDATA[<p>🧬 <em>Day 104of Daily Bioinformatics from Jojy’s Desk</em></p>
+
+<p>If you have a Windows laptop, do you need to install Linux before you can start learning bioinformatics?</p>
+
+<p>Not necessarily.</p>
+
+<p>A large part of modern bioinformatics happens in a Linux environment — Bash scripting, Conda environments, command-line tools, HPC clusters, workflow managers. Students who use macOS already have a Unix-like terminal. Windows users have traditionally faced a harder choice: dual-boot, a virtual machine, or connect directly to a remote server.</p>
+
+<p>There is a practical middle ground that is often overlooked: <strong>Windows Subsystem for Linux (WSL)</strong>. It puts a real Linux environment directly inside Windows, without replacing or partitioning anything. You keep your Windows applications, your file browser, your Office suite — and you get a Bash terminal running Ubuntu alongside them.</p>
+
+<p>This post is the guide I wish existed for every bioinformatics workshop where half the participants have Windows laptops.</p>
+
+<hr />
+
+<h2 id="what-wsl-actually-is">What WSL actually is</h2>
+
+<p>WSL stands for Windows Subsystem for Linux. It allows you to run a Linux distribution directly on Windows without a traditional virtual machine or dual-boot setup. The current version, WSL 2, runs a real Linux kernel inside a lightweight managed virtual machine. For most practical purposes — Bash, Git, Conda, Python, R, bioinformatics command-line tools — it behaves like a native Linux terminal.</p>
+
+<p>Conceptually, your computer looks like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Windows
+├── Microsoft Office, browser, Windows apps
+├── VS Code
+└── WSL 2
+    └── Ubuntu
+        ├── Bash
+        ├── Git
+        ├── Python / R
+        ├── Conda / Bioconda
+        └── Bioinformatics tools
+</code></pre></div></div>
+
+<p>For a learner, this means: you can keep using Windows while learning and practicing Linux.</p>
+
+<h3 id="wsl-1-vs-wsl-2">WSL 1 vs WSL 2</h3>
+
+<p>WSL 2 is the relevant version for almost everyone. New distributions installed via <code class="language-plaintext highlighter-rouge">wsl --install</code> use WSL 2 by default. WSL 2 uses a real Linux kernel, offers better system-call compatibility, and generally better filesystem performance than WSL 1. Check which version you are running with:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wsl <span class="nt">-l</span> <span class="nt">-v</span>
+</code></pre></div></div>
+
+<p>Use WSL 2 unless you have a specific reason not to.</p>
+
+<hr />
+
+<h2 id="why-not-just-use-virtualbox-or-dual-boot">Why not just use VirtualBox or dual boot?</h2>
+
+<p>All approaches can work. The comparison below is practical, not absolute:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>WSL 2</th>
+      <th>Traditional VM</th>
+      <th>Dual Boot</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Real Linux kernel</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Keep Windows running</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>Windows/Linux file integration</td>
+      <td>Excellent</td>
+      <td>Moderate</td>
+      <td>Limited</td>
+    </tr>
+    <tr>
+      <td>Setup difficulty</td>
+      <td>Low</td>
+      <td>Moderate</td>
+      <td>Higher</td>
+    </tr>
+    <tr>
+      <td>Good for teaching beginners</td>
+      <td>Excellent</td>
+      <td>Good</td>
+      <td>Lower</td>
+    </tr>
+    <tr>
+      <td>Large production analyses</td>
+      <td>Limited by laptop</td>
+      <td>Limited by laptop</td>
+      <td>Limited by laptop</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>WSL is particularly useful for teaching because students do not need to fundamentally change how they use their computer before their first Bash command. The barrier to entry is a single PowerShell command.</p>
+
+<hr />
+
+<h2 id="installation">Installation</h2>
+
+<p>For modern Windows 10 and Windows 11 systems, installation is a single command. Open <strong>PowerShell as Administrator</strong> and run:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This installs WSL 2 and Ubuntu by default. Restart your computer when prompted. After restarting, Ubuntu will launch and ask you to create a Linux username and password — these do not need to match your Windows credentials.</p>
+
+<p>To install a different Linux distribution:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># See what is available</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--list</span><span class="w"> </span><span class="nt">--online</span><span class="w">
+
+</span><span class="c"># Install a specific distribution</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--install</span><span class="w"> </span><span class="nt">-d</span><span class="w"> </span><span class="nx">Ubuntu-22.04</span><span class="w">
+</span></code></pre></div></div>
+
+<p>For beginners, Ubuntu is the best choice — extensive documentation, the largest community, and broad Bioconda support.</p>
+
+<h3 id="verify-the-installation">Verify the installation</h3>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--status</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--version</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">-l</span><span class="w"> </span><span class="nt">-v</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="your-first-linux-commands">Your first Linux commands</h2>
+
+<p>Open Ubuntu from the Start menu. The prompt will look like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>username@computer:~$
+</code></pre></div></div>
+
+<p>Try these immediately:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">pwd</span>                    <span class="c"># print working directory</span>
+<span class="nb">ls</span>                     <span class="c"># list files</span>
+<span class="nb">mkdir </span>bioinformatics   <span class="c"># create a directory</span>
+<span class="nb">cd </span>bioinformatics      <span class="c"># move into it</span>
+<span class="nb">pwd</span>                    <span class="c"># confirm where you are</span>
+<span class="nb">touch </span>test.txt         <span class="c"># create an empty file</span>
+<span class="nb">ls</span> <span class="nt">-lh</span>                 <span class="c"># list with sizes</span>
+</code></pre></div></div>
+
+<p>Then update Ubuntu — do this on any fresh Linux installation before installing anything:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt update
+<span class="nb">sudo </span>apt upgrade
+</code></pre></div></div>
+
+<p>When prompted for a password, type your Linux password. Nothing will appear on screen while you type — this is normal Linux behaviour.</p>
+
+<hr />
+
+<h2 id="the-commands-worth-learning-first">The commands worth learning first</h2>
+
+<p>These appear repeatedly in every bioinformatics workflow:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Navigation and files</span>
+<span class="nb">pwd   ls   cd   mkdir   cp   mv   rm</span>
+
+<span class="c"># Viewing and inspecting data</span>
+<span class="nb">cat   </span>less   <span class="nb">head   tail   wc</span>
+
+<span class="c"># Searching and filtering</span>
+<span class="nb">grep   </span>find   <span class="nb">awk   sed   sort   cut</span>
+
+<span class="c"># Compression and transfer</span>
+<span class="nb">gzip   tar   </span>wget   curl   ssh   rsync
+</code></pre></div></div>
+
+<p>A student who can use these fluently is ready to follow almost any bioinformatics tutorial and ready to connect to an HPC cluster and feel at home.</p>
+
+<hr />
+
+<h2 id="ram-and-storage-the-honest-numbers">RAM and storage: the honest numbers</h2>
+
+<p>WSL does not create computational resources. If your laptop has 16 GB RAM, WSL has access to some fraction of 16 GB RAM. The analysis requirements determine whether that is enough.</p>
+
+<p>By default, WSL 2 can use up to <strong>50% of total Windows memory</strong> (so 8 GB on a 16 GB machine), with processors defaulting to all logical processors available to Windows. These limits are configurable via a <code class="language-plaintext highlighter-rouge">.wslconfig</code> file in your Windows user directory:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[wsl2]
+memory=8GB
+processors=4
+swap=4GB
+</code></pre></div></div>
+
+<p>Do not blindly copy these values — set them based on your computer and workload. The WSL defaults are reasonable for most learning scenarios.</p>
+
+<p>For practical bioinformatics use, here is a realistic RAM guide:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>RAM</th>
+      <th>Practical use in WSL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>8 GB</td>
+      <td>Linux navigation, Git, Python/R, small exercises</td>
+    </tr>
+    <tr>
+      <td>16 GB</td>
+      <td>Recommended starting point for learning bioinformatics tools</td>
+    </tr>
+    <tr>
+      <td>32 GB</td>
+      <td>Comfortable for moderate local analyses</td>
+    </tr>
+    <tr>
+      <td>64 GB+</td>
+      <td>More capable, but still not a replacement for HPC</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Storage follows the same principle. Learning Bash and running small exercises needs a few GB. A real sequencing project needs hundreds of GB to TB — that lives on the HPC, not your laptop.</p>
+
+<hr />
+
+<h2 id="an-important-file-storage-rule">An important file storage rule</h2>
+
+<p>Your Windows C: drive is accessible from WSL at <code class="language-plaintext highlighter-rouge">/mnt/c/</code>. This is convenient, but:</p>
+
+<p><strong>For Linux-heavy bioinformatics work, store files in the Linux filesystem, not under <code class="language-plaintext highlighter-rouge">/mnt/c/</code>.</strong></p>
+
+<p>Linux tools reading and writing files across the Windows/Linux boundary can be significantly slower. Use your Linux home directory instead:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/projects
+<span class="nb">cd</span> ~/projects
+<span class="c"># run your bioinformatics workflows here</span>
+</code></pre></div></div>
+
+<p>To open your current Linux directory in Windows Explorer (when you need to access files from the Windows side):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>explorer.exe <span class="nb">.</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="wsl--vs-code">WSL + VS Code</h2>
+
+<p>This combination is especially good for teaching and development. Students get the familiar VS Code interface on Windows while their code and terminal run inside Linux.</p>
+
+<p>Install VS Code on Windows, then install the <strong>WSL extension</strong> (search “WSL” in the Extensions panel). From any WSL project directory:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>code <span class="nb">.</span>
+</code></pre></div></div>
+
+<p>VS Code opens connected directly to your Linux environment — full IntelliSense, integrated terminal, file browser, all running in Ubuntu. For students who are not yet comfortable living entirely in a terminal, this is a gentler entry point.</p>
+
+<hr />
+
+<h2 id="git-conda-and-bioinformatics-tools">Git, Conda, and bioinformatics tools</h2>
+
+<p><strong>Git:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>git
+git config <span class="nt">--global</span> user.name <span class="s2">"Your Name"</span>
+git config <span class="nt">--global</span> user.email <span class="s2">"your@email.com"</span>
+git <span class="nt">--version</span>
+</code></pre></div></div>
+
+<p>Git skills learned in WSL transfer directly to any Linux server or HPC.</p>
+
+<p><strong>Conda (Miniforge recommended):</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+bash Miniforge3-Linux-x86_64.sh
+<span class="c"># Restart terminal after installation</span>
+conda <span class="nt">--version</span>
+</code></pre></div></div>
+
+<p>From here, create isolated environments exactly as you would on an HPC:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda create <span class="nt">-n</span> bioinfo <span class="nt">-c</span> bioconda fastqc trimmomatic
+conda activate bioinfo
+fastqc <span class="nt">--version</span>
+</code></pre></div></div>
+
+<p>The environment-management concepts are identical to what students will use on a remote Linux server later.</p>
+
+<hr />
+
+<h2 id="wsl-as-a-stepping-stone-to-hpc">WSL as a stepping stone to HPC</h2>
+
+<p>This is the most underappreciated educational value of WSL. A student who learns Linux navigation, Bash scripting, Git, and Conda locally in WSL is prepared to connect to an HPC and not feel completely lost:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Step 1:  Install WSL
+Step 2:  Learn Linux navigation (pwd, ls, cd, mkdir)
+Step 3:  Learn file manipulation (cp, mv, grep, awk)
+Step 4:  Learn Git
+Step 5:  Learn Conda environments
+Step 6:  Run small bioinformatics tools (FastQC, fastp, samtools)
+Step 7:  Write Bash scripts
+Step 8:  SSH into HPC — ssh username@hpc.edu
+Step 9:  Learn SLURM (sbatch, squeue, sacct)
+Step 10: Scale up real analyses
+</code></pre></div></div>
+
+<p>WSL does not need to run your large analysis. It can simply be your local Linux terminal that you use to develop scripts, then SSH into the cluster to run them at scale:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Windows laptop
+      ↓
+    WSL
+      ↓  ssh
+    HPC cluster
+      ├── SLURM
+      ├── Large RAM
+      ├── Many CPUs
+      └── Large storage
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="what-wsl-is-good-for-and-where-it-has-limits">What WSL is good for and where it has limits</h2>
+
+<p><strong>WSL works well for:</strong></p>
+
+<ul>
+  <li>Learning Linux and Bash</li>
+  <li>Learning Git</li>
+  <li>Learning Conda</li>
+  <li>Python and R development</li>
+  <li>Small FASTQ exercises and practice datasets</li>
+  <li>Testing and developing scripts before HPC submission</li>
+  <li>Teaching workshops</li>
+  <li>SSH access to HPC</li>
+</ul>
+
+<p><strong>Think carefully before using WSL for:</strong></p>
+
+<ul>
+  <li>Large reference databases (Kraken2, GTDB-Tk full databases)</li>
+  <li>Moderate genome or metagenome assembly</li>
+  <li>Docker-heavy workflows</li>
+  <li>Large local datasets</li>
+</ul>
+
+<p><strong>Move to HPC or cloud for:</strong></p>
+
+<ul>
+  <li>Hundreds of sequencing samples</li>
+  <li>Large metagenomic assemblies</li>
+  <li>High-memory analyses</li>
+  <li>Highly parallel production pipelines</li>
+  <li>Large MAG workflows</li>
+</ul>
+
+<p>The key point: WSL provides the <em>environment</em>. It does not create computational resources. A 16 GB laptop with WSL is still a 16 GB laptop.</p>
+
+<hr />
+
+<h2 id="useful-wsl-management-commands">Useful WSL management commands</h2>
+
+<p>Run these from PowerShell or Command Prompt, not from inside Ubuntu:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wsl</span><span class="w"> </span><span class="nt">--status</span><span class="w">          </span><span class="c"># check WSL status</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--version</span><span class="w">         </span><span class="c"># WSL version</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">-l</span><span class="w"> </span><span class="nt">-v</span><span class="w">             </span><span class="c"># list distributions and versions</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--update</span><span class="w">          </span><span class="c"># update WSL</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--shutdown</span><span class="w">        </span><span class="c"># shut down all WSL instances</span><span class="w">
+</span><span class="n">wsl</span><span class="w"> </span><span class="nt">--list</span><span class="w"> </span><span class="nt">--online</span><span class="w">   </span><span class="c"># see available distributions</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="quick-reference-setup-checklist">Quick reference: setup checklist</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Install WSL (PowerShell as Administrator)</span>
+wsl <span class="nt">--install</span>
+
+<span class="c"># 2. After restarting: update Ubuntu</span>
+<span class="nb">sudo </span>apt update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt upgrade
+
+<span class="c"># 3. Install Git</span>
+<span class="nb">sudo </span>apt <span class="nb">install </span>git
+
+<span class="c"># 4. Install Miniforge (Conda)</span>
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+bash Miniforge3-Linux-x86_64.sh
+
+<span class="c"># 5. Install VS Code on Windows, then connect:</span>
+code <span class="nb">.</span>
+
+<span class="c"># 6. Create your first project directory</span>
+<span class="nb">mkdir</span> <span class="nt">-p</span> ~/projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ~/projects
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="the-honest-summary">The honest summary</h2>
+
+<p>WSL does not replace Linux HPC. It lowers the barrier to learning it.</p>
+
+<p>For a student with a Windows laptop, asking them to install a second operating system or configure a virtual machine before their first Bash command can turn the first bioinformatics lesson into an IT support session. WSL offers a different path: keep Windows, add Linux, start learning immediately.</p>
+
+<p>The commands learned in WSL — <code class="language-plaintext highlighter-rouge">grep</code>, <code class="language-plaintext highlighter-rouge">awk</code>, <code class="language-plaintext highlighter-rouge">sed</code>, Git, Conda, SSH — are the same commands used on every Linux server and HPC cluster. When a student eventually types <code class="language-plaintext highlighter-rouge">ssh username@hpc.edu</code> for the first time, the Linux environment is no longer completely unfamiliar.</p>
+
+<p>That is why WSL has become my first recommendation for Windows users starting out in bioinformatics.</p>
+
+<hr />
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Microsoft Learn — Install WSL</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/setup/environment">Microsoft Learn — Set up a WSL development environment</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/compare-versions">Microsoft Learn — Comparing WSL 1 and WSL 2</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/wsl-config">Microsoft Learn — Advanced settings configuration in WSL (.wslconfig)</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/basic-commands">Microsoft Learn — WSL basic commands</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/windows/wsl/disk-space">Microsoft Learn — WSL disk space management</a></li>
+</ul>
+
+<hr />
+
+<p><em>Posted as Day 104 of Daily Bioinformatics from Jojy’s Desk. Small steps at the command line open the door to much larger computational workflows.</em></p>
+
+<p><img src="/assets/img/wsl.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="linux" /><category term="linux" /><category term="WSL" /><category term="Windows" /><category term="Ubuntu" /><category term="bash" /><category term="command-line" /><category term="bioinformatics" /><category term="conda" /><category term="VS-Code" /><category term="HPC" /><category term="beginners" /><category term="teaching" /><category term="reproducibility" /><summary type="html"><![CDATA[A practical beginner's guide to using Windows Subsystem for Linux (WSL) for bioinformatics. Learn how to install Ubuntu on Windows, use Bash, Git, Conda, and VS Code, manage RAM and storage, and build the Linux skills needed to transition from a laptop to HPC.]]></summary></entry><entry><title type="html">Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/" rel="alternate" type="text/html" title="Cleanifier: Fast Human Read Removal and the False-Positive Question — Day 4 of 5" /><published>2026-10-08T00:00:00-04:00</published><updated>2026-10-08T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/cleanifier-human-read-removal</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-cleanifier-false-positives-day4/"><![CDATA[<p>🧬 <em>Day 4 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
 
 <p>The first three days of this benchmark established a clear pattern: BMTagger removed the most reads, Bowtie2 was faster and operationally simpler, and BBMap’s output shifted meaningfully depending on which human reference it used. Runtimes ranged from 50 to 77 minutes per sample. Memory requirements peaked at 45 GB for BBMap.</p>
 
