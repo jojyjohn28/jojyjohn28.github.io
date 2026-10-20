@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-12T13:25:48-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
-</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-12T13:25:48-04:00</published><updated>2026-10-12T13:25:48-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://jojyjohn28.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jojyjohn28.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-10-20T11:56:13-04:00</updated><id>https://jojyjohn28.github.io/feed.xml</id><title type="html">blank</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html"></title><link href="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/" rel="alternate" type="text/html" title="" /><published>2026-10-20T11:56:13-04:00</published><updated>2026-10-20T11:56:13-04:00</updated><id>https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/2026-02-11-day6-specialized-functions/"><![CDATA[<h1 id="day-6-specialized-genomic-functions">Day 6: Specialized Genomic Functions</h1>
 
 <table>
   <tbody>
@@ -766,7 +766,466 @@ run_dbcan <span class="nt">--tools</span> all ...
 
 <p>Last updated: February 2026</p>
 
-<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Speed, Sensitivity, and Microbial Specificity: The Final Host-Removal Benchmark — Day 5 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-benchmark-final-day5/" rel="alternate" type="text/html" title="Speed, Sensitivity, and Microbial Specificity: The Final Host-Removal Benchmark — Day 5 of 5" /><published>2026-10-12T00:00:00-04:00</published><updated>2026-10-12T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/human_contamination-removal-day5</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-benchmark-final-day5/"><![CDATA[<p>🧬 <em>Day 5 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
+<p><img src="/assets/img/mg_day6.png" alt="day6 mg" /></p>]]></content><author><name></name></author></entry><entry><title type="html">Sequali: A Modern Alternative to FastQC for Sequencing Quality Control</title><link href="https://jojyjohn28.github.io/blog/sequali-sequencing-quality-control-fastqc-alternative/" rel="alternate" type="text/html" title="Sequali: A Modern Alternative to FastQC for Sequencing Quality Control" /><published>2026-10-20T00:00:00-04:00</published><updated>2026-10-20T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/Sequali-A-Modern-Alternative-to-FastQC</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/sequali-sequencing-quality-control-fastqc-alternative/"><![CDATA[<p>🧬 <strong>Day 105 of Daily Bioinformatics from Jojy’s Desk</strong></p>
+
+<h2 id="sequali-a-modern-alternative-to-fastqc-for-sequencing-quality-control">Sequali: A Modern Alternative to FastQC for Sequencing Quality Control</h2>
+
+<p>Quality control is one of the first steps in almost every sequencing workflow. Whether we are analyzing whole genomes, metagenomes, metatranscriptomes, or amplicons, we start by asking similar questions:</p>
+
+<ul>
+  <li>Are the reads of acceptable quality?</li>
+  <li>Is quality dropping toward the ends of the reads?</li>
+  <li>Are adapters still present?</li>
+  <li>Are there overrepresented sequences?</li>
+  <li>Is the library highly duplicated?</li>
+  <li>Does the read-length distribution look reasonable?</li>
+</ul>
+
+<p>For years, <strong>FastQC</strong> has been the default tool for answering these questions. Recently I came across <strong>Sequali</strong>, which offers some interesting improvements, particularly for people working with both short-read and long-read data. Today: what Sequali does, how to run it, and how it compares with FastQC.</p>
+
+<hr />
+
+<h2 id="1-what-is-sequali">1. What is Sequali?</h2>
+
+<p><a href="https://github.com/rhpvorderman/sequali">Sequali</a> is an open-source sequencing QC tool developed by Ruben H. P. Vorderman and described in a 2025 paper in <em>Bioinformatics Advances</em>: <strong>“Sequali: efficient and comprehensive quality control of short- and long-read sequencing data.”</strong></p>
+
+<p>Instead of targeting a single platform, Sequali provides one QC framework for both Illumina and Oxford Nanopore data. It reads FASTQ files and unaligned BAM (uBAM) files.</p>
+
+<p>Notable features:</p>
+
+<ul>
+  <li>Fast execution with low memory requirements</li>
+  <li>Quality-score and nucleotide-composition plots</li>
+  <li>Adapter detection for Illumina and Nanopore reads</li>
+  <li>Overrepresented sequence identification</li>
+  <li>Duplication-rate estimation</li>
+  <li>Insert-size analysis for paired-end reads</li>
+  <li>Illumina per-tile quality plots</li>
+  <li>Nanopore-specific channel and translocation-speed plots</li>
+  <li>MultiQC integration</li>
+</ul>
+
+<p>Sequali writes an HTML report for visual inspection and a JSON file for downstream processing.</p>
+
+<hr />
+
+<h2 id="2-why-is-sequali-interesting">2. Why is Sequali interesting?</h2>
+
+<p>At first glance it looks like another FastQC-style tool. Three implementation details are worth a closer look.</p>
+
+<h3 id="a-read-level-quality-is-averaged-as-error-probability">A. Read-level quality is averaged as error probability</h3>
+
+<p>Phred scores are logarithmic:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Q = -10 × log10(P)
+</code></pre></div></div>
+
+<p>where P is the probability of an incorrect base call.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phred score</th>
+      <th>Estimated error probability</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Q10</td>
+      <td>10%</td>
+    </tr>
+    <tr>
+      <td>Q20</td>
+      <td>1%</td>
+    </tr>
+    <tr>
+      <td>Q30</td>
+      <td>0.1%</td>
+    </tr>
+    <tr>
+      <td>Q40</td>
+      <td>0.01%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Because the scale is logarithmic, averaging Phred scores directly is not the same as averaging the underlying error. Consider a read with just two bases, Q10 and Q30:</p>
+
+<ul>
+  <li>Arithmetic mean of the scores: <strong>Q20</strong></li>
+  <li>Mean error probability: (0.1 + 0.001) / 2 = 0.0505, which converts back to roughly <strong>Q13</strong></li>
+</ul>
+
+<p>The naive average hides the fact that the poor base dominates the expected number of errors. Sequali summarizes read-level quality using expected error probabilities: convert each base to an error probability, average, then convert back to Phred.</p>
+
+<h3 id="b-overrepresented-sequences-with-an-attempt-at-identification">B. Overrepresented sequences, with an attempt at identification</h3>
+
+<p>Overrepresented sequences can point to adapter contamination, PCR enrichment, unexpected library-prep sequences, or other technical artifacts. According to the paper, Sequali uses short sequence fragments (21 bp) to find frequent patterns and compares candidates against the NCBI UniVec database and additional known sequencing-related sequences, so you get a hint about <em>what</em> an overrepresented sequence might be, not only that it exists.</p>
+
+<p>A caution: an overrepresented sequence is not automatically contamination. Genuine biological sequences can also be highly abundant.</p>
+
+<h3 id="c-duplication-estimation-by-fingerprint-subsampling">C. Duplication estimation by fingerprint subsampling</h3>
+
+<p>Duplication can come from PCR amplification, low library complexity, or genuine biological abundance. Sequali estimates it using a fingerprint-based subsampling approach: instead of storing every complete read, it samples short fingerprints and uses their frequency distribution to estimate duplication. This keeps memory use down while still producing a duplication profile.</p>
+
+<p><strong>A caution for microbiome researchers:</strong> high duplication does not necessarily mean poor data. In metagenomes and metatranscriptomes, abundant organisms and highly expressed transcripts naturally generate repeated sequences. Always interpret duplication in the context of the experiment.</p>
+
+<hr />
+
+<h2 id="3-sequali-vs-fastqc">3. Sequali vs. FastQC</h2>
+
+<p>FastQC remains a useful, established tool. Sequali builds on many of the same ideas and adds some capabilities.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>FastQC</th>
+      <th>Sequali</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Illumina FASTQ QC</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Nanopore-specific QC</td>
+      <td>Limited</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Per-base quality plots</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Per-read quality summaries</td>
+      <td>Yes</td>
+      <td>Yes (expected-error approach)</td>
+    </tr>
+    <tr>
+      <td>GC-content analysis</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Adapter detection</td>
+      <td>Yes</td>
+      <td>Yes, including ONT adapters</td>
+    </tr>
+    <tr>
+      <td>Overrepresented sequences</td>
+      <td>Yes</td>
+      <td>Yes, with expanded identification</td>
+    </tr>
+    <tr>
+      <td>Duplication analysis</td>
+      <td>Yes</td>
+      <td>Yes (fingerprint-based estimation)</td>
+    </tr>
+    <tr>
+      <td>Paired-end insert-size metrics</td>
+      <td>No native module</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Illumina per-tile quality</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Nanopore channel plots</td>
+      <td>No</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>MultiQC integration</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>HTML reports</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="what-about-speed">What about speed?</h3>
+
+<p>The Sequali paper benchmarked it against other QC tools. The numbers below are as reported in the publication, <strong>not from my own benchmark</strong>.</p>
+
+<p>Illumina benchmark dataset:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tool</th>
+      <th>Runtime</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sequali</td>
+      <td>19 seconds</td>
+    </tr>
+    <tr>
+      <td>Falco</td>
+      <td>35 seconds</td>
+    </tr>
+    <tr>
+      <td>fastp</td>
+      <td>26 seconds (with adjustments described in the paper)</td>
+    </tr>
+    <tr>
+      <td>NanoPlot</td>
+      <td>2 min 41 s</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Nanopore benchmark dataset:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tool</th>
+      <th>Runtime</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sequali</td>
+      <td>3 min 22 s</td>
+    </tr>
+    <tr>
+      <td>Falco</td>
+      <td>17 min 12 s</td>
+    </tr>
+    <tr>
+      <td>fastp</td>
+      <td>8 min 39 s (with adjustments described in the paper)</td>
+    </tr>
+    <tr>
+      <td>NanoPlot</td>
+      <td>23 min 28 s</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Note that the study compared against <strong>Falco</strong>, a faster FastQC-compatible reimplementation, not the original FastQC executable. The results suggest Sequali can be substantially faster, especially on long reads, but actual performance depends on dataset size, read length, compression, hardware, and software versions. Run it on your own data before drawing conclusions.</p>
+
+<hr />
+
+<h2 id="4-installing-sequali">4. Installing Sequali</h2>
+
+<p>Sequali is available through pip and Bioconda.</p>
+
+<p><strong>Option 1: pip</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>sequali
+</code></pre></div></div>
+
+<p><strong>Option 2: conda (my preference, in its own environment)</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda create <span class="nt">-n</span> sequali_env <span class="nt">-c</span> conda-forge <span class="nt">-c</span> bioconda sequali
+conda activate sequali_env
+</code></pre></div></div>
+
+<p>Check the installation:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sequali <span class="nt">--help</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="5-running-sequali-on-fastq-files">5. Running Sequali on FASTQ files</h2>
+
+<h3 id="single-end-reads">Single-end reads</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sequali sample.fastq.gz
+</code></pre></div></div>
+
+<p>By default this writes two reports next to the input:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sample.fastq.gz.html
+sample.fastq.gz.json
+</code></pre></div></div>
+
+<p>Open the HTML in a browser; the JSON holds the same QC information in a structured form for scripts.</p>
+
+<h3 id="paired-end-illumina-reads">Paired-end Illumina reads</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sequali sample_R1.fastq.gz sample_R2.fastq.gz
+</code></pre></div></div>
+
+<p>With paired input Sequali can look at read overlap and insert-size characteristics, which is a useful quality indicator for Illumina libraries.</p>
+
+<h3 id="organizing-output">Organizing output</h3>
+
+<p>For many samples, keep reports in a dedicated directory:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> 02_qc/sequali
+
+sequali <span class="se">\</span>
+  <span class="nt">--out-dir</span> 02_qc/sequali <span class="se">\</span>
+  sample_R1.fastq.gz <span class="se">\</span>
+  sample_R2.fastq.gz
+</code></pre></div></div>
+
+<p>Note the flag is <code class="language-plaintext highlighter-rouge">--out-dir</code> (with a hyphen). Option names can change between versions, so confirm against <code class="language-plaintext highlighter-rouge">sequali --help</code> for the version you installed.</p>
+
+<hr />
+
+<h2 id="6-before-and-after-quality-control">6. Before-and-after quality control</h2>
+
+<p>A practical use is comparing quality before and after preprocessing. Suppose you use fastp to trim adapters and filter low-quality reads.</p>
+
+<p>Assess the raw reads:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sequali <span class="se">\</span>
+  <span class="nt">--html</span> before_qc.html <span class="se">\</span>
+  <span class="nt">--json</span> before_qc.json <span class="se">\</span>
+  raw.fastq.gz
+</code></pre></div></div>
+
+<p>Preprocess:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fastp <span class="se">\</span>
+  <span class="nt">-i</span> raw.fastq.gz <span class="se">\</span>
+  <span class="nt">-o</span> trimmed.fastq.gz <span class="se">\</span>
+  <span class="nt">-h</span> fastp.html <span class="se">\</span>
+  <span class="nt">-j</span> fastp.json
+</code></pre></div></div>
+
+<p>Assess the processed reads:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sequali <span class="se">\</span>
+  <span class="nt">--html</span> after_qc.html <span class="se">\</span>
+  <span class="nt">--json</span> after_qc.json <span class="se">\</span>
+  trimmed.fastq.gz
+</code></pre></div></div>
+
+<p>Compare the two reports for changes in base-quality distributions, adapter content, read lengths, overrepresented sequences, and duplication profiles.</p>
+
+<p>One distinction matters: <strong>Sequali assesses quality; fastp preprocesses reads.</strong> They are complementary, not replacements for each other.</p>
+
+<hr />
+
+<h2 id="7-integrating-sequali-with-multiqc">7. Integrating Sequali with MultiQC</h2>
+
+<p>With hundreds of samples, opening individual HTML reports is impractical. MultiQC can aggregate Sequali results; support was added in MultiQC version 1.22.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda <span class="nb">install</span> <span class="nt">-c</span> conda-forge <span class="nt">-c</span> bioconda multiqc
+
+multiqc 02_qc/sequali <span class="nt">-o</span> 02_qc/multiqc
+</code></pre></div></div>
+
+<p>This produces a single project-level report, which is especially handy for large metagenomic or transcriptomic cohorts. Make sure your MultiQC is version 1.22 or newer.</p>
+
+<hr />
+
+<h2 id="8-using-sequali-on-an-hpc-cluster">8. Using Sequali on an HPC cluster</h2>
+
+<p>Sequali’s low memory footprint suits shared computing environments. Its documentation indicates typical analyses need only a couple of GB of RAM, and by default it uses about two CPU cores, though a single-core mode is available (see <code class="language-plaintext highlighter-rouge">sequali --help</code> for the option in your version). Resource use depends on the input, so measure rather than assume.</p>
+
+<p>Because each sample is independent, many single-sample jobs can be more efficient than giving extra cores to any one sample. A simple SLURM script:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="c">#SBATCH --job-name=sequali_qc</span>
+<span class="c">#SBATCH --cpus-per-task=2</span>
+<span class="c">#SBATCH --mem=4G</span>
+<span class="c">#SBATCH --time=01:00:00</span>
+<span class="c">#SBATCH --output=sequali_%j.log</span>
+
+<span class="nb">source</span> /path/to/conda.sh        <span class="c"># replace with the correct path on your cluster</span>
+conda activate sequali_env
+
+sequali <span class="nt">--out-dir</span> 02_qc/sequali sample.fastq.gz
+</code></pre></div></div>
+
+<p>For large projects, extend this to a SLURM job array with one sample per task (the same pattern used in the Kaiju and genome-annotation posts in this series). Adjust the memory and time requests after checking actual usage with <code class="language-plaintext highlighter-rouge">sacct</code> or <code class="language-plaintext highlighter-rouge">/usr/bin/time -v</code>.</p>
+
+<hr />
+
+<h2 id="9-sequali-for-nanopore-sequencing">9. Sequali for Nanopore sequencing</h2>
+
+<p>Nanopore data behaves differently from Illumina:</p>
+
+<ul>
+  <li>Read lengths vary enormously</li>
+  <li>Adapter and barcode contamination can remain after basecalling</li>
+  <li>Quality can vary between channels</li>
+  <li>Translocation speed can affect run performance</li>
+</ul>
+
+<p>Sequali provides plots designed for these characteristics, including channel and translocation-speed views, and accepts BAM files from Nanopore basecalling workflows.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sequali nanopore_reads.fastq.gz
+sequali dorado_basecalled.bam
+</code></pre></div></div>
+
+<p>One limitation: Sequali does not currently use paired-read relationships in BAM input. For Nanopore data, where reads are analyzed individually, this rarely matters.</p>
+
+<hr />
+
+<h2 id="10-should-we-replace-fastqc-with-sequali">10. Should we replace FastQC with Sequali?</h2>
+
+<p>I would not replace an established QC pipeline without evaluating the alternative first. FastQC has a long track record, extensive documentation, and is built into countless workflows.</p>
+
+<p>Sequali’s attractions:</p>
+
+<ul>
+  <li>One approach to short-read and long-read QC</li>
+  <li>Efficient performance</li>
+  <li>Expected-error-based quality summaries</li>
+  <li>Additional adapter and overrepresentation analysis</li>
+  <li>Paired-end insert-size information</li>
+  <li>Low memory requirements</li>
+</ul>
+
+<p>If you are building a new sequencing QC workflow, Sequali is worth evaluating. If you already have one, run FastQC and Sequali on the same representative samples and compare the reports. The interesting question is whether Sequali reveals problems that are not obvious in the FastQC output.</p>
+
+<p>A simple evaluation set:</p>
+
+<ol>
+  <li>One high-quality Illumina sample</li>
+  <li>One sample with known adapter contamination</li>
+  <li>One highly duplicated library</li>
+  <li>One Nanopore dataset</li>
+</ol>
+
+<p>That would show quickly whether Sequali offers practical advantages for the data you actually analyze.</p>
+
+<hr />
+
+<h2 id="11-final-thoughts">11. Final thoughts</h2>
+
+<p>QC is sometimes treated as routine: run FastQC, glance at the report, move on. But how a tool calculates and presents its metrics shapes how we interpret the data. Sequali shows that even familiar measurements, like average read quality and duplication, can benefit from different computational approaches, and its support for both Illumina and Nanopore is a real advantage as workflows increasingly combine short and long reads.</p>
+
+<p>The lesson I take from it: <strong>quality control is not simply about generating plots. It is about understanding what those plots measure and whether they accurately describe the sequencing data.</strong></p>
+
+<p>Sequali is a useful tool to have in the toolkit.</p>
+
+<hr />
+
+<h2 id="references-and-resources">References and resources</h2>
+
+<ol>
+  <li>Vorderman, R. H. P. (2025). Sequali: efficient and comprehensive quality control of short- and long-read sequencing data. <em>Bioinformatics Advances</em>, 5(1), vbaf010. https://doi.org/10.1093/bioadv/vbaf010</li>
+  <li>Sequali documentation: https://sequali.readthedocs.io/</li>
+  <li>Sequali GitHub repository: https://github.com/rhpvorderman/sequali</li>
+  <li>FastQC: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/</li>
+  <li>MultiQC: https://multiqc.info/</li>
+</ol>
+
+<hr />
+
+<p><em>Day 105 of Daily Bioinformatics from Jojy’s Desk.</em></p>
+
+<p><em>Small steps. Real progress.</em></p>]]></content><author><name></name></author><category term="genomics" /><category term="bioinformatics" /><category term="sequencing" /><category term="quality-control" /><category term="FASTQ" /><category term="Sequali" /><category term="FastQC" /><category term="Illumina" /><category term="Nanopore" /><category term="MultiQC" /><category term="HPC" /><category term="beginners" /><summary type="html"><![CDATA[A practical introduction to Sequali, a fast and lightweight sequencing quality-control tool for Illumina and Nanopore data. Learn about its quality metrics, adapter detection, duplication estimation, MultiQC integration, and how it compares with FastQC.]]></summary></entry><entry><title type="html">Speed, Sensitivity, and Microbial Specificity: The Final Host-Removal Benchmark — Day 5 of 5</title><link href="https://jojyjohn28.github.io/blog/human-contamination-removal-benchmark-final-day5/" rel="alternate" type="text/html" title="Speed, Sensitivity, and Microbial Specificity: The Final Host-Removal Benchmark — Day 5 of 5" /><published>2026-10-12T00:00:00-04:00</published><updated>2026-10-12T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/human_contamination-removal-day5</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/human-contamination-removal-benchmark-final-day5/"><![CDATA[<p>🧬 <em>Day 5 of 5 — Benchmarking Host-Read Removal for High-Host-Content Metagenomes</em></p>
 
 <p>This series started with a deceptively simple question: which tool should you use to remove human reads from a host-associated metagenome? Over four days, that question expanded considerably. The benchmark moved from timing comparisons and removal percentages to read-level concordance and the practical question of whether differences in filtering change downstream microbiome profiles. Today I bring all of that together.</p>
 
@@ -3978,160 +4437,4 @@ git config <span class="nt">--global</span> user.email <span class="s2">"your_em
 
 <p>For more details about shortcuts and more please also visit:https://support.apple.com/en-us/102650</p>
 
-<p><img src="/assets/img/mac-key.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="macOS" /><category term="linux" /><category term="terminal" /><category term="homebrew" /><category term="conda" /><category term="bioinformatics" /><category term="keyboard-shortcuts" /><category term="iTerm2" /><category term="VS-Code" /><category term="new-lab" /><category term="beginners" /><category term="productivity" /><summary type="html"><![CDATA[After years of Linux as my daily operating system — running pipelines on HPC clusters, writing Bash scripts, processing terabytes of sequencing data — I just started my new position at the University of Maryland School of Medicine and, for the first time, my daily machine is a MacBook. The transition is mostly smooth (macOS is Unix-based, the terminal feels familiar), but there were enough small differences in the first few days to slow me down. This post covers the commands, shortcuts, and setup steps every Linux-trained bioinformatician needs when switching to macOS — from the keyboard muscle memory problem to Homebrew, iTerm2, Conda, and VS Code.]]></summary></entry><entry><title type="html">How Bioinformaticians Think: Asking the Right Questions Before Running Any Tool</title><link href="https://jojyjohn28.github.io/blog/how-bioinformaticians-think/" rel="alternate" type="text/html" title="How Bioinformaticians Think: Asking the Right Questions Before Running Any Tool" /><published>2026-06-27T00:00:00-04:00</published><updated>2026-06-27T00:00:00-04:00</updated><id>https://jojyjohn28.github.io/blog/how-bioinformaticians-think</id><content type="html" xml:base="https://jojyjohn28.github.io/blog/how-bioinformaticians-think/"><![CDATA[<p>🧬 <em>Day 96 of Daily Bioinformatics from Jojy’s Desk</em></p>
-
-<p>Anyone can run a pipeline. Install the tool, point it at your FASTQ files, wait for the SLURM job to finish, get a table of results. This is true whether the pipeline is Kraken2 or DESeq2 or AlphaFold. The execution step has gotten easier every year — better documentation, conda environments, one-line installs, Docker containers that handle every dependency for you.</p>
-
-<p>What has not gotten easier, and never will, is deciding what question the pipeline should actually answer. This is the part of bioinformatics that takes years to develop, that no software update will automate, and that separates an analysis that quietly produces a table from an analysis that actually advances understanding.</p>
-
-<p>This post is not a tutorial. There is no code here. It is about the thinking that happens before you type the first command.</p>
-
-<hr />
-
-<h2 id="the-question-behind-the-question">The question behind the question</h2>
-
-<p>Most bioinformatics training focuses on the “how.” How do you run Kraken2. How do you interpret a DESeq2 results table. How do you build a co-occurrence network. These are necessary skills, but they are answers to a question that was already decided for you — usually by an advisor, a paper you are replicating, or a default workflow you found online.</p>
-
-<p>The harder and more valuable skill is recognizing when the question itself is too shallow to be useful.</p>
-
-<p><strong>Instead of:</strong> <em>Which taxa are present in my samples?</em></p>
-
-<p><strong>Ask:</strong> <em>Which taxa are driving the difference I observe between treatments?</em></p>
-
-<p>The first question is answered by any taxonomic classifier. It produces a list. The list is not wrong, but it is not interpretable on its own — every sample has taxa present, that fact alone tells you nothing about your experiment. The second question forces you to define what “difference” means (statistical? ecological? both?), forces you to choose an appropriate differential abundance method, and forces you to think about whether the taxa you find are biologically plausible drivers or just statistical artifacts of an unbalanced design.</p>
-
-<p><strong>Instead of:</strong> <em>Which genes are present in my metagenome?</em></p>
-
-<p><strong>Ask:</strong> <em>Which genes explain the ecological pattern I already observed?</em></p>
-
-<p>Again — the first question is satisfied by any annotation tool. Run Prokka, run eggNOG-mapper, get a functional profile. But “present” is almost meaningless in isolation. Almost every gene family is present in almost every reasonably complex metagenome at some level. The question that actually moves your research forward is connective: you saw something — a community shift across a salinity gradient, a bloom in a particular phylum, a change between FL and PA fractions — and you are asking which genes, mechanistically, could explain it.</p>
-
-<p>This reframing changes everything downstream. It changes which statistical test you choose, which comparisons you make, which figures you build, and most importantly, what counts as a meaningful result versus noise.</p>
-
-<h3 id="a-simple-test-for-your-own-question">A simple test for your own question</h3>
-
-<p>Before running any tool, try finishing this sentence: <em>“If this analysis works perfectly, the result will tell me ___.”</em></p>
-
-<p>If you cannot finish that sentence with something specific and falsifiable, the analysis is not ready to run yet — no matter how excited you are to see the output. “It will tell me what’s there” is not a finished sentence. “It will tell me whether genome size correlates with particle-association after controlling for phylum” is.</p>
-
-<hr />
-
-<h2 id="lesson-1-reviewing-manuscripts-taught-me-to-ask-better-questions">Lesson 1: Reviewing manuscripts taught me to ask better questions</h2>
-
-<p>The single biggest improvement in my analytical thinking did not come from a course or a textbook. It came from reviewing manuscripts for journals.</p>
-
-<p>When you review a paper, you are forced into a specific mental posture that is completely different from the posture you have when running your own analysis. As a reviewer, you naturally ask:</p>
-
-<ul>
-  <li>Is the analysis appropriate for this type of data?</li>
-  <li>Is there another explanation for this result that the authors haven’t considered?</li>
-  <li>What controls are missing?</li>
-  <li>Is this result statistically significant but biologically meaningless?</li>
-  <li>Does the conclusion actually follow from the data, or is there a gap?</li>
-</ul>
-
-<p>The strange thing is that these questions are not hard to ask. Any trained reviewer asks them automatically, almost reflexively, about someone else’s work. What is hard is asking them about your <em>own</em> work, in real time, before you have already committed to a narrative.</p>
-
-<p>Reviewing teaches you to internalize that skeptical voice and turn it inward. After you have reviewed a dozen papers and seen a dozen ways that a reasonable-looking analysis can have a hidden flaw — an unaccounted confounder, a multiple-testing problem, a sample size too small to support the claimed effect — you start running that same checklist on your own pipeline before you trust the output.</p>
-
-<p>A practical exercise: the next time you get a result you are excited about, write a one-paragraph peer review of your own analysis as if a stranger had submitted it to you. Be as skeptical as you would be of someone else’s work. You will usually find at least one question worth answering before you move forward.</p>
-
-<hr />
-
-<h2 id="lesson-2-github-issues-are-an-underrated-education">Lesson 2: GitHub issues are an underrated education</h2>
-
-<p>This is something almost nobody talks about, and it deserves more attention than it gets.</p>
-
-<p>When you are learning a tool from documentation alone, you see the idealized version: clean example data, expected output, a tutorial that works on the first try. What you do not see is the tool’s actual behavior in the messy, real-world conditions your own data will present.</p>
-
-<p>This is exactly what GitHub Issues capture. The typical pattern looks like this:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Tool works perfectly on the documented example
-        ↓
-A real user runs it on their own (messier) data
-        ↓
-User reports a weird, unexpected, or seemingly wrong result
-        ↓
-The developer responds, explaining a limitation, an edge case,
-or an assumption baked into the tool that isn't obvious from
-the documentation
-        ↓
-You read this exchange and learn something the manual never told you
-</code></pre></div></div>
-
-<p>This is gold, and it is free, and it is sitting in the open Issues tab of every actively maintained bioinformatics tool you use.</p>
-
-<p>A few concrete examples of the kind of thing you learn only from issues:</p>
-
-<ul>
-  <li>A tool’s default parameter assumes paired-end reads of a certain length range, and silently produces degraded results outside that range — never stated explicitly in the docs, but explained clearly in a three-comment thread from 2022</li>
-  <li>A statistical method’s p-values become unreliable below a certain sample size, something the developer mentions in response to a confused user but does not put in a warning message</li>
-  <li>Two parameters interact in a non-obvious way, and changing one without the other produces a result that looks plausible but is wrong — caught only because someone reported it and the maintainer explained the interaction</li>
-</ul>
-
-<p>None of this is information you would find by reading the methods paper or the README. It is the accumulated, hard-won troubleshooting knowledge of every person who has hit an edge case before you — and the tool author’s honest explanation of why.</p>
-
-<h3 id="how-to-actually-use-this-as-a-learning-resource">How to actually use this as a learning resource</h3>
-
-<p>Before you commit to using a tool for an important analysis, spend fifteen minutes in its GitHub Issues tab (and the Closed issues, not just Open ones — that is where resolved confusions live):</p>
-
-<ul>
-  <li>Search for your specific use case (e.g., “low coverage,” “small sample size,” “metagenome mode”)</li>
-  <li>Read a handful of issues where the user got a confusing result and the developer explained why</li>
-  <li>Note any caveats that change how you should interpret your own output</li>
-</ul>
-
-<p>This single habit will save you from more silent analytical mistakes than almost anything else you can do in fifteen minutes.</p>
-
-<hr />
-
-<h2 id="what-this-looks-like-in-practice">What this looks like in practice</h2>
-
-<p>Put together, here is roughly what a more mature analytical workflow looks like, compared to a more naive one:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Naive approach</th>
-      <th>More mature approach</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Run the tool everyone uses</td>
-      <td>Ask what question you actually need answered, then pick the tool that answers it</td>
-    </tr>
-    <tr>
-      <td>Accept the default parameters</td>
-      <td>Check the tool’s GitHub issues for known caveats at your data scale</td>
-    </tr>
-    <tr>
-      <td>Report whatever is statistically significant</td>
-      <td>Ask whether the result is also biologically and ecologically plausible</td>
-    </tr>
-    <tr>
-      <td>Trust the first result that confirms your hypothesis</td>
-      <td>Review your own analysis the way you’d review someone else’s submission</td>
-    </tr>
-    <tr>
-      <td>Treat “what is present” as the end goal</td>
-      <td>Treat “what explains the pattern I observed” as the actual goal</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>None of this replaces technical skill. You still need to know how to run the tools, interpret the statistics, and write the code. But technical skill without this layer of questioning produces a researcher who can execute pipelines competently and still draw the wrong conclusions from them — confidently.</p>
-
-<hr />
-
-<h2 id="the-habit-worth-building">The habit worth building</h2>
-
-<p>If there is one habit to take from this post, it is this: before you open a terminal, write down — in plain language, no jargon — what question you are trying to answer and what result would make you change your mind. Then go run the pipeline.</p>
-
-<p>It takes thirty seconds. It will save you from more wasted analyses than any new tool you could learn this year.</p>
-
-<hr />
-
-<p><em>Posted as Day 96 of Daily Bioinformatics from Jojy’s Desk.</em></p>
-
-<p><img src="/assets/img/bionfo.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="bioinformatics" /><category term="scientific-thinking" /><category term="study-design" /><category term="peer-review" /><category term="GitHub-issues" /><category term="career-development" /><category term="research-methodology" /><category term="critical-thinking" /><category term="metagenomics" /><category term="beginners" /><summary type="html"><![CDATA[Anyone can run a pipeline. Type the command, wait for the job to finish, get a table of results. The hard part of bioinformatics has never been execution — it is deciding what question the pipeline should actually answer. This post is not a tutorial. It is about the thinking that happens before the first command is typed: how to turn a vague curiosity into a testable question, and two underrated sources of analytical maturity that nobody talks about — reviewing manuscripts and reading GitHub issues.]]></summary></entry></feed>
+<p><img src="/assets/img/mac-key.png" alt="See your plot" /></p>]]></content><author><name></name></author><category term="macOS" /><category term="linux" /><category term="terminal" /><category term="homebrew" /><category term="conda" /><category term="bioinformatics" /><category term="keyboard-shortcuts" /><category term="iTerm2" /><category term="VS-Code" /><category term="new-lab" /><category term="beginners" /><category term="productivity" /><summary type="html"><![CDATA[After years of Linux as my daily operating system — running pipelines on HPC clusters, writing Bash scripts, processing terabytes of sequencing data — I just started my new position at the University of Maryland School of Medicine and, for the first time, my daily machine is a MacBook. The transition is mostly smooth (macOS is Unix-based, the terminal feels familiar), but there were enough small differences in the first few days to slow me down. This post covers the commands, shortcuts, and setup steps every Linux-trained bioinformatician needs when switching to macOS — from the keyboard muscle memory problem to Homebrew, iTerm2, Conda, and VS Code.]]></summary></entry></feed>
